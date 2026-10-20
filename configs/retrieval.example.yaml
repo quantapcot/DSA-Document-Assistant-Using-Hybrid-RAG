@@ -1,0 +1,7 @@
+# Discussion example only. Not loaded by the current application.
+# C1 and D1 must confirm these values before integration/evaluation.
+candidate_top_k: 20
+rerank_top_k: 5
+keyword_search: bm25
+vector_search: enabled
+# Embedding model, vector DB, fusion method and reranker are not selected here.

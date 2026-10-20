@@ -1,0 +1,5 @@
+# Discussion example only. Not loaded by the current application.
+# C2 owns the future loader/schema and prompt integration.
+require_citations: true
+abstain_without_evidence: true
+# Provider, model, generation parameters and prompt versions remain to be agreed.

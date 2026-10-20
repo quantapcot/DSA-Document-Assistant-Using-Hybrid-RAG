@@ -1,0 +1,30 @@
+# Python caches and local environments
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+
+# Local settings and credentials
+.env
+.env.*
+!.env.example
+
+# Local runtime data; retain its directory guides
+data/runtime/**/*
+!data/runtime/**/
+!data/runtime/**/README.md
+
+# Generated evaluation runs; curated reports stay trackable
+evaluation/results/**/*
+!evaluation/results/**/
+!evaluation/results/**/README.md
+
+# Local logs and OS files
+*.log
+.DS_Store
+Thumbs.db
