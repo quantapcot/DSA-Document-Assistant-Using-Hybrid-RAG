@@ -78,7 +78,7 @@ Folder backend/app là gói ứng dụng của FastAPI. Nhiều nhóm cùng làm
 | backend/app/api/ | Tầng giao tiếp HTTP. Nhận request, trả response; không phải nơi viết thuật toán PDF/RAG. | A1 | Có khung router và middleware |
 | backend/app/api/routes/ | Mỗi file đại diện cho một nhóm endpoint. | A1 | chat.py trả mock, health.py trả thông tin ứng dụng; upload.py, quiz.py, revision.py còn rỗng |
 | backend/app/api/middleware/ | Xử lý chung quanh request. | A1; D1 dùng số liệu khi đánh giá | observability.py đo thời gian cho đường dẫn bắt đầu bằng /api/ và gắn response header |
-| backend/app/core/ | Cấu hình chung của ứng dụng. | A1, A3 | config.py đã khai báo tên ứng dụng, môi trường, host/port và biến LLM/ChromaDB; chưa có kết nối LLM/VectorDB |
+| backend/app/core/ | Cấu hình chung của ứng dụng. | A1, A3 | config.py đã khai báo tên ứng dụng, môi trường, host/port và biến LLM/Qdrant; chưa có kết nối LLM/VectorDB |
 | backend/app/schemas/ | Hợp đồng dữ liệu dùng chung giữa các module và API. | A1 điều phối; B1/C1/C2/D2 xác nhận phần liên quan | contracts.py đã định nghĩa DocumentChunk, Citation, ChatRequest, RAGResponse, GuardrailResult |
 | backend/app/orchestration/ | Vị trí dự kiến để phân loại ý định và nối API với các module xử lý; không tự làm thay thuật toán của B1/C1/C2/D2. | A1 | Mới có khung intent_router.py, request_flow.py, ingestion_flow.py; chưa được API gọi |
 | backend/app/document_processing/ | Vị trí dự kiến đọc PDF, làm sạch, chia đoạn và gắn filename/page/section để tạo DocumentChunk. Không quản lý VectorDB. | B1 | document_parser.py còn rỗng; text_cleaner.py, chunker.py, metadata.py mới có mô tả nhiệm vụ |
@@ -86,7 +86,7 @@ Folder backend/app là gói ứng dụng của FastAPI. Nhiều nhóm cùng làm
 | backend/app/generation/ | Vị trí dự kiến tạo câu trả lời, quiz, lộ trình ôn tập và gắn trích dẫn; xử lý trường hợp không đủ bằng chứng. | C2 | rag_engine.py, quiz_generator.py, revision_generator.py còn rỗng; các file khác là khung |
 | backend/app/generation/prompts/ | Nơi đặt prompt khi C2 triển khai generation. | C2 | Mới có README hướng dẫn, chưa có prompt hoạt động |
 | backend/app/safety/ | Vị trí dự kiến viết quy tắc và module kiểm tra an toàn; A1 sẽ gọi từ luồng điều phối. | D2 viết logic; A1 tích hợp | guardrail.py còn rỗng; policies.py mới là khung |
-| backend/.env.example | Danh sách biến môi trường mẫu, không chứa khóa thật. | A3 phối hợp A1/C1/C2 | Có file mẫu; biến LLM/ChromaDB chưa được dùng trong luồng xử lý |
+| backend/.env.example | Danh sách biến môi trường mẫu, không chứa khóa thật. | A3 phối hợp A1/C1/C2 | Có file mẫu; biến LLM/Qdrant chưa được dùng trong luồng xử lý |
 | backend/requirements.txt | Khai báo thư viện backend. | A1, A3 phối hợp | Có các phụ thuộc FastAPI, Uvicorn, Pydantic và phụ thuộc hỗ trợ |
 | backend/Dockerfile | Vị trí đóng gói backend. | A3 | File rỗng |
 
