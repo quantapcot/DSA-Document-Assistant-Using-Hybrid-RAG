@@ -10,8 +10,7 @@ class Settings(BaseSettings):
     
     # Biến môi trường cho LLM & VectorDB (sử dụng ở các tuần sau)
     OPENAI_API_KEY: Optional[str] = None
-    CHROMADB_HOST: str = "localhost"
-    CHROMADB_PORT: int = 8000
+    QDRANT_URL: str = "http://localhost:6333"
 
     class Config:
         env_file = ".env"

@@ -8,15 +8,23 @@ Docker Compose chưa có triển khai đầy đủ.
 
 ## Chạy từ thư mục gốc repo bằng PowerShell
 
-Cần Python phù hợp với dependencies của nhóm. Các lệnh cài đặt dưới đây do
-người phát triển chạy khi muốn chuẩn bị môi trường; lần sắp xếp thư mục không
-cài đặt hoặc thay đổi dependencies.
+Cần Python 3.11.x phù hợp với dependencies của dự án (khuyến nghị tạo môi trường
+Conda `dsa-rag` hoặc virtualenv với Python 3.11.x). Các lệnh cài đặt dưới đây do
+người phát triển chạy khi muốn chuẩn bị môi trường:
 
 ```powershell
+# Cách 1: Sử dụng Conda environment dsa-rag (Python 3.11.x)
+conda activate dsa-rag
 cd backend
-python -m venv .venv
+pip install -r requirements.txt
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+
+# Cách 2: Sử dụng virtualenv với Python 3.11.x
+cd backend
+py -3.11 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
-Copy-Item .env.example .env
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
@@ -30,12 +38,13 @@ Không dựa vào block chạy trực tiếp trong `main.py` cho hướng dẫn 
 
 `app/core/config.py` đọc `.env` theo thư mục chạy. Vì vậy ví dụ môi trường nằm
 ở `backend/.env.example`; đặt `.env` bên cạnh khi chạy theo hướng dẫn trên.
-Không đưa API key thật vào Git. Các biến LLM/ChromaDB hiện được khai báo để dùng
+Không đưa API key thật vào Git. Các biến LLM/Qdrant (`QDRANT_URL`) hiện được khai báo để dùng
 về sau, chưa có retrieval/generation thực tế.
 
-Khi triển khai VectorDB, C1/A3 cần thống nhất địa chỉ và cổng; tránh chạy backend
-và VectorDB cùng chiếm một cổng trên cùng host. Không thay đổi mặc định trong code
-ở lần sắp xếp này.
+Mặc định Qdrant chạy tại cổng 6333 (`QDRANT_URL=http://localhost:6333` trên local, hoặc
+`http://qdrant:6333` khi chạy trong Docker Compose sau này), tách biệt rõ ràng với cổng 8000
+của backend FastAPI. Lưu ý: kết nối cơ sở dữ liệu Qdrant và luồng Hybrid RAG chưa được kích
+hoạt trong mã nguồn hiện tại (hiện chỉ có API mock).
 
 ## Chưa thể chạy toàn hệ thống bằng Docker
 
