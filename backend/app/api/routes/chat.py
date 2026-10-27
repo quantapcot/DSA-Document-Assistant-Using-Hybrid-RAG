@@ -1,48 +1,44 @@
-# dsa_ai_agent/backend/app/api/routes/chat.py
+"""PoC: exactly one supported AVL sample question, answered using fixed mock data."""
 from fastapi import APIRouter, HTTPException, status
-from app.schemas.contracts import ChatRequest, RAGResponse, Citation
+
+from app.schemas.contracts import ChatRequest, Citation, RAGResponse
 
 router = APIRouter()
+SAMPLE_PROMPT = "Cây AVL là gì và độ phức tạp tìm kiếm là bao nhiêu?"
+
 
 @router.post("/api/chat", response_model=RAGResponse, tags=["Chat Agent"])
 async def chat_mock_endpoint(request: ChatRequest):
-    """
-    Endpoint xử lý trò chuyện hỏi đáp DSA giả lập (Mock API cho Tuần 4).
-    Giúp Frontend (A2) kết nối giao diện và test khung Trích dẫn (Citations).
-    """
-    user_query = request.query.strip()
-    
-    if not user_query:
+    question = " ".join(request.query.strip().split())
+    if not question:
+        raise HTTPException(status_code=400, detail="Câu hỏi không được để trống.")
+    if question != SAMPLE_PROMPT:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, 
-            detail="Câu hỏi không được để trống."
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="PoC hiện chỉ hỗ trợ câu hỏi AVL mẫu được hiển thị trên giao diện.",
         )
-        
-    # Tạo dữ liệu giả lập (Mock Data) chuẩn theo Pydantic Contract RAGResponse
-    mock_citations = [
-        Citation(
-            filename="Chuong4_Trees_DSA.pdf",
-            page=12,
-            section="4.2 Cây AVL - Định nghĩa",
-            snippet="Cây AVL là cây nhị phân tìm kiếm tự cân bằng, trong đó độ cao của hai cây con không lệch quá 1."
-        ),
-        Citation(
-            filename="Chuong4_Trees_DSA.pdf",
-            page=15,
-            section="4.2 Cây AVL - Độ phức tạp",
-            snippet="Độ phức tạp thời gian cho các thao tác Tìm kiếm, Thêm, Xóa trên Cây AVL đều đạt O(log n)."
-        )
-    ]
-    
+
     return RAGResponse(
-        query=user_query,
+        query=question,
         answer=(
-            f"[MOCK RESPONSE - TUẦN 4] Dưới đây là giải đáp cho câu hỏi: '{user_query}'\n\n"
-            "1. **Khái niệm:** Cây AVL là cây nhị phân tìm kiếm (BST) tự cân bằng.\n"
-            "2. **Đặc điểm:** Hệ số cân bằng của mọi nút chỉ nhận các giá trị -1, 0, hoặc 1.\n"
-            "3. **Độ phức tạp:** Thao tác tìm kiếm đạt hiệu năng O(log n)."
+            "[MOCK - PoC] Cây AVL là cây nhị phân tìm kiếm (BST) tự cân bằng.\n\n"
+            "- Hệ số cân bằng của mỗi nút thuộc {-1, 0, 1}.\n"
+            "- Thời gian tìm kiếm trên cây AVL là **O(log n)**."
         ),
-        citations=mock_citations,
-        confidence_score=0.95,
-        is_safe=True
+        citations=[
+            Citation(
+                filename="Chuong4_Trees_DSA.pdf",
+                page=12,
+                section="4.2 Cây AVL - Định nghĩa",
+                snippet="[MOCK] Cây AVL là cây nhị phân tìm kiếm tự cân bằng.",
+            ),
+            Citation(
+                filename="Chuong4_Trees_DSA.pdf",
+                page=15,
+                section="4.2 Cây AVL - Độ phức tạp",
+                snippet="[MOCK] Tìm kiếm trên cây AVL có độ phức tạp O(log n).",
+            ),
+        ],
+        confidence_score=0.95,  # Fixed demo value, not computed
+        is_safe=True,            # Fixed demo value, no guardrail is running
     )

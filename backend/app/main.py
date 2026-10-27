@@ -2,7 +2,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.api.routes import health, chat
+from app.api.routes import health, chat, upload
 from app.api.middleware.observability import ObservabilityMiddleware
 
 app = FastAPI(
@@ -26,6 +26,7 @@ app.add_middleware(ObservabilityMiddleware)
 # Đăng ký các Routers
 app.include_router(health.router)
 app.include_router(chat.router)
+app.include_router(upload.router)
 
 @app.get("/", tags=["Root"])
 async def root():
