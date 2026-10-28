@@ -29,7 +29,7 @@ Dự án hiện ở giai đoạn xây dựng khung ban đầu. Phần đã có c
 
 | Mã | Họ và tên | MSSV | Phân công |
 | --- | --- | --- | --- |
-| A1 | Nguyễn Phú Trọng | 25127534 | Backend và điều phối |
+| A1 | Nguyễn Lê Phú Trọng | 25127534 | Backend và điều phối |
 | A2 | Nguyễn Văn An | 25127010 | Frontend và UI/UX |
 | A3 | Nguyễn Phú Nguyên Vũ | 25127172 | Tích hợp hệ thống và DevOps |
 | B1 | Nguyễn Thanh Danh | 25127291 | Xử lý tài liệu |
