@@ -121,6 +121,7 @@ Các schema trong [`backend/app/schemas/contracts.py`](backend/app/schemas/contr
 quiz.py, revision.py là khung, chưa được đăng ký thành endpoints trong app/main.py.
 5. Cây thư mục project hiện tại
 Cây phản ánh repository hiện tại; lược bớt __init__.py, README phụ và một số file chi tiết để dễ đọc. [PoC] = đang dùng trong bản demo; [Khung] = vị trí cho tính năng chưa triển khai.
+```text
 DSA-Document-Assistant-Using-Hybrid-RAG/
 ├── backend/
 │   ├── app/
@@ -182,6 +183,7 @@ DSA-Document-Assistant-Using-Hybrid-RAG/
 ├── docker-compose.yml                     # [Khung] file rỗng
 ├── .gitignore
 └── README.md
+```
 Lưu ý: data/runtime/ được .gitignore bỏ qua (trừ README hướng dẫn), cũng như file .env cá nhân. docker-compose.yml và hai Dockerfile còn rỗng; không dùng docker compose up để chạy PoC hiện tại.
 6. Công nghệ PoC so với mục tiêu
 Thành phần	PoC hiện tại	Mục tiêu
