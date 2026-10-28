@@ -196,16 +196,25 @@ Deployment	Chạy local bằng hai terminal	Docker Compose: Streamlit, FastAPI, 
 Evaluation	Chưa có benchmark	Baselines, Ground Truth, retrieval/answer metrics
 
 
-7. Thành viên và phân công
-Mã	Họ và tên	MSSV	Phân công
-A1	Nguyễn Lê Phú Trọng	25127534	Backend và điều phối
-A2	Nguyễn Văn An	25127010	Frontend và UI/UX
-A3	Nguyễn Phú Nguyên Vũ	25127172	Tích hợp hệ thống và DevOps
-B1	Nguyễn Thanh Danh	25127291	Xử lý tài liệu
-C1	Trương Minh Quân	25127126	Tìm kiếm và truy xuất
-C2	Hứa Kiến Quốc	25127130	RAG và sinh nội dung học tập
-D1	Đặng Phan Gia Bảo	25127016	Benchmark và đánh giá chất lượng
-D2	Nguyễn Minh Cường	25127286	An toàn và độ tin cậy
 
+## 7. Thành viên và phân công
 
-Tài liệu: [Setup backend](docs/setup.md) · [Kiến trúc mục tiêu](docs/architecture.md) · [Data contracts](docs/data_contracts.md) · [Phân công](docs/ownership.md)
+| Mã | Họ và tên | MSSV | Phân công |
+|---|---|---|---|
+| A1 | Nguyễn Lê Phú Trọng | 25127534 | Backend và điều phối |
+| A2 | Nguyễn Văn An | 25127010 | Frontend và UI/UX |
+| A3 | Nguyễn Phú Nguyên Vũ | 25127172 | Tích hợp hệ thống và DevOps |
+| B1 | Nguyễn Thanh Danh | 25127291 | Xử lý tài liệu |
+| C1 | Trương Minh Quân | 25127126 | Tìm kiếm và truy xuất |
+| C2 | Hứa Kiến Quốc | 25127130 | RAG và sinh nội dung học tập |
+| D1 | Đặng Phan Gia Bảo | 25127016 | Benchmark và đánh giá chất lượng |
+| D2 | Nguyễn Minh Cường | 25127286 | An toàn và độ tin cậy |
+
+---
+
+### Tài liệu liên quan
+
+- [Hướng dẫn cài đặt](docs/setup.md)
+- [Kiến trúc hệ thống](docs/architecture.md)
+- [Data Contracts](docs/data_contracts.md)
+- [Phân công công việc](docs/ownership.md)
