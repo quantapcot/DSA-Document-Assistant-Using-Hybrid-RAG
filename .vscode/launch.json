@@ -1,0 +1,42 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Backend (FastAPI)",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "uvicorn",
+            "args": [
+                "app.main:app",
+                "--host",
+                "127.0.0.1",
+                "--port",
+                "8000",
+                "--reload"
+            ],
+            "cwd": "${workspaceFolder}/backend",
+            "jinja": true
+        },
+        {
+            "name": "Frontend (Streamlit)",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "streamlit",
+            "args": [
+                "run",
+                "app.py"
+            ],
+            "cwd": "${workspaceFolder}/frontend",
+            "jinja": true
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Run Both (Backend + Frontend)",
+            "configurations": [
+                "Backend (FastAPI)",
+                "Frontend (Streamlit)"
+            ]
+        }
+    ]
+}
