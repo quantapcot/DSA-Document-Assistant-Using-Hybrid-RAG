@@ -1,0 +1,9 @@
+# ==========================================
+# DSA Document Assistant - Hybrid RAG
+# Requirements khung của Dự án (Tuần 4)
+# ==========================================
+# Cài đặt toàn bộ dependencies cho dự án:
+# pip install -r requirements.txt
+
+-r backend/requirements.txt
+-r frontend/requirements.txt

@@ -1,0 +1,42 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "1. Start Backend (FastAPI)",
+            "type": "shell",
+            "command": "python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload",
+            "options": {
+                "cwd": "${workspaceFolder}/backend"
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "group": "servers"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "2. Start Frontend (Streamlit)",
+            "type": "shell",
+            "command": "python -m streamlit run app.py",
+            "options": {
+                "cwd": "${workspaceFolder}/frontend"
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new",
+                "group": "servers"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Run Both (Backend + Frontend)",
+            "dependsOn": [
+                "1. Start Backend (FastAPI)",
+                "2. Start Frontend (Streamlit)"
+            ],
+            "dependsOrder": "parallel",
+            "problemMatcher": []
+        }
+    ]
+}
