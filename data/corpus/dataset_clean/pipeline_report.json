@@ -1,0 +1,333 @@
+{
+  "total_files": 54,
+  "processed": 54,
+  "failed": 0,
+  "total_chunks": 5941,
+  "files": [
+    {
+      "file": "001_train_file_Eng.docx",
+      "folder": "end_docx",
+      "chunks": 5,
+      "status": "ok"
+    },
+    {
+      "file": "002_train_file_Eng.docx",
+      "folder": "end_docx",
+      "chunks": 6,
+      "status": "ok"
+    },
+    {
+      "file": "003_train_file_Eng.docx",
+      "folder": "end_docx",
+      "chunks": 7,
+      "status": "ok"
+    },
+    {
+      "file": "004_train_file_Eng.docx",
+      "folder": "end_docx",
+      "chunks": 4,
+      "status": "ok"
+    },
+    {
+      "file": "005_train_file_Eng.docx",
+      "folder": "end_docx",
+      "chunks": 3,
+      "status": "ok"
+    },
+    {
+      "file": "006_train_file_Eng.docx",
+      "folder": "end_docx",
+      "chunks": 6,
+      "status": "ok"
+    },
+    {
+      "file": "001_train_file_Vie.docx",
+      "folder": "vie_docx",
+      "chunks": 6,
+      "status": "ok"
+    },
+    {
+      "file": "002_train_file_Vie.docx",
+      "folder": "vie_docx",
+      "chunks": 141,
+      "status": "ok"
+    },
+    {
+      "file": "003_train_file_Vie.docx",
+      "folder": "vie_docx",
+      "chunks": 5,
+      "status": "ok"
+    },
+    {
+      "file": "004_train_file_Vie.docx",
+      "folder": "vie_docx",
+      "chunks": 5,
+      "status": "ok"
+    },
+    {
+      "file": "005_train_file_Vie.docx",
+      "folder": "vie_docx",
+      "chunks": 5,
+      "status": "ok"
+    },
+    {
+      "file": "006_train_file_Vie.docx",
+      "folder": "vie_docx",
+      "chunks": 7,
+      "status": "ok"
+    },
+    {
+      "file": "007_train_file_Vie.docx",
+      "folder": "vie_docx",
+      "chunks": 6,
+      "status": "ok"
+    },
+    {
+      "file": "001_train_file_Eng.pdf",
+      "folder": "eng_pdf",
+      "chunks": 26,
+      "status": "ok"
+    },
+    {
+      "file": "002_train_file_Eng.pdf",
+      "folder": "eng_pdf",
+      "chunks": 24,
+      "status": "ok"
+    },
+    {
+      "file": "003_train_file_Eng.pdf",
+      "folder": "eng_pdf",
+      "chunks": 26,
+      "status": "ok"
+    },
+    {
+      "file": "004_train_file_Eng.pdf",
+      "folder": "eng_pdf",
+      "chunks": 21,
+      "status": "ok"
+    },
+    {
+      "file": "005_train_file_Eng.pdf",
+      "folder": "eng_pdf",
+      "chunks": 20,
+      "status": "ok"
+    },
+    {
+      "file": "006_train_file_Eng.pdf",
+      "folder": "eng_pdf",
+      "chunks": 23,
+      "status": "ok"
+    },
+    {
+      "file": "007_train_file_Eng.pdf",
+      "folder": "eng_pdf",
+      "chunks": 25,
+      "status": "ok"
+    },
+    {
+      "file": "008_train_file_Eng.pdf",
+      "folder": "eng_pdf",
+      "chunks": 32,
+      "status": "ok"
+    },
+    {
+      "file": "009_train_file_Eng.pdf",
+      "folder": "eng_pdf",
+      "chunks": 31,
+      "status": "ok"
+    },
+    {
+      "file": "010_train_file_Eng.pdf",
+      "folder": "eng_pdf",
+      "chunks": 25,
+      "status": "ok"
+    },
+    {
+      "file": "011_train_file_Eng.pdf",
+      "folder": "eng_pdf",
+      "chunks": 11,
+      "status": "ok"
+    },
+    {
+      "file": "012_train_file_Eng.pdf",
+      "folder": "eng_pdf",
+      "chunks": 24,
+      "status": "ok"
+    },
+    {
+      "file": "013_train_file_Eng.pdf",
+      "folder": "eng_pdf",
+      "chunks": 31,
+      "status": "ok"
+    },
+    {
+      "file": "014_train_file_Eng.pdf",
+      "folder": "eng_pdf",
+      "chunks": 30,
+      "status": "ok"
+    },
+    {
+      "file": "015_train_file_Eng.pdf",
+      "folder": "eng_pdf",
+      "chunks": 28,
+      "status": "ok"
+    },
+    {
+      "file": "016_train_file_Eng.pdf",
+      "folder": "eng_pdf",
+      "chunks": 33,
+      "status": "ok"
+    },
+    {
+      "file": "017_train_file_Eng.pdf",
+      "folder": "eng_pdf",
+      "chunks": 21,
+      "status": "ok"
+    },
+    {
+      "file": "018_train_file_Eng.pdf",
+      "folder": "eng_pdf",
+      "chunks": 22,
+      "status": "ok"
+    },
+    {
+      "file": "019_train_file_Eng.pdf",
+      "folder": "eng_pdf",
+      "chunks": 24,
+      "status": "ok"
+    },
+    {
+      "file": "020_train_file_Eng.pdf",
+      "folder": "eng_pdf",
+      "chunks": 26,
+      "status": "ok"
+    },
+    {
+      "file": "001_train_file_Vie.pdf",
+      "folder": "vie_pdf",
+      "chunks": 771,
+      "status": "ok"
+    },
+    {
+      "file": "002_train_file_Vie.pdf",
+      "folder": "vie_pdf",
+      "chunks": 609,
+      "status": "ok"
+    },
+    {
+      "file": "003_train_file_Vie.pdf",
+      "folder": "vie_pdf",
+      "chunks": 737,
+      "status": "ok"
+    },
+    {
+      "file": "004_train_file_Vie.pdf",
+      "folder": "vie_pdf",
+      "chunks": 1018,
+      "status": "ok"
+    },
+    {
+      "file": "005_train_file_Vie.pdf",
+      "folder": "vie_pdf",
+      "chunks": 406,
+      "status": "ok"
+    },
+    {
+      "file": "006_train_file_Vie.pdf",
+      "folder": "vie_pdf",
+      "chunks": 625,
+      "status": "ok"
+    },
+    {
+      "file": "007_train_file_Vie.pdf",
+      "folder": "vie_pdf",
+      "chunks": 55,
+      "status": "ok"
+    },
+    {
+      "file": "008_train_file_Vie.pdf",
+      "folder": "vie_pdf",
+      "chunks": 56,
+      "status": "ok"
+    },
+    {
+      "file": "009_train_file_Vie.pdf",
+      "folder": "vie_pdf",
+      "chunks": 53,
+      "status": "ok"
+    },
+    {
+      "file": "010_train_file_Vie.pdf",
+      "folder": "vie_pdf",
+      "chunks": 26,
+      "status": "ok"
+    },
+    {
+      "file": "011_train_file_Vie.pdf",
+      "folder": "vie_pdf",
+      "chunks": 37,
+      "status": "ok"
+    },
+    {
+      "file": "012_train_file_Vie.pdf",
+      "folder": "vie_pdf",
+      "chunks": 60,
+      "status": "ok"
+    },
+    {
+      "file": "013_train_file_Vie.pdf",
+      "folder": "vie_pdf",
+      "chunks": 43,
+      "status": "ok"
+    },
+    {
+      "file": "014_train_file_Vie.pdf",
+      "folder": "vie_pdf",
+      "chunks": 49,
+      "status": "ok"
+    },
+    {
+      "file": "015_train_file_Vie.pdf",
+      "folder": "vie_pdf",
+      "chunks": 10,
+      "status": "ok"
+    },
+    {
+      "file": "016_train_file_Vie.pdf",
+      "folder": "vie_pdf",
+      "chunks": 23,
+      "status": "ok"
+    },
+    {
+      "file": "017_train_file_Vie.pdf",
+      "folder": "vie_pdf",
+      "chunks": 12,
+      "status": "ok"
+    },
+    {
+      "file": "018_train_file_Vie.pdf",
+      "folder": "vie_pdf",
+      "chunks": 33,
+      "status": "ok"
+    },
+    {
+      "file": "019_train_file_Vie.pdf",
+      "folder": "vie_pdf",
+      "chunks": 15,
+      "status": "ok"
+    },
+    {
+      "file": "020_train_file_Vie.pdf",
+      "folder": "vie_pdf",
+      "chunks": 20,
+      "status": "ok"
+    },
+    {
+      "file": "021_train_file_Vie.pdf",
+      "folder": "vie_pdf",
+      "chunks": 574,
+      "status": "ok"
+    }
+  ],
+  "elapsed_sec": 21.31
+}
