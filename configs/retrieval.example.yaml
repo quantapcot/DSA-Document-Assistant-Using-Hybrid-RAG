@@ -1,7 +1,14 @@
-# Discussion example only. Not loaded by the current application.
-# C1 and D1 must confirm these values before integration/evaluation.
+# Explicit configuration; pass --config to indexing/benchmark or RetrievalConfig.from_yaml.
+embedding_model: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+reranker_model: null
+collection: dsa_chunks_v1
+qdrant_mode: local
+# qdrant_path is omitted to use the project-local default. Set qdrant_mode: server
+# and qdrant_url: http://localhost:6333 to use a running Qdrant server.
 candidate_top_k: 20
-rerank_top_k: 5
-keyword_search: bm25
-vector_search: enabled
-# Embedding model, vector DB, fusion method and reranker are not selected here.
+final_top_k: 5
+rrf_k: 60
+bm25_k1: 1.5
+bm25_b: 0.75
+accent_insensitive: false
+batch_size: 32

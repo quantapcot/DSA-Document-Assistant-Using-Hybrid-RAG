@@ -1,75 +1,114 @@
-"""C1: BM25 keyword retrieval — sparse vector từ rank_bm25."""
-
+"""BM25 lexical search; index is rebuilt in memory from the supplied corpus."""
 from __future__ import annotations
-
+import json
 import logging
 import re
-from collections import Counter
+import unicodedata
+from pathlib import Path
+from typing import Any
+from rank_bm25 import BM25Okapi
+from pyvi import ViTokenizer
 
 logger = logging.getLogger(__name__)
+DEFAULT_K1 = 1.5
+DEFAULT_B = 0.75
+DEFAULT_TOP_K = 20
+_WORD_RE = re.compile(r"[^\W_]+(?:_[^\W_]+)*", re.UNICODE)
 
-# ---------------------------------------------------------------------------
-# Tokenizer đơn giản (hỗ trợ cả tiếng Việt lẫn tiếng Anh)
-# ---------------------------------------------------------------------------
+def tokenize(text: str, *, accent_insensitive: bool = False) -> list[str]:
+    text = unicodedata.normalize("NFC", text).casefold()
+    if accent_insensitive:
+        text = "".join(c for c in unicodedata.normalize("NFD", text.replace("\u0111", "d")) if not unicodedata.combining(c))
+    segmented = ViTokenizer.tokenize(text)
+    return _WORD_RE.findall(segmented)
 
-def _tokenize(text: str) -> list[str]:
-    """Lowercase + split theo ký tự không phải chữ/số."""
-    return re.findall(r"[a-záàảãạăắằẳẵặâấầẩẫậđéèẻẽẹêếềểễệíìỉĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵ0-9]+", text.lower())
+def normalize_chunk(chunk):
+    if hasattr(chunk, "model_dump"):
+        chunk = chunk.model_dump()
+    elif hasattr(chunk, "dict") and not isinstance(chunk, dict):
+        chunk = chunk.dict()
+    if not isinstance(chunk, dict):
+        raise ValueError("chunk must be a DocumentChunk or dictionary")
+    required = ("chunk_id", "document_id", "filename", "page", "text")
+    if any(k not in chunk for k in required) or any(not isinstance(chunk[k], str) or not chunk[k].strip() for k in ("chunk_id", "document_id", "filename", "text")) or not isinstance(chunk["page"], int):
+        raise ValueError("invalid chunk: required identity, page and nonempty text")
+    result = dict(chunk)
+    result.setdefault("section", None)
+    result.setdefault("metadata", {})
+    if not isinstance(result["metadata"], dict):
+        raise ValueError("chunk metadata must be a dictionary")
+    return result
 
+class BM25Retriever:
+    def __init__(self, chunks, *, k1=DEFAULT_K1, b=DEFAULT_B, accent_insensitive=False):
+        self.accent_insensitive = accent_insensitive
+        self.chunks = []
+        self._term_sets = []
+        corpus = []
+        seen = set()
+        for chunk in chunks:
+            record = normalize_chunk(chunk)
+            if record["chunk_id"] in seen:
+                raise ValueError(f"duplicate chunk_id: {record['chunk_id']}")
+            seen.add(record["chunk_id"])
+            terms = tokenize(record["text"], accent_insensitive=accent_insensitive)
+            if not terms:
+                raise ValueError("chunk contains no indexable terms")
+            self.chunks.append(record)
+            corpus.append(terms)
+            self._term_sets.append(set(terms))
 
-# ---------------------------------------------------------------------------
-# Vocabulary (global, build khi index)
-# ---------------------------------------------------------------------------
+        self._model = BM25Okapi(corpus, k1=k1, b=b) if corpus else None
+        logger.info("BM25 index ready: %d chunks", len(self.chunks))
 
-_vocab: dict[str, int] = {}   # token → index
+    @classmethod
+    def from_jsonl(
+        cls,
+        path: str | Path,
+        *,
+        k1: float = DEFAULT_K1,
+        b: float = DEFAULT_B,
+        accent_insensitive: bool = False,
+    ) -> "BM25Retriever":
+        records: list[dict[str, Any]] = []
+        with Path(path).open("r", encoding="utf-8") as stream:
+            for line_no, line in enumerate(stream, 1):
+                if not line.strip():
+                    continue
+                try:
+                    record = json.loads(line)
+                except json.JSONDecodeError as exc:
+                    raise ValueError(f"Bad JSONL on line {line_no}") from exc
+                if not isinstance(record, dict):
+                    raise ValueError(f"Expected JSON object on line {line_no}")
+                records.append(record)
+        return cls(records, k1=k1, b=b, accent_insensitive=accent_insensitive)
 
+    def search(self, query: str, top_k: int = DEFAULT_TOP_K) -> list[dict[str, Any]]:
+        if not isinstance(query, str):
+            raise TypeError("query must be a string")
+        if top_k <= 0 or self._model is None:
+            return []
+        query_terms = tokenize(query, accent_insensitive=self.accent_insensitive)
+        if not query_terms:
+            return []
 
-def build_vocab(texts: list[str]) -> dict[str, int]:
-    """Xây dựng vocabulary từ danh sách văn bản."""
-    global _vocab
-    all_tokens: set[str] = set()
-    for t in texts:
-        all_tokens.update(_tokenize(t))
-    _vocab = {tok: i for i, tok in enumerate(sorted(all_tokens))}
-    logger.info(f"Vocabulary size: {len(_vocab)}")
-    return _vocab
+        scores = self._model.get_scores(query_terms)
+        query_set = set(query_terms)
+        matches = [
+            i for i, indexed_terms in enumerate(self._term_sets)
+            if not query_set.isdisjoint(indexed_terms)
+        ]
+        # BM25 scores may be zero/negative in tiny collections; filter by
+        # lexical overlap instead of scores > 0.
+        matches.sort(key=lambda i: (-float(scores[i]), self.chunks[i]["chunk_id"]))
 
-
-def text_to_sparse_vector(text: str, vocab: dict[str, int] | None = None) -> tuple[list[int], list[float]]:
-    """
-    Chuyển văn bản thành TF sparse vector (indices + values).
-    Dùng với vocab đã build. Trả về (indices, values) chuẩn Qdrant SparseVector.
-    """
-    v = vocab or _vocab
-    if not v:
-        raise RuntimeError("Vocab chưa được build. Gọi build_vocab() trước.")
-    tokens = _tokenize(text)
-    if not tokens:
-        return [], []
-    counts = Counter(tokens)
-    total = sum(counts.values())
-    indices = []
-    values = []
-    for tok, cnt in counts.items():
-        if tok in v:
-            indices.append(v[tok])
-            values.append(cnt / total)   # TF normalized
-    return indices, values
-
-
-def save_vocab(path: str) -> None:
-    """Lưu vocab ra file JSON để dùng lại."""
-    import json
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(_vocab, f, ensure_ascii=False)
-    logger.info(f"Vocab saved: {path}")
-
-
-def load_vocab(path: str) -> dict[str, int]:
-    """Load vocab từ file JSON."""
-    global _vocab
-    import json
-    with open(path, encoding="utf-8") as f:
-        _vocab = json.load(f)
-    logger.info(f"Vocab loaded: {len(_vocab)} tokens from {path}")
-    return _vocab
+        return [
+            {
+                **self.chunks[idx],
+                "score": float(scores[idx]),
+                "rank": position,
+                "retrieval_method": "bm25",
+            }
+            for position, idx in enumerate(matches[:top_k], 1)
+        ]

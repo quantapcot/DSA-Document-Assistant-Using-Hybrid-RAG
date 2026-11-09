@@ -1,86 +1,41 @@
-"""C1: vector database access — Qdrant local (file-based, no Docker required)."""
+"""Dense-only Qdrant storage. Local mode never opens an HTTP connection."""
+from qdrant_client import QdrantClient, models
+from .config import RetrievalConfig
 
-from __future__ import annotations
-
-import logging
-from pathlib import Path
-
-from qdrant_client import QdrantClient
-from qdrant_client.models import (
-    Distance,
-    PointStruct,
-    SparseVector,
-    SparseVectorParams,
-    VectorParams,
-    VectorsConfig,
-)
-
-logger = logging.getLogger(__name__)
-
-# Tên collection và tên các vector field trong Qdrant
-COLLECTION_NAME = "dsa_chunks"
 DENSE_VECTOR_NAME = "dense"
-SPARSE_VECTOR_NAME = "sparse"
-EMBEDDING_DIM = 384
 
-# Thư mục lưu dữ liệu Qdrant local (file-based, không cần Docker)
-_DEFAULT_QDRANT_PATH = (
-    Path(__file__).resolve().parents[4] / "data" / "runtime" / "qdrant_local"
-)
-
-
-def get_client(path: str | Path | None = None) -> QdrantClient:
-    """
-    Lấy Qdrant client.
-    - Nếu `path` được cung cấp hoặc tồn tại QDRANT_PATH → dùng local file.
-    - Dùng in-memory khi path=':memory:'.
-    """
-    import os
-    resolved = path or os.environ.get("QDRANT_PATH") or str(_DEFAULT_QDRANT_PATH)
-    if resolved == ":memory:":
-        logger.info("Using Qdrant in-memory mode")
+def get_client(path=None, *, config=None):
+    config = config or RetrievalConfig.from_env()
+    if path is not None:
+        return QdrantClient(":memory:") if str(path) == ":memory:" else QdrantClient(path=str(path))
+    if config.qdrant_mode == "local":
+        return QdrantClient(path=config.qdrant_path)
+    if config.qdrant_mode == "memory":
         return QdrantClient(":memory:")
-    p = Path(resolved)
-    p.mkdir(parents=True, exist_ok=True)
-    logger.info(f"Using Qdrant local path: {p}")
-    return QdrantClient(path=str(p))
+    if config.qdrant_mode == "server" and config.qdrant_url:
+        return QdrantClient(url=config.qdrant_url)
+    raise ValueError("Choose qdrant_mode local, memory, or server with qdrant_url")
 
+def ensure_collection(client, dimension, *, config=None, recreate=False):
+    config = config or RetrievalConfig()
+    name = config.collection
+    if dimension <= 0:
+        raise ValueError("dimension must be positive")
+    if client.collection_exists(name) and recreate:
+        client.delete_collection(name)
+    if not client.collection_exists(name):
+        client.create_collection(collection_name=name, vectors_config={DENSE_VECTOR_NAME: models.VectorParams(size=dimension, distance=models.Distance.COSINE)})
+    else:
+        vectors = client.get_collection(name).config.params.vectors
+        if not isinstance(vectors, dict) or DENSE_VECTOR_NAME not in vectors or vectors[DENSE_VECTOR_NAME].size != dimension or vectors[DENSE_VECTOR_NAME].distance != models.Distance.COSINE:
+            raise ValueError("Incompatible Qdrant collection; rebuild into a new collection")
 
-def ensure_collection(client: QdrantClient, recreate: bool = False) -> None:
-    """
-    Tạo collection DSA nếu chưa tồn tại.
-    Cấu hình: dense vector (cosine) + sparse vector (BM25).
-    """
-    exists = client.collection_exists(COLLECTION_NAME)
-    if exists and not recreate:
-        logger.info(f"Collection '{COLLECTION_NAME}' already exists — skipping create.")
-        return
-    if exists and recreate:
-        logger.info(f"Dropping existing collection '{COLLECTION_NAME}'.")
-        client.delete_collection(COLLECTION_NAME)
+def scope_filter(corpus_id, workspace_id):
+    if not corpus_id or not workspace_id:
+        raise ValueError("Both corpus_id and workspace_id are required")
+    return models.Filter(must=[models.FieldCondition(key="corpus_id", match=models.MatchValue(value=corpus_id)), models.FieldCondition(key="workspace_id", match=models.MatchValue(value=workspace_id))])
 
-    client.create_collection(
-        collection_name=COLLECTION_NAME,
-        vectors_config={
-            DENSE_VECTOR_NAME: VectorParams(
-                size=EMBEDDING_DIM,
-                distance=Distance.COSINE,
-            )
-        },
-        sparse_vectors_config={
-            SPARSE_VECTOR_NAME: SparseVectorParams()
-        },
-    )
-    logger.info(f"Created collection '{COLLECTION_NAME}'.")
-
-
-def upsert_points(
-    client: QdrantClient,
-    points: list[PointStruct],
-    batch_size: int = 128,
-) -> None:
-    """Upsert danh sách PointStruct vào Qdrant theo batch."""
-    for i in range(0, len(points), batch_size):
-        batch = points[i : i + batch_size]
-        client.upsert(collection_name=COLLECTION_NAME, points=batch)
-    logger.info(f"Upserted {len(points)} points to '{COLLECTION_NAME}'.")
+def check_model(client, config):
+    points, _ = client.scroll(config.collection, limit=1, with_payload=True, with_vectors=False)
+    if points and (points[0].payload or {}).get("embedding_model") != config.embedding_model:
+        raise ValueError("Embedding model differs or is unknown; rebuild into a new collection")
