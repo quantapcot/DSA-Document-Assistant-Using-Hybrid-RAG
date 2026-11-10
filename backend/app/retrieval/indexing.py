@@ -36,13 +36,13 @@ def build_index(chunks, *, corpus_id, workspace_id, client=None, config=None, re
         raise ValueError("batch_size must be positive")
     if not records and not rebuild:
         return {"indexed": 0, "failed": 0, "scope_count": 0}
-    dimension = dimension or embedding_dimension(config.embedding_model)
+    dimension = dimension or embedding_dimension(config.embedding_model, device=config.embedding_device)
     ensure_collection(client, dimension, config=config)
     check_model(client, config)
     # Rebuild replaces only this explicit scope. Precompute all embeddings first;
     # a write failure during replacement can still require retrying the rebuild.
     points = []
-    embedder = embedder or (lambda texts: embed_texts(texts, config.embedding_model, config.batch_size))
+    embedder = embedder or (lambda texts: embed_texts(texts, config.embedding_model, config.batch_size, device=config.embedding_device))
     for start in range(0, len(records), config.batch_size):
         batch = records[start:start + config.batch_size]
         vectors = embedder([c["text"] for c in batch])
@@ -60,6 +60,15 @@ def build_index(chunks, *, corpus_id, workspace_id, client=None, config=None, re
     if count < len(points) or (rebuild and count != len(points)):
         raise RuntimeError("Qdrant scope count verification failed")
     logger.info("Indexed %d chunks, failed 0; scope contains %d", len(points), count)
+
+    # Invalidate BM25 cache for this scope so retrieval picks up new data.
+    try:
+        from .hybrid_search import invalidate_bm25_cache
+        invalidate_bm25_cache(config.collection, corpus_id, workspace_id)
+    except Exception:
+        # Cache invalidation failure must not break indexing.
+        logger.warning("BM25 cache invalidation failed; retrieval may serve stale results until TTL expires")
+
     return {"indexed": len(points), "failed": 0, "scope_count": count}
 
 def main():

@@ -7,7 +7,7 @@ class Model:
     def encode(self, texts, **kwargs): return np.array([[3., 4., 0.]] * len(texts))
 
 def test_empty_and_dimension(monkeypatch):
-    monkeypatch.setattr(embeddings, "_get_model", lambda _: Model())
+    monkeypatch.setattr(embeddings, "_get_model", lambda *_args: Model())
     assert embeddings.embed_texts([]) == []
     vectors = embeddings.embed_texts(["a", "b"])
     assert len(vectors) == 2 and len(vectors[0]) == 3

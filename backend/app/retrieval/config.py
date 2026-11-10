@@ -20,6 +20,19 @@ class RetrievalConfig:
     bm25_b: float = 0.75
     accent_insensitive: bool = False
     batch_size: int = 32
+    # Device selection: "cpu", "cuda", or "auto" (detect CUDA availability).
+    embedding_device: str = "cpu"
+    reranker_device: str = "cpu"
+    # Reranker batch size (separate from embedding batch_size).
+    reranker_batch_size: int = 32
+    # Maximum token length for reranker input pairs; 0 = model default.
+    reranker_max_length: int = 0
+    # BM25 cache TTL in seconds. When indexing and retrieval run in separate
+    # processes, in-process invalidation alone is insufficient. A TTL caps how
+    # long a stale cache can persist. Set to 0 to disable caching entirely.
+    bm25_cache_ttl: int = 300
+    # Maximum number of BM25 scope caches kept in memory.
+    bm25_cache_max_entries: int = 16
 
     @classmethod
     def from_yaml(cls, path):
