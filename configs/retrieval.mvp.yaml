@@ -1,0 +1,28 @@
+# MVP configuration — real BGE reranker on CUDA.
+# Tested on RTX 5060 Laptop GPU (8 GB VRAM).
+embedding_model: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+reranker_model: BAAI/bge-reranker-v2-m3
+collection: dsa_chunks_v1
+qdrant_mode: local
+candidate_top_k: 10
+final_top_k: 5
+rrf_k: 60
+bm25_k1: 1.5
+bm25_b: 0.75
+accent_insensitive: false
+batch_size: 32
+
+# GPU acceleration
+embedding_device: auto
+reranker_device: auto
+# Batch size measured on RTX 5060 (8 GB VRAM):
+# - batch_size 1 : ~128 ms, peak VRAM ~2177 MB
+# - batch_size 4 : ~67 ms, peak VRAM ~2184 MB (recommended default)
+# - batch_size 16: ~58 ms, peak VRAM ~2196 MB
+reranker_batch_size: 4
+reranker_max_length: 512
+
+# Cache: safe for single-process Backend.
+# If Backend and Indexer are separate processes, set bm25_cache_ttl: 0.
+bm25_cache_ttl: 300
+bm25_cache_max_entries: 16

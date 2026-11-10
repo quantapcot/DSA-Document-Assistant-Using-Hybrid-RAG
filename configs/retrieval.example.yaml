@@ -1,10 +1,11 @@
-# Explicit configuration; pass --config to indexing/benchmark or RetrievalConfig.from_yaml.
+# Default safe configuration — uses CPU, no reranker model loaded.
+# Copy this file, set reranker_model and devices for your environment.
 embedding_model: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
 reranker_model: null
 collection: dsa_chunks_v1
 qdrant_mode: local
-# qdrant_path is omitted to use the project-local default. Set qdrant_mode: server
-# and qdrant_url: http://localhost:6333 to use a running Qdrant server.
+# qdrant_path is omitted to use the project-local default.
+# Set qdrant_mode: server and qdrant_url: http://localhost:6333 for Qdrant server.
 candidate_top_k: 20
 final_top_k: 5
 rrf_k: 60
@@ -13,23 +14,18 @@ bm25_b: 0.75
 accent_insensitive: false
 batch_size: 32
 
-# Device selection for embedding model: "cpu", "cuda", or "auto".
-# "auto" selects CUDA when torch.cuda.is_available() is True; falls back to CPU.
-# CPU is the safe default and matches existing indexed vectors.
+# Device selection: "cpu", "cuda", or "auto".
+# "auto" selects CUDA when torch.cuda.is_available(); else CPU.
 embedding_device: cpu
-
-# Device selection for cross-encoder reranker: "cpu", "cuda", or "auto".
 reranker_device: cpu
-# Batch size for reranker predictions (separate from embedding batch_size).
 reranker_batch_size: 32
-# Maximum token length for reranker input pairs; 0 = use model default.
+# Max tokenizer length for reranker; 0 = model default.
+# Set via CrossEncoder constructor (NOT predict), per ST v5.7 API.
 reranker_max_length: 0
 
-# BM25 cache TTL in seconds. Controls how long a BM25 index is reused before
-# being rebuilt from Qdrant. When indexing and retrieval run in the same
-# process, the cache is invalidated immediately after indexing. When they run
-# in separate processes, TTL is the upper bound on staleness.
-# Set to 0 to disable caching (rebuild every query, like the original behavior).
+# BM25 cache TTL in seconds.
+# Same-process: cache is invalidated immediately after build_index.
+# Cross-process: TTL + fingerprint are the upper bound on staleness.
+# Set to 0 to always rebuild (original behavior, safe for multi-process).
 bm25_cache_ttl: 300
-# Maximum number of scope-specific BM25 caches kept in memory.
 bm25_cache_max_entries: 16

@@ -6,9 +6,6 @@ from .config import RetrievalConfig
 logger = logging.getLogger(__name__)
 DENSE_VECTOR_NAME = "dense"
 
-# Key used in collection-level metadata to record the embedding model.
-_COLLECTION_MODEL_KEY = "embedding_model"
-
 
 def get_client(path=None, *, config=None):
     config = config or RetrievalConfig.from_env()
@@ -31,42 +28,36 @@ def ensure_collection(client, dimension, *, config=None, recreate=False):
     if client.collection_exists(name) and recreate:
         client.delete_collection(name)
     if not client.collection_exists(name):
-        client.create_collection(collection_name=name, vectors_config={DENSE_VECTOR_NAME: models.VectorParams(size=dimension, distance=models.Distance.COSINE)})
-        # Store the embedding model at collection level so that check_model
-        # can validate without reading individual payloads.
-        _set_collection_model(client, name, config.embedding_model)
+        client.create_collection(
+            collection_name=name,
+            vectors_config={
+                DENSE_VECTOR_NAME: models.VectorParams(
+                    size=dimension, distance=models.Distance.COSINE,
+                ),
+            },
+        )
     else:
         vectors = client.get_collection(name).config.params.vectors
-        if not isinstance(vectors, dict) or DENSE_VECTOR_NAME not in vectors or vectors[DENSE_VECTOR_NAME].size != dimension or vectors[DENSE_VECTOR_NAME].distance != models.Distance.COSINE:
-            raise ValueError("Incompatible Qdrant collection; rebuild into a new collection")
-
-
-def _set_collection_model(client, collection_name: str, model_name: str):
-    """Write *model_name* into a collection-level alias/description field.
-
-    Qdrant does not offer arbitrary collection metadata, so we repurpose the
-    collection *description* field (available since qdrant-client ≥ 1.10) as a
-    lightweight manifest.  The format is ``model=<name>`` so it can be extended
-    later with additional key-value pairs separated by newlines.
-    """
-    try:
-        client.update_collection(
-            collection_name=collection_name,
-            collection_params=models.CollectionParamsDiff(),
-        )
-        # Qdrant ≥ 1.10 local supports the hnsw/optimizers update path but
-        # collection-level description is server-only in some builds.
-        # Fall-through: model identity is still validated from point payloads.
-    except Exception:
-        pass
-    # We rely on point-level payload as the authoritative source of truth.
-    logger.debug("Collection %s associated with model %s", collection_name, model_name)
+        if (not isinstance(vectors, dict)
+                or DENSE_VECTOR_NAME not in vectors
+                or vectors[DENSE_VECTOR_NAME].size != dimension
+                or vectors[DENSE_VECTOR_NAME].distance != models.Distance.COSINE):
+            raise ValueError(
+                "Incompatible Qdrant collection; rebuild into a new collection"
+            )
 
 
 def scope_filter(corpus_id, workspace_id):
     if not corpus_id or not workspace_id:
         raise ValueError("Both corpus_id and workspace_id are required")
-    return models.Filter(must=[models.FieldCondition(key="corpus_id", match=models.MatchValue(value=corpus_id)), models.FieldCondition(key="workspace_id", match=models.MatchValue(value=workspace_id))])
+    return models.Filter(must=[
+        models.FieldCondition(
+            key="corpus_id", match=models.MatchValue(value=corpus_id),
+        ),
+        models.FieldCondition(
+            key="workspace_id", match=models.MatchValue(value=workspace_id),
+        ),
+    ])
 
 
 def check_model(client, config, *, sample_size: int = 10):
@@ -87,18 +78,16 @@ def check_model(client, config, *, sample_size: int = 10):
     provides strong guarantees when combined with ``build_index`` always
     writing ``embedding_model`` on every upserted point.
 
-    Limitations
-    -----------
-    * Two models with the same HuggingFace identifier but different local
-      weights would pass.  This is acceptable for a course project.
-    * Checking is O(sample_size), not O(N).  A full scan is available via
-      ``check_model_exhaustive`` for one-time audits.
+    The check runs on every ``build_index`` and ``search_dense`` call.
+    For one-time full audits, use ``check_model_exhaustive``.
     """
     name = config.collection
     if not client.collection_exists(name):
         return  # Nothing to validate yet.
 
-    points, _ = client.scroll(name, limit=sample_size, with_payload=True, with_vectors=False)
+    points, _ = client.scroll(
+        name, limit=sample_size, with_payload=True, with_vectors=False,
+    )
     if not points:
         return  # Empty collection is valid.
 
@@ -160,7 +149,8 @@ def check_model_exhaustive(client, config, *, batch_size: int = 256):
                 )
             if stored != expected:
                 raise ValueError(
-                    f"Point {point.id} uses model '{stored}', expected '{expected}'"
+                    f"Point {point.id} uses model '{stored}', "
+                    f"expected '{expected}'"
                 )
             checked += 1
         if offset is None:

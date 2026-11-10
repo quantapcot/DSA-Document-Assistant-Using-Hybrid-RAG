@@ -39,11 +39,24 @@ def _get_model(model_name: str, device: str = "cpu"):
     except ImportError as exc:
         raise RuntimeError("Install sentence-transformers to use dense retrieval") from exc
     logger.info("Loading embedding model %s on %s", model_name, resolved)
-    return SentenceTransformer(model_name, device=resolved)
+    model = SentenceTransformer(model_name, device=resolved)
+    try:
+        actual_device = str(model.device)
+    except Exception:
+        actual_device = resolved
+    logger.info(
+        "Embedding model %s initialized successfully on actual device: %s",
+        model_name, actual_device,
+    )
+    return model
 
 
 def embedding_dimension(model_name=DEFAULT_MODEL, *, device: str = "cpu"):
-    dim = _get_model(model_name, device).get_sentence_embedding_dimension()
+    model = _get_model(model_name, device)
+    if hasattr(model, "get_embedding_dimension"):
+        dim = model.get_embedding_dimension()
+    else:
+        dim = model.get_sentence_embedding_dimension()
     if not isinstance(dim, int) or dim <= 0:
         raise ValueError("Embedding model did not report a valid dimension")
     return dim

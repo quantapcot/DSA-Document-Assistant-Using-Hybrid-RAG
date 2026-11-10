@@ -1,92 +1,217 @@
-# Retrieval engine (C1)
+# Retrieval Engine — DSA Document Assistant
 
-Four methods: `bm25`, `dense`, `hybrid_rrf`, `hybrid_rerank`. BM25 uses rank-bm25 and PyVi with NFC and casefold; accent folding is opt-in and may create false positives. Dense vectors use cosine similarity in Qdrant. RRF combines ranks, not raw scores. Scores are method-specific relevance scores, not probabilities.
+Unified Hybrid Retrieval Engine supporting four retrieval methods: `bm25`, `dense`, `hybrid_rrf`, `hybrid_rerank`.
 
-## Install and configure
+---
 
-Use Python 3.11 in the `dsa-rag` environment: `python -m pip install -r requirements.txt` and `python -m pip install pytest` for tests. This installs sentence-transformers and its PyTorch dependencies. The embedding model is loaded lazily on first dense indexing/search and may need a download. Existing embedding model is `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`; the Proposal names `sentence-transformers/all-MiniLM-L6-v2`. Changing models requires a new collection and rebuilding the index, including when dimensions happen to match. This implementation checks model identity stored in payloads and rejects an unknown/incompatible collection. Do not share this collection with other writers.
-
-Copy `configs/retrieval.example.yaml` and pass `--config PATH` to the CLI or `RetrievalConfig.from_yaml(PATH)` in code. By default it uses a local Qdrant folder under `data/runtime/qdrant_local`; `qdrant_mode: memory` is for tests, and `qdrant_mode: server` requires `qdrant_url`. Without a YAML config, `QDRANT_MODE`, `QDRANT_PATH`, and `QDRANT_URL` select the connection. An existing QDRANT_URL never activates HTTP in local mode.
-
-## CPU / GPU device selection
-
-Both the embedding model and the reranker support configurable devices via `embedding_device` and `reranker_device`:
-
-| Value  | Behaviour |
-|--------|-----------|
-| `cpu`  | Always use CPU (default, backwards-compatible) |
-| `cuda` | Force CUDA; fails if CUDA unavailable |
-| `auto` | Use CUDA if `torch.cuda.is_available()`, else CPU |
-
-Set in `configs/retrieval.example.yaml` or pass to `RetrievalConfig`:
-
-```yaml
-embedding_device: auto   # Use GPU if available
-reranker_device: auto
-```
-
-Models are cached by `(model_name, device)` — switching device does not reload a model that is already loaded on the target device. GPU and CPU produce the same-dimension vectors from the same model; existing Qdrant indexes do not need rebuilding.
-
-## BM25 cache
-
-BM25 indexes are cached per scope `(collection, corpus_id, workspace_id)` and BM25 parameters (`k1`, `b`, `accent_insensitive`). This avoids rebuilding the index from Qdrant payloads on every query.
-
-**Invalidation:**
-
-- **Same process:** `build_index()` automatically calls `invalidate_bm25_cache()` after upserting. Manual callers who modify Qdrant directly should call `invalidate_bm25_cache(collection, corpus_id, workspace_id)`.
-- **Cross-process:** When indexing and retrieval run in separate processes (e.g. background worker + API server), in-process invalidation is insufficient. The cache uses a **TTL** (`bm25_cache_ttl`, default 300 seconds) and a **version check** (scope point count) to detect staleness. The TTL caps maximum staleness; the count check catches most additions/deletions immediately.
-- **Disable caching:** Set `bm25_cache_ttl: 0` to rebuild on every query (original behaviour).
-
-**Memory control:** `bm25_cache_max_entries` (default 16) limits the number of scope caches; LRU eviction prevents unbounded growth.
-
-**Limitation:** If a document is replaced with a same-count update in a different process, the change may not be detected until the TTL expires. For a course project deployment where indexing and retrieval share a process, this is not an issue.
-
-## Model identity validation
-
-`check_model()` now samples up to 10 points (configurable via `sample_size`) instead of checking only the first point. It:
-
-- Detects mixed-model collections (different `embedding_model` values).
-- Rejects points with missing `embedding_model` metadata (fail-closed).
-- Reports a clear error distinguishing mismatch vs. mixed vs. missing.
-
-For one-time audits, `check_model_exhaustive()` scans every point.
-
-## Index
-
-Run from the repository root (PowerShell):
-
-```powershell
-$env:PYTHONPATH = "backend"
-python -m app.retrieval.indexing data/corpus/dataset_clean/chunks_all.jsonl --corpus-id benchmark-v1 --workspace-id research --config configs/retrieval.example.yaml
-```
-
-Assign distinct corpus and workspace identifiers to benchmark and runtime data. Upsert replaces matching stable scope/chunk IDs, leaving other chunks intact. `--rebuild` replaces only the specified scope, but is not transactional: interruption after deletion requires retry. Input is never changed. Supply new/changed chunks to add/update; removed source chunks remain until a scope rebuild. Duplicate IDs within input are rejected. BM25 is now cached per scope with TTL-based invalidation (see above).
-
-## Backend use
+## Quick Start for Backend Engineers
 
 ```python
+import dataclasses
 from app.retrieval.config import RetrievalConfig
 from app.retrieval.hybrid_search import RetrievalEngine
 
-config = RetrievalConfig.from_yaml("configs/retrieval.example.yaml")
+# 1. Load config (retrieval.mvp.yaml has BGE reranker + CUDA enabled)
+config = RetrievalConfig.from_yaml("configs/retrieval.mvp.yaml")
+
+# If you need to override fields programmatically (RetrievalConfig is frozen/immutable):
+# config = dataclasses.replace(config, reranker_device="cpu")
+
+# 2. Instantiate engine ONCE during app startup (keyword argument required)
 engine = RetrievalEngine(config=config)
-for method in ("bm25", "dense", "hybrid_rrf"):
-    evidence = engine.retrieve("binary tree", method, top_k=5,
-                               corpus_id="benchmark-v1", workspace_id="research")
-    print(method, evidence)
-# Once a cross-encoder has been approved and reranker_model configured:
-# print(engine.retrieve("binary tree", "hybrid_rerank", corpus_id="benchmark-v1", workspace_id="research"))
+
+# 3. Retrieve evidence (query and method are the first two arguments)
+results = engine.retrieve(
+    query="Cây AVL là gì?",
+    method="hybrid_rerank",   # Primary: "hybrid_rerank"; Fallback: "hybrid_rrf"
+    top_k=5,
+    corpus_id="benchmark-v1",
+    workspace_id="research",
+)
+
+for r in results:
+    print(f"#{r['rank']} [{r['filename']} p.{r['page']}] score={r['score']:.4f}")
+    print(f"  {r['text'][:120]}...")
 ```
 
-The engine requires both scope IDs for every method and applies both filters at storage. The caller must authenticate the user and authorize those IDs; IDs alone are not an access-control system. Returned dictionaries retain DocumentChunk fields, metadata, score, rank, and retrieval_method. Connection/model errors propagate, rather than silently returning an empty corpus. An empty corpus or query returns no results. Do not open multiple local clients against the same path concurrently; reuse the client/engine.
+> [!TIP]
+> A complete, copy-pasteable reference script is available at `tests/smoke_backend_integration.py`. Run it directly to verify your environment.
 
-The reranker interface and mock scorer work; no real reranker is selected or downloaded. Proposal originally points to English-oriented MS MARCO. A potential multilingual choice, `BAAI/bge-reranker-v2-m3`, has approximately 2.27 GB FP32 weights and needs additional CPU RAM and inference time; it is not approved or benchmarked. See https://huggingface.co/BAAI/bge-reranker-v2-m3/tree/main. Set `reranker_model` only after explicit model approval. Test with a mock scorer to avoid downloads. The reranker now supports `reranker_batch_size`, `reranker_max_length`, and GPU via `reranker_device`.
+---
 
-## Tests and evaluation
+## Architecture Pipeline
+
+```
+User Query
+    ├── 1. BM25 Lexical Retrieval (PyVi Vietnamese tokenizer + rank-bm25)
+    │       ↓
+    ├── 2. Dense Semantic Retrieval (MiniLM-L12-v2 + Qdrant Cosine)
+    │       ↓
+    └───→ 3. Reciprocal Rank Fusion (RRF, k=60)
+              ↓
+         Candidate Top-K (default k=10)
+              ↓
+         4. BGE Cross-Encoder Reranking (BAAI/bge-reranker-v2-m3)
+              ↓
+         Final Top-K Evidence Chunks
+```
+
+---
+
+## Output Schema (Evidence Contract)
+
+Every dictionary in the returned list contains the following standardized fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `chunk_id` | `str` | Unique chunk identifier |
+| `document_id` | `str` | Parent document ID |
+| `filename` | `str` | Source filename (PDF, DOCX, etc.) |
+| `page` | `int` | 1-based page number |
+| `section` | `str \| None` | Section heading or None |
+| `text` | `str` | Chunk text content |
+| `metadata` | `dict` | Document metadata (e.g. `lang`, custom tags) |
+| `score` | `float` | Method-specific relevance score |
+| `rank` | `int` | Position in result set (1 to top_k) |
+| `retrieval_method` | `str` | `bm25`, `dense`, `hybrid_rrf`, or `hybrid_rerank` |
+| `corpus_id` | `str` | Scope corpus identifier |
+| `workspace_id` | `str` | Scope workspace identifier |
+
+> [!WARNING]
+> **Score interpretation:**
+> Scores are relevance metrics, **not** probabilities or answer confidence:
+> - `bm25`: BM25 term matching scores (positive unbounded).
+> - `dense`: Cosine similarity in range `[-1.0, 1.0]`.
+> - `hybrid_rrf`: Reciprocal Rank Fusion score $\sum \frac{1}{60 + r_i} \in (0.0, 0.033]$.
+> - `hybrid_rerank`: Cross-Encoder relevance score/logit (higher = more relevant).
+
+---
+
+## Configuration & Tuning
+
+### Config Files
+
+- `configs/retrieval.example.yaml`: CPU-only safe default (no reranker model loaded).
+- `configs/retrieval.mvp.yaml`: MVP configuration (CUDA GPU, `BAAI/bge-reranker-v2-m3` reranker, `candidate_top_k: 10`, `reranker_batch_size: 4`).
+
+### Measured RTX 5060 Benchmark (8 GB VRAM)
+
+Tested with `candidate_top_k: 10` (10 candidate pairs reranked):
+
+| `reranker_batch_size` | Latency (10 pairs) | Peak VRAM | Notes |
+|---|---|---|---|
+| `1` | 128.75 ms | 2,177.1 MB | Ultra-conservative |
+| `4` | 66.95 ms | 2,184.2 MB | **Recommended default** (~50% faster, +7 MB VRAM) |
+| `10` | 52.84 ms | 2,196.0 MB | Single forward pass for top-10 |
+| `16` | 57.90 ms | 2,196.0 MB | Fast batch inference |
+
+Total GPU peak VRAM for entire system (Embedding + Reranker): **~2,634 MB** out of 8,192 MB capacity (~32% utilization).
+
+---
+
+## Device Handling & CUDA Verification
+
+### Device Selection
+
+`embedding_device` and `reranker_device` accept:
+- `"cpu"`: Force CPU execution.
+- `"cuda"`: Force CUDA GPU execution (fails with clear `RuntimeError` if unavailable).
+- `"auto"`: Selects `"cuda"` if `torch.cuda.is_available()`, otherwise falls back to `"cpu"`.
+
+### Transparency & Device Verification
+
+The engine **never silently switches** from CUDA to CPU during inference.
+When models are loaded, the actual PyTorch device is logged explicitly:
+```
+INFO app.retrieval.embeddings: Embedding model ... initialized successfully on actual device: cuda:0
+INFO app.retrieval.reranker: Reranker model ... initialized successfully on actual device: cuda:0
+```
+
+### CUDA OOM Handling
+
+If GPU runs out of VRAM during model loading or prediction:
+1. A clear `RuntimeError` is raised indicating CUDA OOM.
+2. The error message suggests reducing `reranker_batch_size`, decreasing `candidate_top_k`, or switching to `reranker_device: cpu`.
+
+---
+
+## BM25 Cache Invalidation & Multi-Process Freshness
+
+BM25 indexes are heavy to compute from Qdrant payloads (~9 seconds for 5,941 chunks). They are cached **per-RetrievalEngine instance**.
+
+### Same-Process (FastAPI app or monolithic script)
+`build_index()` automatically calls `invalidate_all_bm25_caches()` upon completing indexing. No manual cache flushing is required.
+
+### Cross-Process (Separate Indexing Worker / Background Process)
+When indexing runs in a separate process from the API service:
+1. **Dynamic Fingerprint:** On each query, `_scope_fingerprint()` computes a SHA-256 hash of the point count + sampled point IDs + sampled payload text hashes. Additions, deletions, and updates within the sample window trigger automatic rebuilds.
+2. **TTL Expiry:** `bm25_cache_ttl` (default `300` seconds) ensures stale caches expire within 5 minutes even if point count and sample points remain unchanged.
+3. **Guaranteed Freshness Mode:** For ingestion workflows requiring zero-staleness, set `bm25_cache_ttl: 0`. This disables caching entirely and rebuilds the BM25 index on every query.
+
+---
+
+## Fallback Strategy for Backend
+
+If the Reranker model encounters an error or CUDA is temporarily unavailable:
+
+```python
+try:
+    results = engine.retrieve(
+        query=user_query,
+        method="hybrid_rerank",
+        top_k=5,
+        corpus_id=corpus_id,
+        workspace_id=workspace_id,
+    )
+except Exception as exc:
+    logger.warning("Reranker failed (%s); falling back to hybrid_rrf", exc)
+    results = engine.retrieve(
+        query=user_query,
+        method="hybrid_rrf",
+        top_k=5,
+        corpus_id=corpus_id,
+        workspace_id=workspace_id,
+    )
+```
+
+---
+
+## Indexing API Reference
+
+To index new documents programmatically:
+
+```python
+from app.retrieval.indexing import build_index
+from app.retrieval.config import RetrievalConfig
+
+config = RetrievalConfig.from_yaml("configs/retrieval.mvp.yaml")
+
+# chunks: list of DocumentChunk dicts or path to JSONL file
+result = build_index(
+    chunks="data/corpus/dataset_clean/chunks_all.jsonl",
+    corpus_id="benchmark-v1",
+    workspace_id="research",
+    config=config,
+    rebuild=False,  # Set rebuild=True to replace existing scope
+)
+print(f"Indexed {result['indexed']} chunks; total in scope: {result['scope_count']}")
+```
+
+---
+
+## Verification Commands
 
 ```powershell
-python -m pytest tests/unit tests/integration -q --basetemp "$env:USERPROFILE\pytest-dsa-temp" -p no:cacheprovider
-python evaluation/scripts/run_benchmark.py --queries labeled.jsonl --corpus data/corpus/dataset_clean/chunks_all.jsonl --corpus-id benchmark-v1 --workspace-id research --config configs/retrieval.example.yaml --split held-out-test --output evaluation/results/run.json
-```
+# 1. Run unit & integration test suite (52 tests)
+cd d:\Project\DSA-Document-Assistant-Using-Hybrid-RAG
+$env:PYTHONPATH = "backend"
+& C:\Users\USER\miniconda3\envs\dsa-rag-gpu\python.exe -m pytest tests/unit tests/integration -v `
+    --basetemp "$env:USERPROFILE\pytest-dsa-temp-gpu" -p no:cacheprovider
 
-Each JSONL query needs `query_id`, `query`, and a nonempty list of manually validated `relevant_ids` (chunk IDs). The default benchmark requires an approved reranker; pass `--methods bm25 dense hybrid_rrf` to omit it. `run_ablation.py` has the same arguments. Results include per-query and mean Precision@5, Recall@5, reciprocal rank within the returned top 5, and latency; JSON or CSV plus a metadata sidecar are supported. Record a real split name and do not present tuning queries as independent test data. Corpus SHA-256 records the supplied file; the runner does not verify it matches the index. Cold-start/model loading and in-memory BM25 rebuilding affect latency. Do not publish metrics without validated ground truth and a controlled protocol.
+# 2. Run backend integration smoke test (verifies YAML loading, engine init, real inference)
+$env:HF_HUB_DISABLE_XET = "1"
+& C:\Users\USER\miniconda3\envs\dsa-rag-gpu\python.exe tests/smoke_backend_integration.py
+
+# 3. Run full 5-query reranker benchmark on real corpus
+& C:\Users\USER\miniconda3\envs\dsa-rag-gpu\python.exe tests/smoke_reranker.py
+```
