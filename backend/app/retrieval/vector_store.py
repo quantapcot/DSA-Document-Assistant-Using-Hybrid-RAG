@@ -1,86 +1,159 @@
-"""C1: vector database access — Qdrant local (file-based, no Docker required)."""
-
-from __future__ import annotations
-
+"""Dense-only Qdrant storage. Local mode never opens an HTTP connection."""
 import logging
-from pathlib import Path
-
-from qdrant_client import QdrantClient
-from qdrant_client.models import (
-    Distance,
-    PointStruct,
-    SparseVector,
-    SparseVectorParams,
-    VectorParams,
-    VectorsConfig,
-)
+from qdrant_client import QdrantClient, models
+from .config import RetrievalConfig
 
 logger = logging.getLogger(__name__)
-
-# Tên collection và tên các vector field trong Qdrant
-COLLECTION_NAME = "dsa_chunks"
 DENSE_VECTOR_NAME = "dense"
-SPARSE_VECTOR_NAME = "sparse"
-EMBEDDING_DIM = 384
-
-# Thư mục lưu dữ liệu Qdrant local (file-based, không cần Docker)
-_DEFAULT_QDRANT_PATH = (
-    Path(__file__).resolve().parents[4] / "data" / "runtime" / "qdrant_local"
-)
 
 
-def get_client(path: str | Path | None = None) -> QdrantClient:
-    """
-    Lấy Qdrant client.
-    - Nếu `path` được cung cấp hoặc tồn tại QDRANT_PATH → dùng local file.
-    - Dùng in-memory khi path=':memory:'.
-    """
-    import os
-    resolved = path or os.environ.get("QDRANT_PATH") or str(_DEFAULT_QDRANT_PATH)
-    if resolved == ":memory:":
-        logger.info("Using Qdrant in-memory mode")
+def get_client(path=None, *, config=None):
+    config = config or RetrievalConfig.from_env()
+    if path is not None:
+        return QdrantClient(":memory:") if str(path) == ":memory:" else QdrantClient(path=str(path))
+    if config.qdrant_mode == "local":
+        return QdrantClient(path=config.qdrant_path)
+    if config.qdrant_mode == "memory":
         return QdrantClient(":memory:")
-    p = Path(resolved)
-    p.mkdir(parents=True, exist_ok=True)
-    logger.info(f"Using Qdrant local path: {p}")
-    return QdrantClient(path=str(p))
+    if config.qdrant_mode == "server" and config.qdrant_url:
+        return QdrantClient(url=config.qdrant_url)
+    raise ValueError("Choose qdrant_mode local, memory, or server with qdrant_url")
 
 
-def ensure_collection(client: QdrantClient, recreate: bool = False) -> None:
-    """
-    Tạo collection DSA nếu chưa tồn tại.
-    Cấu hình: dense vector (cosine) + sparse vector (BM25).
-    """
-    exists = client.collection_exists(COLLECTION_NAME)
-    if exists and not recreate:
-        logger.info(f"Collection '{COLLECTION_NAME}' already exists — skipping create.")
-        return
-    if exists and recreate:
-        logger.info(f"Dropping existing collection '{COLLECTION_NAME}'.")
-        client.delete_collection(COLLECTION_NAME)
-
-    client.create_collection(
-        collection_name=COLLECTION_NAME,
-        vectors_config={
-            DENSE_VECTOR_NAME: VectorParams(
-                size=EMBEDDING_DIM,
-                distance=Distance.COSINE,
+def ensure_collection(client, dimension, *, config=None, recreate=False):
+    config = config or RetrievalConfig()
+    name = config.collection
+    if dimension <= 0:
+        raise ValueError("dimension must be positive")
+    if client.collection_exists(name) and recreate:
+        client.delete_collection(name)
+    if not client.collection_exists(name):
+        client.create_collection(
+            collection_name=name,
+            vectors_config={
+                DENSE_VECTOR_NAME: models.VectorParams(
+                    size=dimension, distance=models.Distance.COSINE,
+                ),
+            },
+        )
+    else:
+        vectors = client.get_collection(name).config.params.vectors
+        if (not isinstance(vectors, dict)
+                or DENSE_VECTOR_NAME not in vectors
+                or vectors[DENSE_VECTOR_NAME].size != dimension
+                or vectors[DENSE_VECTOR_NAME].distance != models.Distance.COSINE):
+            raise ValueError(
+                "Incompatible Qdrant collection; rebuild into a new collection"
             )
-        },
-        sparse_vectors_config={
-            SPARSE_VECTOR_NAME: SparseVectorParams()
-        },
+
+
+def scope_filter(corpus_id, workspace_id):
+    if not corpus_id or not workspace_id:
+        raise ValueError("Both corpus_id and workspace_id are required")
+    return models.Filter(must=[
+        models.FieldCondition(
+            key="corpus_id", match=models.MatchValue(value=corpus_id),
+        ),
+        models.FieldCondition(
+            key="workspace_id", match=models.MatchValue(value=workspace_id),
+        ),
+    ])
+
+
+def check_model(client, config, *, sample_size: int = 10):
+    """Validate that vectors in *config.collection* were created by the
+    configured embedding model.
+
+    Strategy
+    --------
+    1. Sample up to *sample_size* points across the collection and verify
+       that **every** sampled point carries ``embedding_model`` matching
+       ``config.embedding_model``.
+    2. A point with a missing ``embedding_model`` payload is treated as
+       **invalid** (fail-closed), preventing silent corruption.
+    3. If different ``embedding_model`` values are found among sampled
+       points, the collection is rejected as mixed-model.
+
+    This is a statistical check — it does not scan every point — but it
+    provides strong guarantees when combined with ``build_index`` always
+    writing ``embedding_model`` on every upserted point.
+
+    The check runs on every ``build_index`` and ``search_dense`` call.
+    For one-time full audits, use ``check_model_exhaustive``.
+    """
+    name = config.collection
+    if not client.collection_exists(name):
+        return  # Nothing to validate yet.
+
+    points, _ = client.scroll(
+        name, limit=sample_size, with_payload=True, with_vectors=False,
     )
-    logger.info(f"Created collection '{COLLECTION_NAME}'.")
+    if not points:
+        return  # Empty collection is valid.
+
+    expected = config.embedding_model
+    models_found: set[str] = set()
+
+    for point in points:
+        payload = point.payload or {}
+        stored_model = payload.get("embedding_model")
+        if stored_model is None:
+            raise ValueError(
+                f"Point {point.id} in collection '{name}' has no embedding_model "
+                f"metadata. Cannot verify model identity; rebuild with the current "
+                f"pipeline to ensure all points carry model metadata."
+            )
+        models_found.add(stored_model)
+
+    if len(models_found) > 1:
+        raise ValueError(
+            f"Mixed embedding models detected in collection '{name}': "
+            f"{models_found}. All vectors must come from the same model. "
+            f"Rebuild the collection from scratch."
+        )
+
+    actual = models_found.pop()
+    if actual != expected:
+        raise ValueError(
+            f"Embedding model mismatch in collection '{name}': "
+            f"expected '{expected}', found '{actual}'. "
+            f"Rebuild into a new collection or update the configuration."
+        )
 
 
-def upsert_points(
-    client: QdrantClient,
-    points: list[PointStruct],
-    batch_size: int = 128,
-) -> None:
-    """Upsert danh sách PointStruct vào Qdrant theo batch."""
-    for i in range(0, len(points), batch_size):
-        batch = points[i : i + batch_size]
-        client.upsert(collection_name=COLLECTION_NAME, points=batch)
-    logger.info(f"Upserted {len(points)} points to '{COLLECTION_NAME}'.")
+def check_model_exhaustive(client, config, *, batch_size: int = 256):
+    """Full-scan variant of :func:`check_model`.
+
+    Iterates every point in the collection and verifies that all carry the
+    same ``embedding_model``.  Use for one-time audits, not per-query checks.
+    """
+    name = config.collection
+    if not client.collection_exists(name):
+        return
+
+    expected = config.embedding_model
+    offset = None
+    checked = 0
+
+    while True:
+        points, offset = client.scroll(
+            name, limit=batch_size, offset=offset,
+            with_payload=["embedding_model"], with_vectors=False,
+        )
+        for point in points:
+            payload = point.payload or {}
+            stored = payload.get("embedding_model")
+            if stored is None:
+                raise ValueError(
+                    f"Point {point.id} has no embedding_model metadata"
+                )
+            if stored != expected:
+                raise ValueError(
+                    f"Point {point.id} uses model '{stored}', "
+                    f"expected '{expected}'"
+                )
+            checked += 1
+        if offset is None:
+            break
+
+    logger.info("Exhaustive model check passed: %d points verified", checked)

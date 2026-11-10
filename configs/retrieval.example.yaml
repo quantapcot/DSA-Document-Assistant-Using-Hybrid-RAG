@@ -1,7 +1,31 @@
-# Discussion example only. Not loaded by the current application.
-# C1 and D1 must confirm these values before integration/evaluation.
+# Default safe configuration — uses CPU, no reranker model loaded.
+# Copy this file, set reranker_model and devices for your environment.
+embedding_model: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+reranker_model: null
+collection: dsa_chunks_v1
+qdrant_mode: local
+# qdrant_path is omitted to use the project-local default.
+# Set qdrant_mode: server and qdrant_url: http://localhost:6333 for Qdrant server.
 candidate_top_k: 20
-rerank_top_k: 5
-keyword_search: bm25
-vector_search: enabled
-# Embedding model, vector DB, fusion method and reranker are not selected here.
+final_top_k: 5
+rrf_k: 60
+bm25_k1: 1.5
+bm25_b: 0.75
+accent_insensitive: false
+batch_size: 32
+
+# Device selection: "cpu", "cuda", or "auto".
+# "auto" selects CUDA when torch.cuda.is_available(); else CPU.
+embedding_device: cpu
+reranker_device: cpu
+reranker_batch_size: 32
+# Max tokenizer length for reranker; 0 = model default.
+# Set via CrossEncoder constructor (NOT predict), per ST v5.7 API.
+reranker_max_length: 0
+
+# BM25 cache TTL in seconds.
+# Same-process: cache is invalidated immediately after build_index.
+# Cross-process: TTL + fingerprint are the upper bound on staleness.
+# Set to 0 to always rebuild (original behavior, safe for multi-process).
+bm25_cache_ttl: 300
+bm25_cache_max_entries: 16
