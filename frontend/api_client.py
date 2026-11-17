@@ -1,5 +1,4 @@
-"""A2: frontend HTTP access to backend. Scaffold only; not implemented."""
-"""HTTP client: Streamlit -> FastAPI (PoC only)."""
+"""HTTP client: Streamlit → FastAPI backend."""
 import os
 from typing import Any
 
@@ -15,9 +14,13 @@ def _error_detail(response: requests.Response) -> str:
         return f"HTTP {response.status_code}: {response.text[:200]}"
 
 
+# ---------------------------------------------------------------------------
+# Health
+# ---------------------------------------------------------------------------
+
 def check_health() -> tuple[bool, dict[str, Any]]:
     try:
-        response = requests.get(f"{BACKEND_URL}/health", timeout=5)
+        response = requests.get(f"{BACKEND_URL}/health", timeout=10)
         if response.ok:
             return True, response.json()
         return False, {"error": _error_detail(response)}
@@ -25,12 +28,25 @@ def check_health() -> tuple[bool, dict[str, Any]]:
         return False, {"error": str(exc)}
 
 
-def ask_question(query: str) -> tuple[bool, dict[str, Any]]:
+# ---------------------------------------------------------------------------
+# Chat
+# ---------------------------------------------------------------------------
+
+def ask_question(
+    query: str,
+    workspace_id: str | None = None,
+    corpus_id: str | None = None,
+) -> tuple[bool, dict[str, Any]]:
     try:
+        payload: dict[str, Any] = {"query": query}
+        if workspace_id:
+            payload["workspace_id"] = workspace_id
+        if corpus_id:
+            payload["corpus_id"] = corpus_id
         response = requests.post(
             f"{BACKEND_URL}/api/chat",
-            json={"query": query},
-            timeout=15,
+            json=payload,
+            timeout=120,
         )
         if response.ok:
             data = response.json()
@@ -41,17 +57,68 @@ def ask_question(query: str) -> tuple[bool, dict[str, Any]]:
         return False, {"error": str(exc)}
 
 
-def upload_pdf(filename: str, file_bytes: bytes) -> tuple[bool, dict[str, Any]]:
+# ---------------------------------------------------------------------------
+# Upload
+# ---------------------------------------------------------------------------
+
+def upload_pdf(
+    filename: str,
+    file_bytes: bytes,
+    workspace_id: str = "default-workspace",
+    corpus_id: str = "user-uploads",
+) -> tuple[bool, dict[str, Any]]:
     try:
         response = requests.post(
             f"{BACKEND_URL}/api/upload",
-            files={"file": (filename, file_bytes, "application/pdf")},
-            timeout=30,
+            files={"file": (filename, file_bytes, "application/octet-stream")},
+            data={"workspace_id": workspace_id, "corpus_id": corpus_id},
+            timeout=300,  # 5 phút — file lớn cần thời gian embedding
         )
         if response.ok:
             data = response.json()
             data["process_time_ms"] = response.headers.get("X-Process-Time-MS", "N/A")
             return True, data
+        return False, {"error": _error_detail(response)}
+    except requests.RequestException as exc:
+        return False, {"error": str(exc)}
+
+
+# ---------------------------------------------------------------------------
+# Document Management
+# ---------------------------------------------------------------------------
+
+def list_documents(
+    workspace_id: str = "default-workspace",
+    corpus_id: str = "user-uploads",
+) -> tuple[bool, dict[str, Any]]:
+    """Lấy danh sách tài liệu đã nạp trong workspace/corpus chỉ định."""
+    try:
+        response = requests.get(
+            f"{BACKEND_URL}/api/documents",
+            params={"workspace_id": workspace_id, "corpus_id": corpus_id},
+            timeout=30,
+        )
+        if response.ok:
+            return True, response.json()
+        return False, {"error": _error_detail(response)}
+    except requests.RequestException as exc:
+        return False, {"error": str(exc)}
+
+
+def delete_document(
+    document_id: str,
+    workspace_id: str = "default-workspace",
+    corpus_id: str = "user-uploads",
+) -> tuple[bool, dict[str, Any]]:
+    """Xóa tài liệu theo document_id khỏi Qdrant và ổ đĩa."""
+    try:
+        response = requests.delete(
+            f"{BACKEND_URL}/api/documents/{document_id}",
+            params={"workspace_id": workspace_id, "corpus_id": corpus_id},
+            timeout=30,
+        )
+        if response.ok:
+            return True, response.json()
         return False, {"error": _error_detail(response)}
     except requests.RequestException as exc:
         return False, {"error": str(exc)}

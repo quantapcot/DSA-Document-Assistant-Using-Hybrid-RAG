@@ -37,6 +37,8 @@ class ChatRequest(BaseModel):
         description="Câu hỏi DSA của sinh viên", 
         json_schema_extra={"example": "Cây AVL là gì và độ phức tạp tìm kiếm là bao nhiêu?"}
     )
+    workspace_id: Optional[str] = Field(None, description="Mã workspace của người dùng (tùy chọn)")
+    corpus_id: Optional[str] = Field(None, description="Mã corpus cần tìm kiếm (tùy chọn)")
 
 # ==========================================
 # 3. CONTRACT D -> A/C (Team D gán nhãn Guardrail & Safety)

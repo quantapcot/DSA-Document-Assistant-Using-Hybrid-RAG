@@ -3,7 +3,12 @@ import argparse
 import json
 import logging
 import uuid
-from qdrant_client import models
+
+try:
+    from qdrant_client import models
+except ImportError:
+    models = None
+
 from .config import RetrievalConfig
 from .embeddings import embed_texts, embedding_dimension
 from .keyword_search import normalize_chunk
@@ -26,6 +31,10 @@ def load_chunks(jsonl_path):
 
 def build_index(chunks, *, corpus_id, workspace_id, client=None, config=None,
                 rebuild=False, embedder=None, dimension=None):
+    if models is None:
+        raise ImportError(
+            "Thư viện 'qdrant-client' chưa được cài đặt. Vui lòng chạy: pip install qdrant-client"
+        )
     config = config or RetrievalConfig.from_env()
     scope = scope_filter(corpus_id, workspace_id)
     client = client or get_client(config=config)

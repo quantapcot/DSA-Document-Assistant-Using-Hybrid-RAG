@@ -57,7 +57,7 @@ with st.sidebar:
         st.rerun()
 
     st.divider()
-    st.caption("© 2026 Nhóm Track C — PoC Tuần 4")
+    st.caption("© 2026 Nhóm Track C — Tuần 5 · LLM C2 + Doc Management")
 
 
 # ==========================================
