@@ -1,18 +1,43 @@
 """Dense-only Qdrant storage. Local mode never opens an HTTP connection."""
 import logging
-from qdrant_client import QdrantClient, models
+from pathlib import Path
+from typing import Any
+
+try:
+    from qdrant_client import QdrantClient, models
+except ImportError:
+    QdrantClient = None
+    models = None
+
 from .config import RetrievalConfig
 
 logger = logging.getLogger(__name__)
 DENSE_VECTOR_NAME = "dense"
 
+# Cache client instances by path within the same process to avoid concurrent file lock errors
+_LOCAL_CLIENTS: dict[str, Any] = {}
+
 
 def get_client(path=None, *, config=None):
+    if QdrantClient is None:
+        raise ImportError(
+            "Thư viện 'qdrant-client' chưa được cài đặt. Vui lòng chạy: pip install qdrant-client"
+        )
     config = config or RetrievalConfig.from_env()
     if path is not None:
-        return QdrantClient(":memory:") if str(path) == ":memory:" else QdrantClient(path=str(path))
+        if str(path) == ":memory:":
+            return QdrantClient(":memory:")
+        key = str(Path(path).resolve())
+        if key not in _LOCAL_CLIENTS:
+            _LOCAL_CLIENTS[key] = QdrantClient(path=str(path))
+        return _LOCAL_CLIENTS[key]
+
     if config.qdrant_mode == "local":
-        return QdrantClient(path=config.qdrant_path)
+        key = str(Path(config.qdrant_path).resolve())
+        if key not in _LOCAL_CLIENTS:
+            _LOCAL_CLIENTS[key] = QdrantClient(path=config.qdrant_path)
+        return _LOCAL_CLIENTS[key]
+
     if config.qdrant_mode == "memory":
         return QdrantClient(":memory:")
     if config.qdrant_mode == "server" and config.qdrant_url:
@@ -63,23 +88,6 @@ def scope_filter(corpus_id, workspace_id):
 def check_model(client, config, *, sample_size: int = 10):
     """Validate that vectors in *config.collection* were created by the
     configured embedding model.
-
-    Strategy
-    --------
-    1. Sample up to *sample_size* points across the collection and verify
-       that **every** sampled point carries ``embedding_model`` matching
-       ``config.embedding_model``.
-    2. A point with a missing ``embedding_model`` payload is treated as
-       **invalid** (fail-closed), preventing silent corruption.
-    3. If different ``embedding_model`` values are found among sampled
-       points, the collection is rejected as mixed-model.
-
-    This is a statistical check — it does not scan every point — but it
-    provides strong guarantees when combined with ``build_index`` always
-    writing ``embedding_model`` on every upserted point.
-
-    The check runs on every ``build_index`` and ``search_dense`` call.
-    For one-time full audits, use ``check_model_exhaustive``.
     """
     name = config.collection
     if not client.collection_exists(name):
@@ -122,11 +130,7 @@ def check_model(client, config, *, sample_size: int = 10):
 
 
 def check_model_exhaustive(client, config, *, batch_size: int = 256):
-    """Full-scan variant of :func:`check_model`.
-
-    Iterates every point in the collection and verifies that all carry the
-    same ``embedding_model``.  Use for one-time audits, not per-query checks.
-    """
+    """Full-scan variant of :func:`check_model`."""
     name = config.collection
     if not client.collection_exists(name):
         return

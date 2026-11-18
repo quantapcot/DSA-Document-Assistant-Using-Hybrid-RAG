@@ -6,8 +6,16 @@ import re
 import unicodedata
 from pathlib import Path
 from typing import Any
-from rank_bm25 import BM25Okapi
-from pyvi import ViTokenizer
+
+try:
+    from rank_bm25 import BM25Okapi
+except ImportError:
+    BM25Okapi = None
+
+try:
+    from pyvi import ViTokenizer
+except ImportError:
+    ViTokenizer = None
 
 logger = logging.getLogger(__name__)
 DEFAULT_K1 = 1.5
@@ -19,7 +27,10 @@ def tokenize(text: str, *, accent_insensitive: bool = False) -> list[str]:
     text = unicodedata.normalize("NFC", text).casefold()
     if accent_insensitive:
         text = "".join(c for c in unicodedata.normalize("NFD", text.replace("\u0111", "d")) if not unicodedata.combining(c))
-    segmented = ViTokenizer.tokenize(text)
+    if ViTokenizer is not None:
+        segmented = ViTokenizer.tokenize(text)
+    else:
+        segmented = text
     return _WORD_RE.findall(segmented)
 
 def normalize_chunk(chunk):
@@ -41,6 +52,10 @@ def normalize_chunk(chunk):
 
 class BM25Retriever:
     def __init__(self, chunks, *, k1=DEFAULT_K1, b=DEFAULT_B, accent_insensitive=False):
+        if BM25Okapi is None:
+            raise ImportError(
+                "Thư viện 'rank-bm25' chưa được cài đặt. Vui lòng chạy: pip install rank-bm25 pyvi"
+            )
         self.accent_insensitive = accent_insensitive
         self.chunks = []
         self._term_sets = []
@@ -99,8 +114,6 @@ class BM25Retriever:
             i for i, indexed_terms in enumerate(self._term_sets)
             if not query_set.isdisjoint(indexed_terms)
         ]
-        # BM25 scores may be zero/negative in tiny collections; filter by
-        # lexical overlap instead of scores > 0.
         matches.sort(key=lambda i: (-float(scores[i]), self.chunks[i]["chunk_id"]))
 
         return [

@@ -1,9 +1,14 @@
-"""Chat UI with bottom input, mock AVL question, and citation viewer."""
+"""Chat UI with bottom input, real Hybrid RAG retrieval, and citation viewer."""
 import streamlit as st
 
 from api_client import ask_question
 
-SAMPLE_PROMPT = "Cây AVL là gì và độ phức tạp tìm kiếm là bao nhiêu?"
+SAMPLE_PROMPTS = [
+    "Cây AVL là gì và độ phức tạp tìm kiếm là bao nhiêu?",
+    "Giải thích thao tác quay cây trong Cây AVL?",
+    "Cây nhị phân tìm kiếm (BST) là gì?",
+    "So sánh thuật toán Quick Sort và Merge Sort?",
+]
 
 
 def _show_message(item: dict) -> None:
@@ -14,10 +19,10 @@ def _show_message(item: dict) -> None:
             st.markdown(item["content"])
 
         if item.get("citations"):
-            with st.expander("📌 Nguồn minh họa (MOCK Trích dẫn)", expanded=True):
+            with st.expander(f"📌 Nguồn minh chứng ({len(item['citations'])} trích dẫn)", expanded=True):
                 st.caption(
-                    "Các trích dẫn này là dữ liệu giả lập theo Data Contract Tuần 4, "
-                    "chưa lấy trực tiếp từ PDF upload."
+                    "Các trích dẫn này được truy xuất trực tiếp từ kho ngữ liệu slide/tài liệu DSA "
+                    "bằng động cơ Hybrid Search (BM25 + Qdrant Dense + BGE Reranker)."
                 )
 
                 for index, citation in enumerate(item["citations"], start=1):
@@ -33,45 +38,45 @@ def _show_message(item: dict) -> None:
 
         if item.get("process_time_ms"):
             st.caption(
-                f"⏱️ Thời gian phản hồi API: {item['process_time_ms']} ms · Dữ liệu Mock PoC"
+                f"⏱️ Thời gian phản hồi API: {item['process_time_ms']} ms · Hybrid RAG Engine"
             )
 
 
 def render_chat_ui() -> None:
     st.header("💬 Trò chuyện & Hỏi đáp môn DSA")
-    st.caption("Khung giao diện hỏi đáp tài liệu môn Cấu trúc Dữ liệu & Giải thuật (Track C).")
+    st.caption("Trợ lý hỏi đáp tài liệu môn Cấu trúc Dữ liệu & Giải thuật dựa trên Hybrid RAG (Track C).")
 
-    if "poc_messages" not in st.session_state:
-        st.session_state["poc_messages"] = []
+    if "chat_messages" not in st.session_state:
+        st.session_state["chat_messages"] = []
 
     # Thanh công cụ hỗ trợ
     col_help, col_clear = st.columns([4, 1])
     with col_clear:
-        if st.session_state["poc_messages"]:
+        if st.session_state["chat_messages"]:
             if st.button("🗑️ Xóa hội thoại"):
-                st.session_state["poc_messages"] = []
+                st.session_state["chat_messages"] = []
                 st.rerun()
 
     prompt_to_send = None
 
     # Gợi ý câu hỏi mẫu khi chưa có tin nhắn
-    if not st.session_state["poc_messages"]:
+    if not st.session_state["chat_messages"]:
         with st.container():
             st.info(
-                "💡 **Gợi ý nhanh (PoC Tuần 4):** Backend hiện đang chạy mock endpoint `/api/chat`. "
-                "Bạn có thể nhấn vào nút bên dưới để gửi ngay câu hỏi mẫu mà không cần nhập thủ công."
+                "💡 **Gợi ý câu hỏi:** Bạn có thể bấm vào các gợi ý dưới đây hoặc tự nhập bất kỳ câu hỏi nào về môn DSA vào khung chat bên dưới:"
             )
-            if st.button(f"👉 Thử ngay: \"{SAMPLE_PROMPT}\""):
-                prompt_to_send = SAMPLE_PROMPT
+            cols = st.columns(2)
+            for i, p in enumerate(SAMPLE_PROMPTS):
+                with cols[i % 2]:
+                    if st.button(f"👉 {p}", key=f"sample_{i}"):
+                        prompt_to_send = p
 
     # Hiển thị các tin nhắn đã có
-    for item in st.session_state["poc_messages"]:
+    for item in st.session_state["chat_messages"]:
         _show_message(item)
 
     # Chat input ở cuối màn hình
-    question = st.chat_input(
-        f"Nhập câu hỏi (Ví dụ: {SAMPLE_PROMPT})"
-    )
+    question = st.chat_input("Nhập câu hỏi DSA của bạn (Ví dụ: Cây AVL là gì?)...")
 
     if question:
         prompt_to_send = question
@@ -84,41 +89,29 @@ def render_chat_ui() -> None:
         "role": "user",
         "content": prompt_to_send,
     }
-    st.session_state["poc_messages"].append(user_item)
+    st.session_state["chat_messages"].append(user_item)
     _show_message(user_item)
 
-    # Kiểm tra khớp câu hỏi mẫu cho PoC
-    if " ".join(prompt_to_send.split()) != SAMPLE_PROMPT:
+    with st.spinner("🔍 Đang tìm kiếm bằng chứng qua Hybrid Search & Reranking..."):
+        ok, data = ask_question(prompt_to_send)
+
+    if ok:
+        assistant_item = {
+            "role": "assistant",
+            "content": data.get("answer", ""),
+            "citations": data.get("citations", []),
+            "process_time_ms": data.get("process_time_ms"),
+        }
+    else:
         assistant_item = {
             "role": "assistant",
             "content": (
-                f"⚠️ Bản PoC Tuần 4 hiện chỉ hỗ trợ câu hỏi mẫu cố định:\n\n"
-                f"**\"{SAMPLE_PROMPT}\"**\n\n"
-                f"*(Các câu hỏi tự do kết nối Hybrid RAG thực tế sẽ được hỗ trợ từ Tuần 5 & 6)*."
+                "❌ Không kết nối được với FastAPI Backend:\n"
+                f"`{data.get('error', 'Unknown error')}`\n\n"
+                "Vui lòng đảm bảo Backend đang chạy tại `http://127.0.0.1:8000`."
             ),
             "error": True,
         }
-    else:
-        with st.spinner("Đang gửi yêu cầu đến FastAPI Backend..."):
-            ok, data = ask_question(SAMPLE_PROMPT)
 
-        if ok:
-            assistant_item = {
-                "role": "assistant",
-                "content": data.get("answer", ""),
-                "citations": data.get("citations", []),
-                "process_time_ms": data.get("process_time_ms"),
-            }
-        else:
-            assistant_item = {
-                "role": "assistant",
-                "content": (
-                    "❌ Không kết nối được với FastAPI Backend:\n"
-                    f"`{data.get('error', 'Unknown error')}`\n\n"
-                    "Vui lòng đảm bảo Backend đang chạy tại `http://127.0.0.1:8000`."
-                ),
-                "error": True,
-            }
-
-    st.session_state["poc_messages"].append(assistant_item)
+    st.session_state["chat_messages"].append(assistant_item)
     st.rerun()
