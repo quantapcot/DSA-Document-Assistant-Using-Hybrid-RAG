@@ -1,8 +1,11 @@
 """Application settings — đọc từ backend/.env qua pydantic-settings."""
 from __future__ import annotations
 
-from typing import Optional
-from pydantic_settings import BaseSettings
+from pathlib import Path
+from pydantic import SecretStr
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+_BACKEND_DIR = Path(__file__).resolve().parents[2]
 
 
 class Settings(BaseSettings):
@@ -20,13 +23,16 @@ class Settings(BaseSettings):
     # Tên model cụ thể (để trống = dùng default của provider)
     LLM_MODEL: str = ""
     # Google Gemini
-    GEMINI_API_KEY: Optional[str] = None
+    GEMINI_API_KEY: SecretStr | None = None
     # OpenAI-compatible
-    OPENAI_API_KEY: Optional[str] = None
+    OPENAI_API_KEY: SecretStr | None = None
+    LLM_BASE_URL: str | None = None
 
-    class Config:
-        env_file = ".env"
-        extra = "ignore"
+    model_config = SettingsConfigDict(
+        env_file=(_BACKEND_DIR.parent / ".env", _BACKEND_DIR / ".env", ".env"),
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
 
 settings = Settings()
