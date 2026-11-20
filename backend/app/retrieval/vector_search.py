@@ -6,6 +6,12 @@ def search_dense(client, query, *, corpus_id, workspace_id, config, top_k=20, qu
     scope = scope_filter(corpus_id, workspace_id)
     if not query.strip() or top_k <= 0 or not client.collection_exists(config.collection):
         return []
+    sample, _ = client.scroll(
+        config.collection, scroll_filter=scope, limit=1,
+        with_payload=False, with_vectors=False,
+    )
+    if not sample:
+        return []
     check_model(client, config)
     vector = (query_embedder or (lambda q: embed_query(q, config.embedding_model, device=config.embedding_device)))(query)
     try:

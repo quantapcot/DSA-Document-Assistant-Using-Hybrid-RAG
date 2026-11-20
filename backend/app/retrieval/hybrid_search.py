@@ -335,6 +335,7 @@ class RetrievalEngine:
     def retrieve(self, query: str, method: str, top_k: int = 5,
                  corpus_id: str | None = None,
                  workspace_id: str | None = None):
+        """Search only the requested scope, including when it has no matches."""
         scope_filter(corpus_id, workspace_id)
         if method not in {"bm25", "dense", "hybrid_rrf", "hybrid_rerank"}:
             raise ValueError("Unknown retrieval method")
