@@ -28,11 +28,11 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: SecretStr | None = None
     LLM_BASE_URL: str | None = None
     LLM_CHAT_TIMEOUT: float = Field(30, gt=0, le=300)
-    LLM_QUIZ_GENERATION_TIMEOUT: float = Field(45, gt=0, le=300)
+    LLM_QUIZ_GENERATION_TIMEOUT: float = Field(120, gt=0, le=300)
     LLM_QUIZ_VERIFICATION_TIMEOUT: float = Field(40, gt=0, le=300)
     LLM_REVISION_TIMEOUT: float = Field(45, gt=0, le=300)
     CHAT_REQUEST_TIMEOUT: float = Field(90, gt=0, le=900)
-    QUIZ_REQUEST_TIMEOUT: float = Field(360, gt=0, le=900)
+    QUIZ_REQUEST_TIMEOUT: float = Field(600, gt=0, le=900)
     REVISION_REQUEST_TIMEOUT: float = Field(240, gt=0, le=900)
     REVISION_MAX_TOPICS: int = Field(20, ge=1, le=60)
     REVISION_SOURCE_TOKEN_BUDGET: int = Field(12000, ge=300, le=40000)

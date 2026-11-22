@@ -52,7 +52,7 @@ SourceLabel = Annotated[int, Field(strict=True, ge=1)]
 
 
 class QuizRequest(ChatRequest):
-    num_questions: int = Field(5, ge=1, le=20)
+    num_questions: int = Field(5, ge=1, le=5)
     difficulty: Difficulty = "Medium"
 
 

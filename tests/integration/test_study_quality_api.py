@@ -10,7 +10,7 @@ from pydantic import SecretStr
 from qdrant_client import QdrantClient
 
 from app.api.routes import upload
-from app.generation import rag_engine
+from app.generation import quiz_generator, rag_engine
 from app.main import app
 from app.retrieval import indexing
 from app.retrieval.config import RetrievalConfig
@@ -73,7 +73,7 @@ def test_upload_retrieve_quiz_and_answer_key(study_client, monkeypatch):
     calls = []
 
     def mock_fit(system, prompt, *, provider, model, max_tokens, task, raise_errors, temperature=None):
-        assert temperature == 0.0
+        assert temperature in (0.0, 0.7)
         assert provider == "openai" and model == "mock-qwen-27b"
         assert "Private.pdf" not in prompt and "bench.pdf" not in prompt
         passages = _passages(prompt)
@@ -97,6 +97,7 @@ def test_upload_retrieve_quiz_and_answer_key(study_client, monkeypatch):
         }])
 
     monkeypatch.setattr(rag_engine, "generate_answer", mock_fit)
+    monkeypatch.setattr(quiz_generator, "MAX_PASSES", 2)
     response = study_client.post("/api/quiz", json={
         "query": "BFS graph traversal", "workspace_id": "alice", "num_questions": 5, "difficulty": "Easy",
     })

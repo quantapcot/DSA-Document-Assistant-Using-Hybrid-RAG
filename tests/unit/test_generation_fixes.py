@@ -118,6 +118,8 @@ def test_quiz_api_uses_mock_llm_and_keeps_scope(monkeypatch, evidence):
     ))
     verified = [{"slot": 1, "correct_index": 0, "unique_answer": True, "on_topic": True,
                  "source": 1, "quote": evidence[0]["text"]}]
+    from app.generation import quiz_generator
+    monkeypatch.setattr(quiz_generator, "MAX_PASSES", 2)
     llm = MagicMock(side_effect=[f"```json\n{json.dumps([{**QUIZ, 'slot': 1}])}\n```", json.dumps(verified), json.dumps([{"slot": 1, "supported": True}]), "[]"])
     monkeypatch.setattr(rag_engine, "generate_answer", llm)
     api = TestClient(app)

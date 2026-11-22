@@ -25,9 +25,16 @@ def reject(stage, reason, *, slot=None, source=None):
 def decode_json(raw, stage):
     text = _THINK.sub("", raw, count=1).strip()
     fenced = _FENCE.fullmatch(text)
+    candidate = fenced[1] if fenced else text
     try:
-        result = json.loads(fenced[1] if fenced else text)
+        result = json.loads(candidate)
     except json.JSONDecodeError as exc:
+        # FIT-AI sometimes adds prose or a second fence around the JSON value;
+        # decode the first complete array/object instead of rejecting the batch.
+        result = _first_json_value(candidate)
+        if result is not None:
+            logger.info("study_json stage=%s recovered=embedded", stage)
+            return result
         # Offsets only: the exception's document contains the original answer.
         logger.warning("study_json stage=%s reason=parse_error offset=%d length=%d",
                        stage, exc.pos, len(text))
@@ -36,13 +43,35 @@ def decode_json(raw, stage):
     return result
 
 
+def _first_json_value(text):
+    decoder = json.JSONDecoder()
+    for index, char in enumerate(text):
+        if char in "[{":
+            try:
+                value, _ = decoder.raw_decode(text, index)
+            except json.JSONDecodeError:
+                continue
+            if isinstance(value, (list, dict)) and value:
+                return value
+    return None
+
+
 def rows(payload, stage, *wrappers):
     if isinstance(payload, dict):
         keys = [key for key in ("items", *wrappers) if key in payload]
+        lists = [key for key, value in payload.items() if isinstance(value, list) and value
+                 and all(isinstance(item, dict) for item in value)]
         if len(keys) == 1:
             payload = payload[keys[0]]
         elif "slot" in payload and not keys:
             payload = [payload]
+        elif len(lists) == 1:
+            # FIT-AI sometimes wraps the array under another key, e.g. {"answers": [...]}.
+            payload = payload[lists[0]]
+        elif payload and all(isinstance(value, dict) for value in payload.values()):
+            # ...or keys rows by slot, e.g. {"1": {...}, "2": {...}}.
+            payload = [{"slot": key, **value} if "slot" not in value else value
+                       for key, value in payload.items()]
     if not isinstance(payload, list):
         reject(stage, "unexpected_json_shape")
         return []
