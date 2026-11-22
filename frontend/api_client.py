@@ -40,15 +40,23 @@ def ask_question(
     return _study_request("chat", query, workspace_id, corpus_id)
 
 
-def create_quiz(query, num_questions=5, workspace_id=None, corpus_id=None):
-    return _study_request("quiz", query, workspace_id, corpus_id, num_questions=num_questions)
+def create_quiz(query, num_questions=5, workspace_id=None, corpus_id=None, *, difficulty="Medium"):
+    return _study_request(
+        "quiz", query, workspace_id, corpus_id, timeout=720,
+        num_questions=num_questions, difficulty=difficulty,
+    )
 
 
-def create_revision(query, workspace_id=None, corpus_id=None):
-    return _study_request("revision", query, workspace_id, corpus_id)
+def create_revision(query, workspace_id=None, corpus_id=None, *, exam_date=None,
+                    days_remaining=None, minutes_per_day=45, level="Intermediate", all_topics=False):
+    return _study_request(
+        "revision", query, workspace_id, corpus_id, timeout=180,
+        exam_date=exam_date, days_remaining=days_remaining, minutes_per_day=minutes_per_day,
+        level=level, all_topics=all_topics,
+    )
 
 
-def _study_request(endpoint, query, workspace_id, corpus_id, **fields):
+def _study_request(endpoint, query, workspace_id, corpus_id, *, timeout=120, **fields):
     try:
         payload: dict[str, Any] = {"query": query, **fields}
         if workspace_id:
@@ -58,7 +66,7 @@ def _study_request(endpoint, query, workspace_id, corpus_id, **fields):
         response = requests.post(
             f"{BACKEND_URL}/api/{endpoint}",
             json=payload,
-            timeout=120,
+            timeout=timeout,
         )
         if response.ok:
             data = response.json()

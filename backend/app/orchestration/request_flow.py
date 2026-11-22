@@ -10,6 +10,7 @@ from fastapi.concurrency import run_in_threadpool
 from app.retrieval.hybrid_search import RetrievalEngine
 from app.retrieval.vector_store import scope_filter
 from app.schemas.contracts import Citation
+from .study_evidence import QUIZ_FACETS, curriculum_inventory, diverse_evidence
 
 logger = logging.getLogger("app.orchestration.request_flow")
 
@@ -28,10 +29,7 @@ def _scope_is_empty(engine, corpus_id, workspace_id):
     return not points
 
 
-async def retrieve_for_study(body, request):
-    query = " ".join(body.query.split())
-    if not query:
-        raise HTTPException(400, "Câu hỏi hoặc chủ đề không được để trống.")
+def _study_scope(body, request):
     engine = getattr(request.app.state, "retrieval_engine", None)
     if engine is None:
         raise HTTPException(503, "Hệ thống truy xuất chưa sẵn sàng.")
@@ -39,6 +37,14 @@ async def retrieve_for_study(body, request):
     corpus = (body.corpus_id or request.headers.get("X-Corpus-Id") or "user-uploads").strip()
     if not workspace or not corpus:
         raise HTTPException(400, "Workspace và corpus không được để trống.")
+    return engine, workspace, corpus
+
+
+async def retrieve_for_study(body, request):
+    query = " ".join(body.query.split())
+    if not query:
+        raise HTTPException(400, "Câu hỏi hoặc chủ đề không được để trống.")
+    engine, workspace, corpus = _study_scope(body, request)
     try:
         evidence, method = await execute_retrieval(
             engine, query, workspace_id=workspace, corpus_id=corpus,
@@ -48,6 +54,34 @@ async def retrieve_for_study(body, request):
         logger.error("Study retrieval failed")
         raise HTTPException(500, "Lỗi truy xuất tài liệu.") from None
     return query, evidence, method, empty
+
+
+async def retrieve_for_exercise(body, request, *, revision=False):
+    """Collect diverse quiz evidence or a curriculum inventory for planning."""
+    query = " ".join(body.query.split())
+    if not query and not (revision and body.all_topics):
+        raise HTTPException(400, "Chủ đề không được để trống.")
+    engine, workspace, corpus = _study_scope(body, request)
+    try:
+        empty = await run_in_threadpool(_scope_is_empty, engine, corpus, workspace)
+        if empty:
+            return query, [], True
+        if revision and body.all_topics:
+            inventory = await run_in_threadpool(curriculum_inventory, engine, workspace, corpus)
+            return query, inventory, not inventory
+        batches = []
+        for search in (query, *(f"{query} — {facet}" for facet in QUIZ_FACETS)):
+            evidence, method = await execute_retrieval(
+                engine, search, workspace_id=workspace, corpus_id=corpus, top_k=8,
+            )
+            batches.append([{**item, "retrieval_method": method} for item in evidence])
+        diverse = diverse_evidence(batches, workspace=workspace, corpus=corpus)
+        if revision and diverse:
+            diverse = await run_in_threadpool(curriculum_inventory, engine, workspace, corpus, diverse)
+        return query, diverse, False
+    except Exception:
+        logger.exception("Study evidence gathering failed")
+        raise HTTPException(500, "Lỗi truy xuất tài liệu.") from None
 
 
 async def execute_retrieval(

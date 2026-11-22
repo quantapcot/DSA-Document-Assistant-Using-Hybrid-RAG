@@ -36,6 +36,7 @@ with st.sidebar:
         "Chọn màn hình làm việc:",
         menu_options,
         index=0,
+        key="study_navigation",
         label_visibility="collapsed",
     )
 

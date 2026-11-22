@@ -1,6 +1,7 @@
 # dsa_ai_agent/backend/app/schemas/contracts.py
-from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any
+from datetime import date
+from typing import List, Optional, Dict, Any, Literal
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 # ==========================================
 # 1. CONTRACT B -> C (Team B bàn giao cho Team C)
@@ -43,37 +44,90 @@ class ChatRequest(BaseModel):
     corpus_id: Optional[str] = Field(None, description="Mã corpus cần tìm kiếm (tùy chọn)")
 
 
+Difficulty = Literal["Easy", "Medium", "Hard"]
+QuestionType = Literal["Concept", "Complexity", "Algorithm Tracing", "Comparison", "Application"]
+StudyLevel = Literal["Beginner", "Intermediate", "Advanced"]
+
+
 class QuizRequest(ChatRequest):
     num_questions: int = Field(5, ge=1, le=20)
+    difficulty: Difficulty = "Medium"
 
 
 class QuizQuestion(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
     question: str = Field(min_length=1)
     options: list[str] = Field(min_length=4, max_length=4)
-    correct_index: int = Field(ge=0, le=3)
+    correct_index: int = Field(ge=0, le=3, strict=True)
     explanation: str = Field(min_length=1)
-    sources: list[int] = Field(min_length=1)
-
-
-class Flashcard(BaseModel):
-    question: str = Field(min_length=1)
-    answer: str = Field(min_length=1)
-    sources: list[int] = Field(min_length=1)
-
-
-class StudySection(BaseModel):
-    title: str = Field(min_length=1)
-    summary: str = Field(min_length=1)
-    sources: list[int] = Field(min_length=1)
+    sources: list[int] = Field(min_length=1, max_length=3)
+    question_type: QuestionType
+    difficulty: Difficulty
+    topic: str = Field(min_length=1, max_length=150)
 
 
 class QuizResponse(RAGResponse):
     questions: list[QuizQuestion] = Field(default_factory=list)
+    requested_count: int = 0
+    generated_count: int = 0
+
+
+class RevisionRequest(ChatRequest):
+    query: str = Field("", max_length=500)
+    exam_date: date | None = None
+    days_remaining: int | None = Field(None, ge=1, le=90)
+    minutes_per_day: int = Field(45, ge=15, le=240)
+    level: StudyLevel = "Intermediate"
+    all_topics: bool = False
+
+    @model_validator(mode="after")
+    def validate_planning_input(self):
+        if (self.exam_date is None) == (self.days_remaining is None):
+            raise ValueError("Provide an exam date or remaining days, not both")
+        if not self.all_topics and not self.query.strip():
+            raise ValueError("Provide a topic or select all topics")
+        return self
+
+
+class StudyTask(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    kind: Literal["learn", "review", "mock_test"]
+    topic_id: str = Field(min_length=1)
+    objective: str = Field(min_length=1, max_length=300)
+    knowledge: list[str] = Field(min_length=1, max_length=5)
+    activity: str = Field(min_length=1, max_length=400)
+    practice: str = Field(min_length=1, max_length=300)
+    minutes: int = Field(ge=5, le=240, strict=True)
+    prerequisites: list[str] = Field(default_factory=list)
+    sources: list[int] = Field(min_length=1, max_length=4)
+    support_quote: str = Field(min_length=20, max_length=500)
+
+
+class StudyDay(BaseModel):
+    date: date
+    tasks: list[StudyTask] = Field(min_length=1)
+
+
+class StudyTopic(BaseModel):
+    id: str
+    title: str
+    sources: list[int]
+
+
+class StudyPlan(BaseModel):
+    exam_date: date
+    minutes_per_day: int = Field(ge=15, le=240)
+    level: StudyLevel
+    days: list[StudyDay] = Field(min_length=1)
+    topics: list[StudyTopic]
 
 
 class RevisionResponse(RAGResponse):
-    sections: list[StudySection] = Field(default_factory=list)
-    flashcards: list[Flashcard] = Field(default_factory=list)
+    plan: StudyPlan | None = None
+    uncovered_topics: list[str] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
 
 # ==========================================
 # 3. CONTRACT D -> A/C (Team D gán nhãn Guardrail & Safety)
