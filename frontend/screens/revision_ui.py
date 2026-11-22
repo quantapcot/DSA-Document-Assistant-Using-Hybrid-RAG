@@ -1,91 +1,103 @@
-"""Revision Roadmap UI framework for DSA Document Assistant.
-Tuần 4: Dựng khung giao diện (Skeleton).
-Tuần 7: Tích hợp hoàn thiện với Backend API (/api/revision) và Revision Engine.
-"""
+"""Calendar, references, and session-local study progress."""
+from datetime import datetime, timedelta, timezone
+
 import streamlit as st
 
+from api_client import create_revision
 
-def render_revision_ui() -> None:
-    st.header("🗺️ Lộ trình Ôn tập DSA (Revision Roadmap)")
-    st.caption("Khung giao diện sơ đồ cây chủ đề và lộ trình ôn tập cá nhân hóa từ tài liệu.")
 
-    st.info(
-        "ℹ️ **Trạng thái**: Khung giao diện (Skeleton) cho Tuần 4. "
-        "Tính năng tổng hợp lộ trình ôn thi và tạo sơ đồ kiến thức sẽ được hoàn thiện vào **Tuần 7** "
-        "(phối hợp giữa Team C - Revision Engine và Team A - API `/api/revision`)."
-    )
+def _record_completion(progress_key, task_id, widget_key):
+    progress = st.session_state.setdefault(progress_key, {})
+    progress[task_id] = st.session_state[widget_key]
 
-    with st.expander("🎯 Thiết lập mục tiêu ôn tập", expanded=True):
-        col1, col2 = st.columns(2)
-        with col1:
-            target_scope = st.selectbox(
-                "Phạm vi kiến thức cần ôn tập",
-                [
-                    "Toàn bộ chương trình Cấu trúc dữ liệu & Giải thuật",
-                    "Chuyên đề 1: Cấu trúc Cây & Cây cân bằng (AVL, Red-Black)",
-                    "Chuyên đề 2: Lý thuyết Đồ thị & Các giải thuật duyệt đồ thị (BFS, DFS, Dijkstra)",
-                    "Chuyên đề 3: Các thuật toán Sắp xếp & Tìm kiếm",
-                    "Chuyên đề 4: Quy hoạch động & Đệ quy có nhớ",
-                ],
+
+def _open_quiz(workspace, corpus, title):
+    st.session_state[f"quiz_topic:{(workspace, corpus)!r}"] = title
+    st.session_state["study_navigation"] = "📝 Luyện tập Trắc nghiệm"
+
+
+def render_revision_ui(workspace_id="default-workspace", corpus_id="user-uploads"):
+    st.header("Kế hoạch ôn tập DSA")
+    scope_key = f"revision:{(workspace_id, corpus_id)!r}"
+    all_topics = st.checkbox("Ôn tất cả tài liệu đã tải")
+    mode = st.radio("Mốc thời gian", ["Số ngày còn lại", "Ngày thi"], horizontal=True)
+    today = datetime.now(timezone(timedelta(hours=7))).date()
+    with st.form("revision_generate"):
+        topic = "" if all_topics else st.text_input("Chủ đề hoặc mục tiêu ôn tập")
+        by_date = mode == "Ngày thi"
+        exam = (st.date_input("Ngày thi", today + timedelta(days=7),
+                              min_value=today + timedelta(days=1),
+                              max_value=today + timedelta(days=90)) if by_date else None)
+        days = None if by_date else st.number_input("Số ngày còn lại", 1, 90, 7)
+        minutes = st.number_input("Phút học mỗi ngày", 15, 240, 45, step=5)
+        level = st.selectbox("Trình độ hiện tại", ["Beginner", "Intermediate", "Advanced"], index=1)
+        generate = st.form_submit_button("Tạo kế hoạch học")
+    if generate:
+        if not all_topics and not topic.strip():
+            st.warning("Nhập chủ đề hoặc chọn ôn tất cả tài liệu.")
+            return
+        with st.spinner("Đang lập lịch ôn tập theo tài liệu…"):
+            ok, data = create_revision(
+                topic.strip(), workspace_id, corpus_id,
+                exam_date=exam.isoformat() if exam else None, days_remaining=days,
+                minutes_per_day=minutes, level=level, all_topics=all_topics,
             )
-            exam_date = st.selectbox(
-                "Thời gian còn lại đến kỳ thi",
-                ["3 ngày tới (Ôn cấp tốc)", "1 tuần tới (Ôn trọng tâm)", "2-4 tuần (Ôn toàn diện)"],
-                index=1,
-            )
-        with col2:
-            weak_points = st.multiselect(
-                "Các phần còn chưa vững",
-                [
-                    "Phép quay cây AVL (Single / Double rotation)",
-                    "Độ phức tạp thuật toán (Big-O)",
-                    "Duyệt đồ thị BFS / DFS",
-                    "Thuật toán tìm đường đi ngắn nhất Dijkstra",
-                    "Bảng băm và giải quyết đụng độ",
-                ],
-                default=["Phép quay cây AVL (Single / Double rotation)"],
-            )
+        version = st.session_state.get(scope_key, (0, None))[0] + 1
+        st.session_state[scope_key] = (version, data if ok else {"error": data["error"]})
+        st.session_state.pop(f"{scope_key}:progress", None)
 
-        btn_create = st.button("📌 Tạo lộ trình gợi ý mẫu (Mock)", use_container_width=True)
+    version, data = st.session_state.get(scope_key, (0, None))
+    if data is None:
+        return
+    if data.get("error"):
+        st.error(data["error"])
+        return
+    plan = data.get("plan")
+    if not plan:
+        st.warning(data["answer"])
+        return
 
-    if btn_create or True:
-        st.subheader("📚 Sơ đồ cây kiến thức & Lộ trình đề xuất (Mock)")
-
-        tab1, tab2 = st.tabs(["🌳 Cây chủ đề kiến thức", "📅 Kế hoạch từng bước"])
-
-        with tab1:
-            st.markdown(
-                """
-```text
-Cấu trúc Dữ liệu & Giải thuật
-├── 1. Danh sách tuyến tính (Linked List, Stack, Queue)
-├── 2. Cây (Tree)
-│   ├── Cây nhị phân (Binary Tree)
-│   ├── Cây nhị phân tìm kiếm (BST)
-│   └── Cây AVL (Tự cân bằng) 📍 [Trọng tâm cần ôn]
-│       ├── Điều kiện cân bằng (|Balance Factor| <= 1)
-│       ├── Các phép quay đơn: Left-Left (LL), Right-Right (RR)
-│       └── Các phép quay kép: Left-Right (LR), Right-Left (RL)
-├── 3. Đồ thị (Graph)
-│   ├── Biểu diễn: Ma trận kề, Danh sách kề
-│   └── Thuật toán: BFS, DFS, Dijkstra, Prim, Kruskal
-└── 4. Kỹ thuật thiết kế giải thuật
-    ├── Chia để trị (Divide and Conquer)
-    └── Quy hoạch động (Dynamic Programming)
-```
-                """
-            )
-
-        with tab2:
-            st.markdown(
-                """
-1. **Bước 1 — Nắm vững lý thuyết cơ bản (Ngày 1)**:
-   - Đọc slide `Chuong4_Trees_DSA.pdf` từ trang 1 đến trang 15.
-   - Nắm rõ công thức tính Balance Factor = Height(L) - Height(R).
-2. **Bước 2 — Thực hành các phép biến đổi cây (Ngày 2)**:
-   - Làm bài tập vẽ từng bước chèn các phần tử vào cây AVL và cân bằng lại.
-   - Ôn tập 4 trường hợp mất cân bằng và các phép quay tương ứng.
-3. **Bước 3 — Luyện câu hỏi trắc nghiệm & Red-Teaming (Ngày 3)**:
-   - Chuyển sang tab **Luyện tập Trắc nghiệm** để kiểm tra mức độ ghi nhớ.
-                """
-            )
+    st.subheader("Lịch học")
+    st.write(data["answer"])
+    st.caption(f"Thi ngày {plan['exam_date']} · {plan['minutes_per_day']} phút tối đa mỗi ngày · {plan['level']}")
+    for warning in data.get("warnings", []):
+        st.warning(warning)
+    if data.get("uncovered_topics"):
+        with st.expander("Các mục chưa xếp lịch"):
+            for title in data["uncovered_topics"]:
+                st.write(title)
+    topics = {topic["id"]: topic["title"] for topic in plan["topics"]}
+    sources = {source["label"]: source for source in data.get("citations", [])}
+    progress_key = f"{scope_key}:progress"
+    progress = st.session_state.get(progress_key, {})
+    total = sum(len(day["tasks"]) for day in plan["days"])
+    st.caption(f"Đã hoàn thành {sum(progress.values())}/{total} nhiệm vụ trong phiên này.")
+    labels = {"learn": "Học", "review": "Ôn lại", "mock_test": "Kiểm tra"}
+    for day in plan["days"]:
+        duration = sum(task["minutes"] for task in day["tasks"])
+        with st.expander(f"{day['date']} · {duration} phút", expanded=True):
+            for i, task in enumerate(day["tasks"]):
+                task_id = f"{day['date']}:{i}"
+                widget_key = f"{scope_key}:{version}:{task_id}"
+                title = topics[task["topic_id"]]
+                covered = task.get("covered_topic_ids") or [task["topic_id"]]
+                coverage_title = ", ".join(topics[item] for item in covered)
+                st.checkbox(
+                    f"{labels[task['kind']]} · {coverage_title} · {task['minutes']} phút",
+                    value=progress.get(task_id, False), key=widget_key,
+                    on_change=_record_completion, args=(progress_key, task_id, widget_key),
+                )
+                st.write(task["objective"])
+                for point in task["knowledge"]:
+                    st.markdown(f"- {point}")
+                if task["prerequisites"]:
+                    st.caption("Học trước: " + ", ".join(topics[item] for item in task["prerequisites"]))
+                st.write(task["activity"])
+                st.write(task["practice"])
+                for label in task["sources"]:
+                    source = sources.get(label)
+                    if source:
+                        with st.popover(f"[{label}] {source['filename']} · Trang {source['page']}"):
+                            st.write(source["snippet"])
+                st.button("Luyện quiz cho mục này", key=f"{widget_key}:quiz",
+                          on_click=_open_quiz, args=(workspace_id, corpus_id, title))

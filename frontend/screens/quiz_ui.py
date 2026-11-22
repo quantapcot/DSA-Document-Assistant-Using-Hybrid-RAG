@@ -1,86 +1,70 @@
-"""Quiz UI framework for DSA Document Assistant.
-Tuần 4: Dựng khung giao diện (Skeleton).
-Tuần 7: Tích hợp hoàn thiện với Backend API (/api/quiz) và Quiz Engine.
-"""
+"""Interactive study quiz backed by the scoped quiz API."""
 import streamlit as st
 
+from api_client import create_quiz
+from screens.chat_ui import show_study_metadata
 
-def render_quiz_ui() -> None:
-    st.header("📝 Luyện tập Trắc nghiệm DSA")
-    st.caption("Khung giao diện sinh câu hỏi trắc nghiệm tự động từ slide bài giảng DSA.")
 
-    st.info(
-        "ℹ️ **Trạng thái**: Khung giao diện (Skeleton) cho Tuần 4. "
-        "Tính năng tạo câu hỏi tự động bằng AI sẽ được kết nối vào **Tuần 7** "
-        "(phối hợp giữa Team C - Quiz Engine và Team A - API `/api/quiz`)."
-    )
+def render_quiz_ui(workspace_id="default-workspace", corpus_id="user-uploads"):
+    st.header("Luyện tập trắc nghiệm DSA")
+    scope_key = f"quiz:{(workspace_id, corpus_id)!r}"
+    prefill_key = f"quiz_topic:{(workspace_id, corpus_id)!r}"
+    with st.form("quiz_generate"):
+        topic = st.text_input("Chủ đề", key=prefill_key)
+        count = st.number_input("Số câu hỏi (tối đa 5)", min_value=1, max_value=5, value=5)
+        difficulty = st.selectbox("Độ khó", ["Easy", "Medium", "Hard"], index=1)
+        generate = st.form_submit_button("Tạo bài trắc nghiệm")
+    if generate:
+        if not topic.strip():
+            st.warning("Nhập chủ đề cần luyện tập.")
+            return
+        with st.spinner("Đang tạo câu hỏi từ tài liệu…"):
+            ok, data = create_quiz(topic.strip(), count, workspace_id, corpus_id, difficulty=difficulty)
+        version = st.session_state.get(scope_key, (0, None))[0] + 1
+        st.session_state[scope_key] = (version, data if ok else {"error": data["error"]})
 
-    with st.expander("⚙️ Tùy chọn sinh đề trắc nghiệm", expanded=True):
-        col1, col2 = st.columns(2)
-        with col1:
-            topic = st.selectbox(
-                "Chủ đề kiến thức",
-                [
-                    "Chương 4: Cây nhị phân tìm kiếm & Cây AVL",
-                    "Chương 5: Đồ thị & Các thuật toán duyệt đồ thị",
-                    "Chương 6: Các thuật toán sắp xếp (QuickSort, MergeSort)",
-                    "Chương 7: Bảng băm (Hash Table) & Xử lý xung đột",
-                    "Chương 8: Quy hoạch động (Dynamic Programming)",
-                ],
+    version, data = st.session_state.get(scope_key, (0, None))
+    if data is None:
+        return
+    if data.get("error"):
+        st.error(data["error"])
+        return
+    questions = data.get("questions", [])
+    if not questions:
+        st.warning(data.get("answer") or "Tài liệu chưa đủ nội dung để tạo câu hỏi.")
+        return
+    if data.get("generated_count", len(questions)) < data.get("requested_count", len(questions)):
+        st.warning(data["answer"])
+
+    attempt_key = f"{scope_key}:{version}"
+    with st.form(attempt_key):
+        answers = [
+            st.radio(
+                f"{i + 1}. {question['question']}", range(4), index=None,
+                format_func=lambda choice, options=question["options"]: options[choice],
+                key=f"{attempt_key}:{i}",
             )
-            difficulty = st.select_slider(
-                "Độ khó",
-                options=["Nhận biết", "Thông hiểu", "Vận dụng", "Vận dụng cao"],
-                value="Thông hiểu",
-            )
-        with col2:
-            num_questions = st.number_input(
-                "Số lượng câu hỏi",
-                min_value=1,
-                max_value=20,
-                value=5,
-                step=1,
-            )
-            mode = st.radio(
-                "Chế độ ôn luyện",
-                ["Làm bài có bấm giờ", "Xem ngay đáp án & giải thích"],
-                index=1,
-            )
-
-        btn_generate = st.button("🚀 Khởi tạo bài trắc nghiệm mẫu (Mock)", use_container_width=True)
-
-    if btn_generate:
-        st.session_state["show_sample_quiz"] = True
-
-    if st.session_state.get("show_sample_quiz", True):
-        st.subheader(f"📋 Bài ôn tập mẫu: {topic}")
-        st.markdown(
-            "**Câu 1 (Mẫu)**: Trong cây AVL, hệ số cân bằng (Balance Factor) của một nút được tính bằng công thức nào sau đây?"
-        )
-
-        user_choice = st.radio(
-            "Chọn đáp án đúng:",
-            [
-                "A. Chiều cao của cây con trái trừ đi chiều cao của cây con phải",
-                "B. Số lượng nút của cây con trái trừ đi số lượng nút của cây con phải",
-                "C. Chiều cao cây con phải cộng với chiều cao cây con trái",
-                "D. Bậc của nút con lớn nhất trừ bậc của nút con nhỏ nhất",
-            ],
-            index=None,
-            key="sample_quiz_q1",
-        )
-
-        if st.button("Nộp câu trả lời"):
-            if user_choice is None:
-                st.warning("Vui lòng chọn một đáp án trước khi nộp.")
-            elif user_choice.startswith("A."):
-                st.success("✅ **Chính xác!** Hệ số cân bằng = Height(Left) - Height(Right).")
-                st.markdown(
-                    "> **Trích dẫn nguồn slide (MOCK):**\n"
-                    "> - *Tài liệu:* `Chuong4_Trees_DSA.pdf` — Trang 12\n"
-                    "> - *Mục:* `4.2 Cây AVL - Định nghĩa và Tính chất`\n"
-                    "> - *Giải thích:* Giá trị hệ số cân bằng chỉ nhận các giá trị {-1, 0, 1}. Nếu chênh lệch vượt quá giá trị này, cây cần thực hiện phép quay."
-                )
+            for i, question in enumerate(questions)
+        ]
+        if st.form_submit_button("Chấm bài"):
+            if None in answers:
+                st.warning("Chọn đáp án cho tất cả câu hỏi.")
             else:
-                st.error("❌ **Chưa chính xác.** Hãy kiểm tra lại định nghĩa hệ số cân bằng trong slide.")
-                st.markdown("Đáp án đúng là **A**.")
+                st.session_state[f"{attempt_key}:submitted"] = answers
+    submitted = st.session_state.get(f"{attempt_key}:submitted")
+    if submitted is not None:
+        score = sum(choice == question["correct_index"] for choice, question in zip(submitted, questions))
+        st.success(f"Kết quả · {score}/{len(questions)} câu đúng")
+        review_topics = dict.fromkeys(
+            question["topic"] for choice, question in zip(submitted, questions)
+            if choice != question["correct_index"]
+        )
+        if review_topics:
+            st.write("Chủ đề cần ôn thêm: " + ", ".join(review_topics))
+        for i, question in enumerate(questions, 1):
+            correct = question["options"][question["correct_index"]]
+            sources = " ".join(f"[{label}]" for label in question["sources"])
+            result = "Đúng" if submitted[i - 1] == question["correct_index"] else "Sai"
+            st.markdown(f"**Câu {i} · {result} · Đáp án: {correct}**")
+            st.write(question["explanation"], sources)
+        show_study_metadata(data)

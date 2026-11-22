@@ -1,134 +1,150 @@
-"""C2: model-provider client — gọi LLM để sinh câu trả lời từ context đã truy xuất.
-
-Hỗ trợ 2 provider:
-  - ``openai``  : OpenAI-compatible API (GPT-4o, GPT-4o-mini, v.v.)
-  - ``gemini``  : Google Gemini API (gemini-2.0-flash, v.v.)
-
-Provider mặc định được đọc từ biến môi trường ``LLM_PROVIDER`` (mặc định "gemini").
-Nếu không có API key hợp lệ, client tự động trả về chuỗi rỗng để caller xử lý fallback.
-"""
-from __future__ import annotations
-
+"""Provider calls with bounded retries and credential-safe logging."""
 import logging
-import os
-from typing import Any
+import time
+from contextvars import ContextVar
+
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
+_RETRY_DELAYS = (1, 2)
+request_deadline: ContextVar[float | None] = ContextVar("llm_request_deadline", default=None)
+FIT_OUTPUT_LIMIT = 4000
+ERROR_MESSAGES = {
+    "timeout": "FIT-AI đã vượt thời gian xử lý cho phép.",
+    "quota_exceeded": "FIT-AI đã hết hạn mức. Hãy kiểm tra ngân sách hoặc chờ kỳ hạn mức tiếp theo.",
+    "rate_limit": "FIT-AI đang giới hạn tần suất. Hãy thử lại sau.",
+    "authentication": "FIT-AI từ chối xác thực. Hãy kiểm tra thông tin kết nối.",
+    "not_configured": "Chưa cấu hình kết nối LLM.",
+    "invalid_json": "FIT-AI trả về dữ liệu JSON không hợp lệ.",
+    "truncated_json": "Phản hồi FIT-AI bị cắt trước khi hoàn tất.",
+    "invalid_output": "Đầu ra FIT-AI không vượt qua kiểm tra nội dung.",
+    "provider": "Không nhận được kết quả từ nhà cung cấp LLM.",
+}
 
 
-# ---------------------------------------------------------------------------
-# Helpers — OpenAI-compatible
-# ---------------------------------------------------------------------------
-
-def _call_openai(messages: list[dict], *, model: str, api_key: str,
-                 temperature: float, max_tokens: int) -> str:
-    try:
-        import openai  # type: ignore
-    except ImportError:
-        raise ImportError("Cài đặt openai: pip install openai")
-
-    client = openai.OpenAI(api_key=api_key)
-    resp = client.chat.completions.create(
-        model=model,
-        messages=messages,
-        temperature=temperature,
-        max_tokens=max_tokens,
-    )
-    return resp.choices[0].message.content or ""
+class LLMError(Exception):
+    def __init__(self, code):
+        self.code = code
+        super().__init__(ERROR_MESSAGES[code])
 
 
-# ---------------------------------------------------------------------------
-# Helpers — Google Gemini
-# ---------------------------------------------------------------------------
+def _call_openai(messages, *, model, api_key, temperature, max_tokens, timeout):
+    import openai
 
-def _call_gemini(prompt: str, *, model: str, api_key: str,
-                 temperature: float, max_tokens: int) -> str:
-    try:
-        import google.generativeai as genai  # type: ignore
-    except ImportError:
-        raise ImportError("Cài đặt google-generativeai: pip install google-generativeai")
+    kwargs = {"api_key": api_key, "timeout": timeout, "max_retries": 0}
+    if settings.LLM_BASE_URL:
+        kwargs["base_url"] = settings.LLM_BASE_URL
+    with openai.OpenAI(**kwargs) as client:
+        response = client.chat.completions.create(
+            model=model, messages=messages, temperature=temperature, max_tokens=max_tokens,
+        )
+        choice = response.choices[0]
+        if getattr(choice, "finish_reason", None) == "length":
+            raise LLMError("truncated_json")
+        return choice.message.content or ""
+
+
+def _call_gemini(prompt, *, model, api_key, temperature, max_tokens, timeout):
+    import google.generativeai as genai
 
     genai.configure(api_key=api_key)
-    gen_model = genai.GenerativeModel(model)
-    config = genai.GenerationConfig(
-        temperature=temperature,
-        max_output_tokens=max_tokens,
+    response = genai.GenerativeModel(model).generate_content(
+        prompt,
+        generation_config=genai.GenerationConfig(
+            temperature=temperature, max_output_tokens=max_tokens,
+        ),
+        request_options={"timeout": timeout, "retry": None},
     )
-    resp = gen_model.generate_content(prompt, generation_config=config)
-    return resp.text or ""
+    return response.text or ""
 
 
-# ---------------------------------------------------------------------------
-# Public API
-# ---------------------------------------------------------------------------
+def classify_error(error):
+    if isinstance(error, LLMError):
+        return error.code
+    code = getattr(error, "status_code", None) or getattr(error, "code", None)
+    if callable(code):
+        code = code()
+    name = getattr(code, "name", None)
+    if code in (401, 403) or name in {"UNAUTHENTICATED", "PERMISSION_DENIED"}:
+        return "authentication"
+    if code == 429 or name == "RESOURCE_EXHAUSTED":
+        # Use provider error codes and quota descriptions for classification only.
+        body = f"{getattr(error, 'body', '')} {getattr(error, 'details', '')} {error}".casefold()
+        permanent = ("insufficient_quota", "billing_hard_limit", "budget_exceeded",
+                     "daily_limit", "daily quota", "daily budget", "per day", "perday", "per_day",
+                     "daily", "credits exhausted", "insufficient credits")
+        temporary = ("per minute", "per second", "per_minute", "per_second", "perminute",
+                     "persecond", "rate_limit_exceeded", "rate limit")
+        if any(term in body for term in permanent):
+            return "quota_exceeded"
+        if any(term in body for term in temporary):
+            return "rate_limit"
+        return "quota_exceeded" if "quota_exceeded" in body or "quota exceeded" in body else "rate_limit"
+    if (code in (408, 504) or name == "DEADLINE_EXCEEDED" or isinstance(error, TimeoutError)
+            or type(error).__name__ in {"APITimeoutError", "DeadlineExceeded", "ReadTimeout", "ConnectTimeout"}):
+        return "timeout"
+    return "provider"
 
-def generate_answer(
-    system_prompt: str,
-    user_prompt: str,
-    *,
-    provider: str | None = None,
-    model: str | None = None,
-    temperature: float = 0.3,
-    max_tokens: int = 1024,
-) -> str:
-    """Gửi prompt đến LLM và trả về chuỗi câu trả lời.
 
-    Parameters
-    ----------
-    system_prompt : Hướng dẫn role/persona cho LLM.
-    user_prompt   : Câu hỏi + context (đã được inject evidence).
-    provider      : ``"openai"`` hoặc ``"gemini"``. Mặc định đọc từ ``LLM_PROVIDER``.
-    model         : Tên model cụ thể. Mặc định đọc từ ``LLM_MODEL``.
-    temperature   : Độ sáng tạo (0 = deterministic, 1 = rất ngẫu nhiên).
-    max_tokens    : Giới hạn token đầu ra.
+def _remaining(deadline):
+    return deadline - time.monotonic() if deadline is not None else float("inf")
 
-    Returns
-    -------
-    str — Câu trả lời từ LLM. Trả về chuỗi rỗng nếu không có API key hoặc gặp lỗi.
-    """
-    effective_provider = (provider or os.getenv("LLM_PROVIDER", "gemini")).lower()
 
-    if effective_provider == "openai":
-        api_key = os.getenv("OPENAI_API_KEY", "")
-        if not api_key:
-            logger.warning("OPENAI_API_KEY chưa được cấu hình — bỏ qua LLM generation.")
-            return ""
-        effective_model = model or os.getenv("LLM_MODEL", "gpt-4o-mini")
-        messages = [
+def generate_answer(system_prompt, user_prompt, *, provider=None, model=None,
+                    temperature=0.3, max_tokens=1024, task="chat", raise_errors=False):
+    """Generate text, returning an empty string when extraction is needed."""
+    provider = (provider or settings.LLM_PROVIDER).lower()
+    if provider == "openai":
+        key = settings.OPENAI_API_KEY
+        call = _call_openai
+        payload = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ]
-        try:
-            return _call_openai(
-                messages,
-                model=effective_model,
-                api_key=api_key,
-                temperature=temperature,
-                max_tokens=max_tokens,
-            )
-        except Exception as exc:
-            logger.error("OpenAI generation thất bại: %s", exc)
-            return ""
-
-    elif effective_provider == "gemini":
-        api_key = os.getenv("GEMINI_API_KEY", "")
-        if not api_key:
-            logger.warning("GEMINI_API_KEY chưa được cấu hình — bỏ qua LLM generation.")
-            return ""
-        effective_model = model or os.getenv("LLM_MODEL", "gemini-2.0-flash")
-        full_prompt = f"{system_prompt}\n\n{user_prompt}"
-        try:
-            return _call_gemini(
-                full_prompt,
-                model=effective_model,
-                api_key=api_key,
-                temperature=temperature,
-                max_tokens=max_tokens,
-            )
-        except Exception as exc:
-            logger.error("Gemini generation thất bại: %s", exc)
-            return ""
-
+        default_model = "gpt-4o-mini"
+    elif provider == "gemini":
+        key = settings.GEMINI_API_KEY
+        call = _call_gemini
+        payload = f"{system_prompt}\n\n{user_prompt}"
+        default_model = "gemini-2.0-flash"
     else:
-        logger.error("LLM provider '%s' không được hỗ trợ.", effective_provider)
+        logger.warning("Unsupported LLM provider")
+        if raise_errors:
+            raise LLMError("not_configured")
         return ""
+
+    if not key or not key.get_secret_value().strip():
+        if raise_errors:
+            raise LLMError("not_configured")
+        return ""
+    deadline = request_deadline.get()
+    timeout = getattr(settings, f"LLM_{task.upper()}_TIMEOUT")
+    failure = "timeout"
+    for attempt in range(len(_RETRY_DELAYS) + 1):
+        remaining = _remaining(deadline)
+        if remaining <= 0:
+            failure = "timeout"
+            break
+        try:
+            result = call(
+                payload, model=model or settings.LLM_MODEL or default_model,
+                api_key=key.get_secret_value(), temperature=temperature, max_tokens=max_tokens,
+                timeout=min(timeout, remaining),
+            ).strip()
+            if _remaining(deadline) <= 0:
+                raise LLMError("timeout")
+            return result
+        except Exception as error:
+            failure = classify_error(error)
+            if attempt == len(_RETRY_DELAYS) or failure not in {"rate_limit", "timeout"}:
+                break
+            delay = _RETRY_DELAYS[attempt]
+            if _remaining(deadline) <= delay:
+                failure = "timeout"
+                break
+            logger.info("Retrying LLM task=%s reason=%s", task, failure)
+            time.sleep(delay)
+    logger.warning("LLM task failed task=%s reason=%s", task, failure)
+    if raise_errors:
+        raise LLMError(failure)
+    return ""

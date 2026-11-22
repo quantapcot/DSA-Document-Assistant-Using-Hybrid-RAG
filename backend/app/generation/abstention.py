@@ -5,12 +5,14 @@ không có, hệ thống trả về ``abstention_response`` thay vì đẩy cont
 vào LLM (tránh hallucination).
 """
 from __future__ import annotations
+from math import isfinite
 
 
 # Ngưỡng điểm tối thiểu để xem chunk là "đủ bằng chứng"
-_SCORE_THRESHOLD = 0.25
-# Số chunk tối thiểu cần có để không từ chối
-_MIN_EVIDENCE_COUNT = 1
+SCORE_THRESHOLDS = {"hybrid_rerank": 0.25, "hybrid_rrf": 0.015, "dense": 0.40, "bm25": 5.0}
+EMPTY_WORKSPACE_RESPONSE = (
+    "Workspace chưa có tài liệu nào. Vui lòng tải tài liệu môn học (PDF/DOCX) để bắt đầu."
+)
 
 ABSTENTION_RESPONSE = (
     "⚠️ **Không tìm thấy nội dung phù hợp trong tài liệu.**\n\n"
@@ -23,22 +25,25 @@ ABSTENTION_RESPONSE = (
 )
 
 
-def should_abstain(evidences: list[dict]) -> bool:
-    """Trả về True nếu hệ thống nên từ chối trả lời vì thiếu bằng chứng.
+def evidence_score(evidence: dict) -> float | None:
+    score = evidence.get("score")
+    if isinstance(score, (int, float)) and not isinstance(score, bool) and isfinite(score):
+        return float(score)
+    return None
 
-    Quy tắc:
-    1. Không có chunk nào được truy xuất.
-    2. Tất cả chunks đều có score dưới ngưỡng ``_SCORE_THRESHOLD``
-       (chỉ áp dụng khi score khả dụng — hybrid_rerank gắn score tuyệt đối).
-    """
-    if not evidences or len(evidences) < _MIN_EVIDENCE_COUNT:
+
+def should_abstain(evidences: list[dict], method: str = "hybrid_rerank") -> bool:
+    """Apply the cutoff for the retrieval method that supplied the evidence."""
+    if not evidences:
         return True
+    threshold = SCORE_THRESHOLDS[method]
+    scores = [score for evidence in evidences if (score := evidence_score(evidence)) is not None]
+    return bool(scores) and max(scores) < threshold
 
-    # Nếu chunk nào có score (từ reranker), áp dụng kiểm tra ngưỡng
-    scored = [ev for ev in evidences if ev.get("score") is not None]
-    if scored:
-        best_score = max(ev["score"] for ev in scored)
-        if best_score < _SCORE_THRESHOLD:
-            return True
 
-    return False
+def topic_missing_response(topic: str) -> str:
+    return (
+        f"⚠️ **Không thể tạo nội dung cho chủ đề \"{topic}\".**\n\n"
+        "Chủ đề này không có trong các tài liệu bạn đã tải lên workspace. "
+        "Hãy tải tài liệu có nội dung về chủ đề này, hoặc chọn một chủ đề có trong tài liệu."
+    )

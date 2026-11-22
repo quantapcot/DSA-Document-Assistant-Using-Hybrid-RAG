@@ -11,7 +11,7 @@ import pytest
 import numpy as np
 from qdrant_client import QdrantClient
 from app.retrieval.config import RetrievalConfig
-from app.retrieval.indexing import build_index
+from app.retrieval.indexing import build_index, delete_document_from_index
 from app.retrieval.hybrid_search import (
     RetrievalEngine, rrf_fuse,
     invalidate_bm25_cache, invalidate_all_bm25_caches,
@@ -64,6 +64,27 @@ def _setup_engine(client=None, config=None, **kw):
         rerank_scorer=lambda pairs: [1.] * len(pairs),
         **kw,
     )
+
+
+def test_delete_document_counts_and_invalidates_only_target_scope():
+    client = QdrantClient(":memory:")
+    engine = _setup_engine(client)
+    config = engine.config
+    build_index(_docs(), corpus_id="c", workspace_id="other",
+                client=client, config=config, embedder=_embed, dimension=3)
+    for workspace in ("w", "other"):
+        assert engine.retrieve("tree", "bm25", corpus_id="c", workspace_id=workspace)
+    assert len(engine._bm25_cache) == 2
+    assert delete_document_from_index(
+        "d", corpus_id="c", workspace_id="w", client=client, config=config,
+    ) == 2
+    assert len(engine._bm25_cache) == 1
+    assert engine.retrieve("tree", "bm25", corpus_id="c", workspace_id="w") == []
+    assert engine.retrieve("tree", "bm25", corpus_id="c", workspace_id="other")
+    assert delete_document_from_index(
+        "d", corpus_id="c", workspace_id="w", client=client, config=config,
+    ) == 0
+    client.close()
 
 
 # ===================================================================

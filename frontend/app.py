@@ -36,6 +36,7 @@ with st.sidebar:
         "Chọn màn hình làm việc:",
         menu_options,
         index=0,
+        key="study_navigation",
         label_visibility="collapsed",
     )
 
@@ -63,11 +64,17 @@ with st.sidebar:
 # ==========================================
 # MAIN CONTENT AREA
 # ==========================================
-if selected_page == "💬 Trò chuyện & Hỏi đáp":
-    render_chat_ui()
-elif selected_page == "📤 Tải lên tài liệu":
+if selected_page == "📤 Tải lên tài liệu":
     render_upload_ui()
-elif selected_page == "📝 Luyện tập Trắc nghiệm":
-    render_quiz_ui()
-elif selected_page == "🗺️ Lộ trình ôn tập":
-    render_revision_ui()
+else:
+    workspace_id = st.sidebar.text_input("Workspace", "default-workspace", key="study_workspace").strip()
+    corpus_id = st.sidebar.text_input("Corpus", "user-uploads", key="study_corpus").strip()
+    screens = {
+        menu_options[0]: render_chat_ui,
+        menu_options[2]: render_quiz_ui,
+        menu_options[3]: render_revision_ui,
+    }
+    if workspace_id and corpus_id:
+        screens[selected_page](workspace_id, corpus_id)
+    else:
+        st.warning("Nhập workspace và corpus để tiếp tục.")

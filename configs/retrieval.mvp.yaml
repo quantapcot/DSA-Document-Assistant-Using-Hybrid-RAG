@@ -10,7 +10,7 @@ rrf_k: 60
 bm25_k1: 1.5
 bm25_b: 0.75
 accent_insensitive: false
-batch_size: 32
+batch_size: 64
 
 # GPU acceleration
 embedding_device: auto

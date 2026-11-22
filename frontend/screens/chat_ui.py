@@ -1,7 +1,7 @@
 """Chat UI with bottom input, real Hybrid RAG retrieval, and citation viewer."""
 import streamlit as st
 
-from api_client import ask_question
+from api_client import ask_question, generation_error_message
 
 SAMPLE_PROMPTS = [
     "Cây AVL là gì và độ phức tạp tìm kiếm là bao nhiêu?",
@@ -11,30 +11,32 @@ SAMPLE_PROMPTS = [
 ]
 
 
+def show_study_metadata(item: dict) -> None:
+    if item.get("generation_mode") == "extractive":
+        reason = generation_error_message(item.get("generation_error"))
+        st.warning("Đang dùng chế độ trích xuất trực tiếp từ tài liệu." + (f" {reason}" if reason else ""))
+    confidence = item.get("confidence_score")
+    if confidence is not None and item.get("generation_mode") != "abstained":
+        st.caption(f"Điểm hỗ trợ từ nguồn · {confidence:.2f}/1")
+    citations = item.get("citations") or []
+    if citations:
+        with st.expander(f"Nguồn minh chứng ({len(citations)})"):
+            for index, citation in enumerate(citations, 1):
+                label = citation.get("label") or index
+                st.markdown(f"**[{label}] {citation['filename']} · Trang {citation['page']}**")
+                if citation.get("section"):
+                    st.caption(citation["section"])
+                st.write(citation["snippet"])
+
+
 def _show_message(item: dict) -> None:
     with st.chat_message(item["role"]):
-        if item.get("error"):
+        if item.get("error") or item.get("generation_mode") == "abstained":
             st.warning(item["content"])
         else:
             st.markdown(item["content"])
 
-        if item.get("citations"):
-            with st.expander(f"📌 Nguồn minh chứng ({len(item['citations'])} trích dẫn)", expanded=True):
-                st.caption(
-                    "Các trích dẫn này được truy xuất trực tiếp từ kho ngữ liệu slide/tài liệu DSA "
-                    "bằng động cơ Hybrid Search (BM25 + Qdrant Dense + BGE Reranker)."
-                )
-
-                for index, citation in enumerate(item["citations"], start=1):
-                    st.markdown(
-                        f"**[{index}] {citation.get('filename', 'Unknown')} — "
-                        f"Trang {citation.get('page', '?')}**"
-                    )
-
-                    if citation.get("section"):
-                        st.caption(f"Mục: {citation['section']}")
-
-                    st.markdown(f"> {citation.get('snippet', '')}")
+        show_study_metadata(item)
 
         if item.get("process_time_ms"):
             st.caption(
@@ -42,25 +44,25 @@ def _show_message(item: dict) -> None:
             )
 
 
-def render_chat_ui() -> None:
+def render_chat_ui(workspace_id="default-workspace", corpus_id="user-uploads") -> None:
     st.header("💬 Trò chuyện & Hỏi đáp môn DSA")
     st.caption("Trợ lý hỏi đáp tài liệu môn Cấu trúc Dữ liệu & Giải thuật dựa trên Hybrid RAG (Track C).")
 
-    if "chat_messages" not in st.session_state:
-        st.session_state["chat_messages"] = []
+    history_key = f"chat_messages:{(workspace_id, corpus_id)!r}"
+    messages = st.session_state.setdefault(history_key, [])
 
     # Thanh công cụ hỗ trợ
     col_help, col_clear = st.columns([4, 1])
     with col_clear:
-        if st.session_state["chat_messages"]:
+        if messages:
             if st.button("🗑️ Xóa hội thoại"):
-                st.session_state["chat_messages"] = []
+                messages.clear()
                 st.rerun()
 
     prompt_to_send = None
 
     # Gợi ý câu hỏi mẫu khi chưa có tin nhắn
-    if not st.session_state["chat_messages"]:
+    if not messages:
         with st.container():
             st.info(
                 "💡 **Gợi ý câu hỏi:** Bạn có thể bấm vào các gợi ý dưới đây hoặc tự nhập bất kỳ câu hỏi nào về môn DSA vào khung chat bên dưới:"
@@ -72,7 +74,7 @@ def render_chat_ui() -> None:
                         prompt_to_send = p
 
     # Hiển thị các tin nhắn đã có
-    for item in st.session_state["chat_messages"]:
+    for item in messages:
         _show_message(item)
 
     # Chat input ở cuối màn hình
@@ -89,11 +91,11 @@ def render_chat_ui() -> None:
         "role": "user",
         "content": prompt_to_send,
     }
-    st.session_state["chat_messages"].append(user_item)
+    messages.append(user_item)
     _show_message(user_item)
 
     with st.spinner("🔍 Đang tìm kiếm bằng chứng qua Hybrid Search & Reranking..."):
-        ok, data = ask_question(prompt_to_send)
+        ok, data = ask_question(prompt_to_send, workspace_id, corpus_id)
 
     if ok:
         assistant_item = {
@@ -101,6 +103,9 @@ def render_chat_ui() -> None:
             "content": data.get("answer", ""),
             "citations": data.get("citations", []),
             "process_time_ms": data.get("process_time_ms"),
+            "confidence_score": data.get("confidence_score"),
+            "generation_mode": data.get("generation_mode"),
+            "generation_error": data.get("generation_error"),
         }
     else:
         assistant_item = {
@@ -113,5 +118,5 @@ def render_chat_ui() -> None:
             "error": True,
         }
 
-    st.session_state["chat_messages"].append(assistant_item)
+    messages.append(assistant_item)
     st.rerun()

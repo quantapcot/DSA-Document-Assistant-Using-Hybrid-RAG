@@ -1,6 +1,7 @@
 """Dense-only Qdrant storage. Local mode never opens an HTTP connection."""
 import logging
 from pathlib import Path
+from threading import Lock
 from typing import Any
 
 try:
@@ -16,6 +17,15 @@ DENSE_VECTOR_NAME = "dense"
 
 # Cache client instances by path within the same process to avoid concurrent file lock errors
 _LOCAL_CLIENTS: dict[str, Any] = {}
+_LOCAL_CLIENTS_LOCK = Lock()
+
+
+def _local_client(path):
+    key = str(Path(path).resolve())
+    with _LOCAL_CLIENTS_LOCK:
+        if key not in _LOCAL_CLIENTS:
+            _LOCAL_CLIENTS[key] = QdrantClient(path=key)
+        return _LOCAL_CLIENTS[key]
 
 
 def get_client(path=None, *, config=None):
@@ -27,16 +37,10 @@ def get_client(path=None, *, config=None):
     if path is not None:
         if str(path) == ":memory:":
             return QdrantClient(":memory:")
-        key = str(Path(path).resolve())
-        if key not in _LOCAL_CLIENTS:
-            _LOCAL_CLIENTS[key] = QdrantClient(path=str(path))
-        return _LOCAL_CLIENTS[key]
+        return _local_client(path)
 
     if config.qdrant_mode == "local":
-        key = str(Path(config.qdrant_path).resolve())
-        if key not in _LOCAL_CLIENTS:
-            _LOCAL_CLIENTS[key] = QdrantClient(path=config.qdrant_path)
-        return _LOCAL_CLIENTS[key]
+        return _local_client(config.qdrant_path)
 
     if config.qdrant_mode == "memory":
         return QdrantClient(":memory:")

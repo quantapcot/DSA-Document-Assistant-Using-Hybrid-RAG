@@ -11,7 +11,10 @@ import logging
 from collections import defaultdict
 from pathlib import Path
 
-from fastapi import APIRouter, HTTPException, Query, Request, status
+from fastapi import APIRouter, HTTPException, Query, Request
+
+from app.api.routes.upload import get_upload_backend, physical_upload, validate_mutable_scope
+from app.retrieval.indexing import document_filter, delete_document_from_index, scope_mutation_lock
 
 logger = logging.getLogger("app.api.routes.documents")
 
@@ -24,7 +27,7 @@ UPLOAD_DIR = Path(__file__).resolve().parents[4] / "data" / "runtime" / "uploads
 # ---------------------------------------------------------------------------
 
 @router.get("/api/documents", tags=["Document Management"])
-async def list_documents(
+def list_documents(
     request: Request,
     workspace_id: str = Query("default-workspace", description="Workspace cần liệt kê tài liệu"),
     corpus_id: str = Query("user-uploads", description="Corpus cần liệt kê tài liệu"),
@@ -34,20 +37,7 @@ async def list_documents(
     Dữ liệu được đọc trực tiếp từ payload của Qdrant (không cần CSDL phụ).
     Mỗi document được tổng hợp từ các chunks có cùng ``document_id``.
     """
-    retrieval_engine = getattr(request.app.state, "retrieval_engine", None)
-    if not retrieval_engine:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Retrieval Engine chưa sẵn sàng.",
-        )
-
-    client = getattr(retrieval_engine, "client", None)
-    config = getattr(request.app.state, "retrieval_config", None)
-    if client is None or config is None:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Qdrant client chưa sẵn sàng.",
-        )
+    client, config = get_upload_backend(request)
 
     if not client.collection_exists(config.collection):
         return {"documents": [], "total": 0, "workspace_id": workspace_id, "corpus_id": corpus_id}
@@ -83,11 +73,13 @@ async def list_documents(
             d["document_id"] = doc_id
             d["filename"] = payload.get("filename", "")
             d["chunk_count"] += 1
+            meta = payload.get("metadata") or {}
+            d["size_kb"] = meta.get("size_kb")
+            d["uploaded_at"] = meta.get("uploaded_at")
             page = payload.get("page")
             if page:
                 d["pages"].add(page)
             if not d["file_type"] or d["file_type"] == "unknown":
-                meta = payload.get("metadata", {})
                 d["file_type"] = meta.get("file_type", payload.get("file_type", "unknown"))
         if offset is None:
             break
@@ -101,6 +93,8 @@ async def list_documents(
             "chunk_count": d["chunk_count"],
             "page_count": len(d["pages"]),
             "file_type": d["file_type"],
+            "size_kb": d["size_kb"],
+            "uploaded_at": d["uploaded_at"],
         })
 
     result.sort(key=lambda x: x["filename"])
@@ -117,7 +111,7 @@ async def list_documents(
 # ---------------------------------------------------------------------------
 
 @router.delete("/api/documents/{document_id}", tags=["Document Management"])
-async def delete_document(
+def delete_document(
     document_id: str,
     request: Request,
     workspace_id: str = Query("default-workspace"),
@@ -127,101 +121,38 @@ async def delete_document(
 
     Sau khi xóa thành công, BM25 cache của scope được invalidate tự động.
     """
-    retrieval_engine = getattr(request.app.state, "retrieval_engine", None)
-    if not retrieval_engine:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Retrieval Engine chưa sẵn sàng.",
-        )
-
-    client = getattr(retrieval_engine, "client", None)
-    config = getattr(request.app.state, "retrieval_config", None)
-    if client is None or config is None:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Qdrant client chưa sẵn sàng.",
-        )
-
-    if not client.collection_exists(config.collection):
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Không tìm thấy document '{document_id}' trong hệ thống.",
-        )
-
-    try:
-        from qdrant_client import models as qdrant_models
-        from app.retrieval.vector_store import scope_filter
-
-        # Lọc theo scope + document_id
-        scope = scope_filter(corpus_id, workspace_id)
-        doc_filter = qdrant_models.Filter(
-            must=[
-                *scope.must,
-                qdrant_models.FieldCondition(
-                    key="document_id",
-                    match=qdrant_models.MatchValue(value=document_id),
-                ),
-            ]
-        )
-
-        # Lấy filename trước khi xóa (để xóa file vật lý)
-        sample_points, _ = client.scroll(
-            config.collection,
-            scroll_filter=doc_filter,
-            limit=1,
-            with_payload=["filename"],
-            with_vectors=False,
-        )
-        filename = sample_points[0].payload.get("filename", "") if sample_points else ""
-
-        if not sample_points:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Không tìm thấy document '{document_id}' trong workspace '{workspace_id}'.",
+    validate_mutable_scope(corpus_id, workspace_id)
+    client, config = get_upload_backend(request)
+    selector = document_filter(document_id, corpus_id, workspace_id)
+    with scope_mutation_lock(config.collection, corpus_id, workspace_id):
+        points = []
+        if client.collection_exists(config.collection):
+            points, _ = client.scroll(
+                config.collection, scroll_filter=selector, limit=1,
+                with_payload=True, with_vectors=False,
             )
-
-        # Xóa tất cả points của document này khỏi Qdrant
-        client.delete(
-            config.collection,
-            points_selector=qdrant_models.FilterSelector(filter=doc_filter),
-            wait=True,
+        if not points:
+            raise HTTPException(status_code=404, detail="Document not found in this scope.")
+        payload = points[0].payload or {}
+        path = physical_upload(UPLOAD_DIR, corpus_id, workspace_id, payload)
+        deleted_chunks = delete_document_from_index(
+            document_id, corpus_id=corpus_id, workspace_id=workspace_id,
+            client=client, config=config,
         )
-
-        # Invalidate BM25 cache của scope này
-        try:
-            from app.retrieval.hybrid_search import invalidate_all_bm25_caches
-            invalidate_all_bm25_caches(config.collection, corpus_id, workspace_id)
-        except Exception as cache_exc:
-            logger.warning("BM25 cache invalidation sau khi xóa thất bại: %s", cache_exc)
-
-        # Xóa file vật lý trên ổ đĩa (tìm theo pattern vì tên có UUID prefix)
-        deleted_files: list[str] = []
-        if filename and UPLOAD_DIR.exists():
-            for f in UPLOAD_DIR.glob(f"*_{filename}"):
-                f.unlink(missing_ok=True)
-                deleted_files.append(f.name)
-
-        logger.info(
-            "Đã xóa document '%s' (file: '%s') khỏi workspace '%s/%s'. "
-            "File vật lý đã xóa: %s",
-            document_id, filename, workspace_id, corpus_id, deleted_files,
-        )
-
-        return {
-            "status": "deleted",
-            "document_id": document_id,
-            "filename": filename,
-            "workspace_id": workspace_id,
-            "corpus_id": corpus_id,
-            "deleted_physical_files": deleted_files,
-            "message": f"Tài liệu '{filename}' đã được xóa hoàn toàn khỏi hệ thống.",
-        }
-
-    except HTTPException:
-        raise
-    except Exception as exc:
-        logger.error("Lỗi khi xóa document '%s': %s", document_id, exc, exc_info=True)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Lỗi khi xóa tài liệu: {exc}",
-        )
+        deleted_files = []
+        if path is not None:
+            try:
+                path.unlink()
+                deleted_files.append(path.name)
+            except FileNotFoundError:
+                pass
+            except OSError as exc:
+                logger.exception("Could not remove upload %s", path.name)
+                raise HTTPException(status_code=500, detail="Index deleted but file cleanup failed.") from exc
+    filename = payload.get("filename", "")
+    return {
+        "status": "deleted", "document_id": document_id, "filename": filename,
+        "workspace_id": workspace_id, "corpus_id": corpus_id,
+        "deleted_chunks": deleted_chunks, "deleted_physical_files": deleted_files,
+        "message": f"Deleted '{filename}'.",
+    }
