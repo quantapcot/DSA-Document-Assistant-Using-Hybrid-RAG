@@ -39,6 +39,13 @@ Streamlit đọc ngân sách HTTP từ `/health`. Output FIT-AI cho Quiz và Rev
 lượng bảo thủ theo kích thước UTF-8. Hết hạn mức không được retry. Chat giữ
 fallback trích xuất và gửi lý do cho giao diện qua `generation_error`.
 
+Log `study_json` và `study_output` ghi giai đoạn xử lý, slot, nhãn nguồn
+và mã từ chối. Log không ghi prompt, phản hồi thô hoặc nội dung tài liệu.
+Bộ đọc chấp nhận biểu diễn tương đương như `"1"` hoặc `"[1]"` cho nhãn nguồn
+và vẫn kiểm tra nhãn trong phạm vi bằng chứng. Quote được đối chiếu theo
+chuỗi token liền nhau sau chuẩn hóa Unicode và định dạng PDF. Thay từ,
+đổi số hoặc đổi toán tử vẫn làm đoạn trích bị loại.
+
 `confidence_score` là điểm hỗ trợ từ nguồn tính theo độ phủ trích dẫn và
 relevance trên thang của phương thức retrieval, có phạt câu trả lời mơ hồ.
 Điểm này chưa được hiệu chuẩn thành xác suất đúng. Trích dẫn giữ nguyên nhãn

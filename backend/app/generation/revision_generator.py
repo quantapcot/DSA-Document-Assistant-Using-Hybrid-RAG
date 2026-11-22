@@ -7,6 +7,7 @@ from .abstention import ABSTENTION_RESPONSE, EMPTY_WORKSPACE_RESPONSE
 from .llm_client import ERROR_MESSAGES, LLMError
 from .rag_engine import generate_study_json, grounded_fields
 from .study_planner import assemble_plan, batch_request, build_curriculum, schedule_topics, validate_batch
+from .study_output import reject
 
 _STUDY_TIMEZONE = timezone(timedelta(hours=7))
 REVISION_BATCH_SIZE = 3
@@ -73,13 +74,14 @@ def _generate_batch(query, slots, chosen, passages, level, *, retry_single=True)
     try:
         payload = generate_study_json(
             query or "Ôn tất cả tài liệu", context, instructions,
-            max_tokens=REVISION_BATCH_OUTPUT, task="revision",
+            max_tokens=REVISION_BATCH_OUTPUT, task="revision", stage="revision.batch_json",
         )
         result = validate_batch(payload, slots, chosen, passages)
         if result is None:
             raise LLMError("invalid_output")
         return result
     except LLMError as error:
+        reject("revision.batch", error.code, slot=slots[0].id if len(slots) == 1 else None)
         if error.code not in {"invalid_json", "truncated_json", "invalid_output"} or not retry_single:
             raise
         # A failed batch gets one smaller attempt per slot, with the exact same

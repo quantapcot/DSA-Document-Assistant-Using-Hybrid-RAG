@@ -1,5 +1,6 @@
 """Build and independently verify batches of grounded DSA questions."""
 import json
+import logging
 from difflib import SequenceMatcher
 
 from pydantic import BaseModel, Field
@@ -10,6 +11,9 @@ from app.schemas.contracts import QuizQuestion, QuizResponse
 from .abstention import ABSTENTION_RESPONSE, EMPTY_WORKSPACE_RESPONSE
 from .llm_client import ERROR_MESSAGES, LLMError
 from .rag_engine import generate_study_json, grounded_fields
+from .study_output import normalize_row, reject, rows, supports_quote, validate_row
+
+logger = logging.getLogger(__name__)
 
 BATCH_SIZE = 5
 BLUEPRINTS = {
@@ -38,35 +42,53 @@ class ExplanationCheck(BaseModel):
 
 
 def _candidates(payload, blueprint, difficulty, source_count):
-    if not isinstance(payload, list):
-        return []
+    stage = "quiz.candidate"
+    payload = rows(payload, stage, "questions")
     accepted = {}
+    kinds = {normalized_text(kind): kind for kind in blueprint.values()}
     for item in payload[:BATCH_SIZE]:
-        try:
-            question = Candidate.model_validate(item)
-        except ValueError:
+        item = normalize_row(item, integers=("slot", "correct_index"))
+        if isinstance(item, dict):
+            if isinstance(kind := item.get("question_type"), str):
+                item["question_type"] = kinds.get(normalized_text(kind.replace("_", " ")), kind)
+            if isinstance(level := item.get("difficulty"), str) and level.strip().casefold() == difficulty.casefold():
+                item["difficulty"] = difficulty
+        question = validate_row(Candidate, item, stage)
+        if question is None:
             continue
         options = {normalized_text(option) for option in question.options}
-        if (
-            blueprint.get(question.slot) == question.question_type
-            and question.difficulty == difficulty
-            and len(options) == 4 and "" not in options
-            and len(set(question.sources)) == len(question.sources)
-            and all(1 <= label <= source_count for label in question.sources)
-        ):
-            accepted.setdefault(question.slot, question)
+        if question.slot not in blueprint:
+            reason = "unassigned_slot"
+        elif blueprint[question.slot] != question.question_type or question.difficulty != difficulty:
+            reason = "blueprint_mismatch"
+        elif len(options) != 4 or "" in options:
+            reason = "duplicate_or_empty_options"
+        elif len(set(question.sources)) != len(question.sources) or any(label > source_count for label in question.sources):
+            reason = "invalid_citations"
+        elif question.slot in accepted:
+            reason = "duplicate_slot"
+        else:
+            accepted[question.slot] = question
+            continue
+        reject(stage, reason, slot=question.slot)
+    logger.info("study_output stage=%s accepted=%d", stage, len(accepted))
     return list(accepted.values())
 
 
 def _solved(payload, candidates, evidence):
-    if not isinstance(payload, list):
-        return []
+    stage = "quiz.checker"
+    payload = rows(payload, stage, "checks", "results")
     reports = {}
     conflicting = set()
+    expected = {candidate.slot for candidate in candidates}
     for item in payload[:BATCH_SIZE]:
-        try:
-            check = Verification.model_validate(item)
-        except ValueError:
+        item = normalize_row(item, integers=("slot", "correct_index", "source"),
+                             booleans=("unique_answer", "on_topic"))
+        check = validate_row(Verification, item, stage)
+        if check is None:
+            continue
+        if check.slot not in expected:
+            reject(stage, "unassigned_slot", slot=check.slot)
             continue
         if check.slot in reports:
             conflicting.add(check.slot)
@@ -74,27 +96,40 @@ def _solved(payload, candidates, evidence):
     verified = []
     for question in candidates:
         report = reports.get(question.slot)
-        if (report is None or question.slot in conflicting or not report.unique_answer
-                or not report.on_topic or report.correct_index != question.correct_index
-                or report.source not in question.sources):
+        if report is None:
+            reason = "missing_report"
+        elif question.slot in conflicting:
+            reason = "duplicate_report"
+        elif not report.unique_answer:
+            reason = "answer_not_unique"
+        elif not report.on_topic:
+            reason = "off_topic"
+        elif report.correct_index != question.correct_index:
+            reason = "answer_mismatch"
+        elif report.source not in question.sources:
+            reason = "uncited_source"
+        elif not supports_quote(report.quote, evidence[report.source - 1]["text"]):
+            reject("quiz.quote", "unsupported_excerpt", slot=question.slot, source=report.source)
             continue
-        quote = " ".join(report.quote.split())
-        passage = " ".join(evidence[report.source - 1]["text"].split())
-        if len(quote) >= 20 and quote in passage:
+        else:
             verified.append((question, report))
+            continue
+        reject(stage, reason, slot=question.slot)
+    logger.info("study_output stage=quiz.quote accepted=%d", len(verified))
     return verified
 
 
 def _approved_explanations(payload):
-    if not isinstance(payload, list):
-        return set()
+    stage = "quiz.explanation"
+    payload = rows(payload, stage, "checks", "results")
     seen, approved = set(), set()
     for item in payload[:BATCH_SIZE]:
-        try:
-            check = ExplanationCheck.model_validate(item)
-        except ValueError:
+        item = normalize_row(item, integers=("slot",), booleans=("supported",))
+        check = validate_row(ExplanationCheck, item, stage)
+        if check is None:
             continue
         if check.slot in seen or not check.supported:
+            reject(stage, "duplicate_report" if check.slot in seen else "unsupported_explanation", slot=check.slot)
             approved.discard(check.slot)
         else:
             approved.add(check.slot)
@@ -110,8 +145,11 @@ def _verify_batch(query, candidates, evidence):
         json.dumps(inputs, ensure_ascii=False), evidence,
         f"Independently solve each question for topic {json.dumps(query, ensure_ascii=False)}. "
         "Use only its cited evidence. Reject unstated assumptions and ambiguity. Return a JSON array "
-        "with slot, correct_index, unique_answer, on_topic, source (a cited label), and a verbatim quote.",
-        task="quiz_verification", max_tokens=1600,
+        "with slot and zero-based correct_index (0 is the first option) as numbers, "
+        "unique_answer and on_topic as JSON booleans, "
+        "source as a cited number, and quote copied in the original source language. Example shape only: "
+        '[{"slot":1,"correct_index":0,"unique_answer":true,"on_topic":true,"source":1,"quote":"source excerpt"}].',
+        task="quiz_verification", max_tokens=1600, stage="quiz.checker",
     )
     solved = _solved(review, candidates, evidence)
     if not solved:
@@ -126,11 +164,16 @@ def _verify_batch(query, candidates, evidence):
         json.dumps(checks, ensure_ascii=False), evidence,
         "Audit each explanation against the verified answer and its cited evidence. "
         "Set supported to false for factual errors, contradictions or unsupported reasoning. "
-        "Return only a JSON array with slot and supported (boolean).",
-        task="quiz_verification", max_tokens=600,
+        'Return only a JSON array shaped like [{"slot":1,"supported":true}], with a JSON number and boolean.',
+        task="quiz_verification", max_tokens=600, stage="quiz.explanation",
     )
     approved = _approved_explanations(explanation_review)
-    return [question for question, _ in solved if question.slot in approved]
+    kept = [question for question, _ in solved if question.slot in approved]
+    for question, _ in solved:
+        if question.slot not in approved:
+            reject("quiz.explanation", "not_approved", slot=question.slot)
+    logger.info("study_output stage=quiz.explanation accepted=%d", len(kept))
+    return kept
 
 
 def _draft_batch(query, evidence, difficulty, blueprint, seen):
@@ -139,10 +182,14 @@ def _draft_batch(query, evidence, difficulty, blueprint, seen):
         f"Draft a DSA quiz at {difficulty} difficulty. Slots and exact types: {json.dumps(blueprint)}. "
         "Easy tests recognition; Medium applies rules or traces short input; Hard tests multi-step reasoning. "
         "Cover distinct subtopics. Return a JSON array with slot, question, options (four plausible strings), "
-        "correct_index (0-3), explanation, sources (one to three labels), question_type, difficulty and topic. "
+        "correct_index (0-3, 0 is the first option), explanation, sources (one to three numeric labels), "
+        "question_type, difficulty and topic. "
+        'Encode slot and labels as JSON numbers, even though the assignment object has string keys. '
+        'Example shape only: [{"slot":1,"question_type":"Concept","difficulty":"Easy","sources":[1],'
+        '"correct_index":0,"question":"Question","options":["A","B","C","D"],"explanation":"Reason","topic":"DSA"}]. '
         "Use one correct answer. State assumptions for traces and complexity. Skip unsupported slots. "
         f"Avoid fill-in-the-blank questions and these previous questions: {json.dumps(seen, ensure_ascii=False)}.",
-        max_tokens=2400, task="quiz_generation",
+        max_tokens=2400, task="quiz_generation", stage="quiz.candidate",
     )
     return _candidates(proposal, blueprint, difficulty, len(evidence))
 
@@ -174,6 +221,7 @@ def generate_quiz(query, evidences, *, num_questions=5, difficulty="Medium", wor
                 for question in checked:
                     fingerprint = normalized_text(question.question)
                     if not fingerprint or any(SequenceMatcher(None, fingerprint, prior).ratio() >= .88 for prior in seen):
+                        reject("quiz.final", "duplicate_or_empty_question", slot=question.slot)
                         continue
                     seen.append(fingerprint)
                     approved[question.slot] = QuizQuestion.model_validate(question.model_dump(exclude={"slot"}))
@@ -183,6 +231,7 @@ def generate_quiz(query, evidences, *, num_questions=5, difficulty="Medium", wor
     questions = [approved[slot] for slot in sorted(approved)]
 
     generated = len(questions)
+    logger.info("study_output stage=quiz.final accepted=%d requested=%d", generated, num_questions)
     if not generated:
         return QuizResponse(
             query=query, answer=ERROR_MESSAGES[failure or "invalid_output"],

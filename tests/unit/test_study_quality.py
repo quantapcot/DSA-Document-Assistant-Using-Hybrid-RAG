@@ -1,11 +1,13 @@
 from datetime import date, timedelta
 import json
+from types import SimpleNamespace
 
 import pytest
 from pydantic import ValidationError
 
 from app.generation import quiz_generator, rag_engine, revision_generator
 from app.generation.llm_client import LLMError
+from app.generation.study_output import decode_json, supports_quote
 from app.generation.study_planner import (
     assemble_plan, build_curriculum, schedule_topics, validate_batch,
 )
@@ -246,3 +248,70 @@ def test_revision_coverage_dependencies_and_varying_minutes(monkeypatch):
     result = revision_generator.generate_revision("DSA", chunks, today=TODAY,
         exam_date=TODAY + timedelta(days=1), budget=15, level="Beginner")
     assert result.plan and len(result.uncovered_topics) == 16
+
+
+@pytest.fixture
+def configured_fit(monkeypatch):
+    monkeypatch.setattr(rag_engine, "settings", SimpleNamespace(
+        LLM_BASE_URL="https://fit.invalid/v1", LLM_MODEL="qwen-fixture", OPENAI_API_KEY=True,
+    ))
+
+
+def test_quiz_one_easy_accepts_unambiguous_qwen_representations(configured_fit, monkeypatch):
+    draft = {
+        **question(1, "Concept", difficulty="Easy"), "slot": "1",
+        "question_type": " concept ", "difficulty": "easy", "sources": ["[1]"],
+    }
+    review = verification(
+        "1", correct_index="0", source="[1]", unique_answer="true", on_topic="True",
+        quote="“BREADTH-FIRST SEARCH visits vertices in ascending order of distance from the start!”",
+    )
+    answers = iter([
+        "<think>reasoning</think>\n```json\n" + json.dumps({"questions": [draft]}) + "\n```",
+        json.dumps({"checks": [review]}),
+        json.dumps({"slot": "1", "supported": "true"}),
+    ])
+    monkeypatch.setattr(rag_engine, "generate_answer", lambda *args, **kwargs: next(answers))
+    result = quiz_generator.generate_quiz("BFS", evidence(), num_questions=1, difficulty="Easy")
+    assert result.generated_count == 1 and result.generation_error is None
+    assert result.questions[0].sources == [1] and result.citations[0].label == 1
+
+
+def test_short_revision_accepts_source_strings_and_checks_quote(configured_fit, monkeypatch, caplog):
+    documents = evidence(1)
+    exam_date = TODAY + timedelta(days=1)
+    kwargs = dict(today=TODAY, exam_date=exam_date, budget=15, level="Beginner")
+    catalog, passages = build_curriculum(documents)
+    chosen, slots = schedule_topics(catalog, passages, **kwargs)
+    content = task_contents(slots, chosen, passages)[0]
+    content.update(slot="1", sources=["[1]"], support_quote=QUOTE.upper().rstrip(".") + "!")
+    monkeypatch.setattr(rag_engine, "generate_answer", lambda *args, **options: json.dumps({"tasks": [content]}))
+    result = revision_generator.generate_revision("BFS", documents, **kwargs)
+    assert result.plan is not None and len(result.plan.days) == 1
+    assert result.plan.days[0].tasks[0].sources == [1]
+    content["support_quote"] = "PRIVATE-MARKER: a stack is the only valid data structure"
+    result = revision_generator.generate_revision("BFS", documents, **kwargs)
+    assert result.plan is None and result.generation_error == "invalid_output"
+    assert "stage=revision.quote reason=unsupported_excerpt slot=1" in caplog.text
+    assert "PRIVATE-MARKER" not in caplog.text
+
+
+def test_rejection_logs_hide_raw_response_and_preserve_strict_semantics(caplog):
+    malformed = '{"secret": "PRIVATE-MARKER"'
+    with pytest.raises(LLMError, match="JSON"):
+        decode_json(malformed, "quiz.candidate")
+    assert "reason=parse_error" in caplog.text and "PRIVATE-MARKER" not in caplog.text
+    draft = {**question(1, "Concept", difficulty="Easy"), "slot": "PRIVATE-MARKER"}
+    assert quiz_generator._candidates([draft], {1: "Concept"}, "Easy", 1) == []
+    assert "field=slot type=int_type" in caplog.text and "PRIVATE-MARKER" not in caplog.text
+
+
+def test_quote_normalization_preserves_numbers_operators_and_word_order():
+    assert supports_quote("Insert the vertex into the priority queue.",
+                          "“Insert the vertex into the priori-\nty queue!”")
+    assert not supports_quote("The loop runs while i < 10.", "The loop runs while i <= 10.")
+    assert not supports_quote("The loop runs while i < 10.", "The loop runs while i < 100.")
+    assert supports_quote("The loop runs while i <= 10.", "The loop runs while i ≤ 10.")
+    assert not supports_quote("The runtime is proportional to n2.", "The runtime is proportional to n².")
+    assert not supports_quote("The vertex is not inserted into the queue.",
+                              "The vertex is inserted into the queue.")

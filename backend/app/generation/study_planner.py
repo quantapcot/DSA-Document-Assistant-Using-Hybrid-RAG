@@ -3,6 +3,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from datetime import date, timedelta
 import json
+import logging
 import re
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -10,6 +11,9 @@ from pydantic import BaseModel, ConfigDict, Field
 from app.core.config import settings
 from app.orchestration.study_evidence import TOPIC_PATTERNS, normalized_text, topic_key
 from app.schemas.contracts import SourceLabel, StudyDay, StudyPlan, StudyTask, StudyTopic
+from .study_output import normalize_row, reject, rows, supports_quote, validate_row
+
+logger = logging.getLogger(__name__)
 
 LEVEL_MINUTES = {"Beginner": 25, "Intermediate": 20, "Advanced": 15}
 FOUNDATIONS = {
@@ -185,8 +189,11 @@ def batch_request(slots, topics, passages, level):
     instructions = (
         f"Write Vietnamese DSA study activities for level {level}. Return only a JSON array with one "
         "object per requested slot. Include slot, objective, knowledge (1-5 points), activity, practice, "
-        "sources (at least one provided label per covered topic) and support_quote (a verbatim excerpt "
-        "from one cited passage, at least 20 characters). Keep fields concise and activities distinct. "
+        "sources (JSON numbers, at least one provided label per covered topic) and support_quote "
+        "(copy a contiguous excerpt from one cited passage in its original language, at least 20 characters). "
+        "Use JSON numbers for slot and sources even though passages are labelled [1], [2]. Example shape only: "
+        '[{"slot":1,"objective":"Goal","knowledge":["Concept"],"activity":"Task","practice":"Exercise",'
+        '"sources":[1],"support_quote":"Excerpt from that passage"}]. Keep the objective, activity and practice distinct. '
         "Use the assigned prerequisites for context. Do not add dates, minutes, topics or prerequisites "
         "to your response; they are set by the scheduler. "
         f"Topics: {json.dumps(catalog, ensure_ascii=False)}. Assignments: {json.dumps(assignments)}."
@@ -195,14 +202,20 @@ def batch_request(slots, topics, passages, level):
 
 
 def validate_batch(payload, slots, topics, passages):
-    if not isinstance(payload, list) or len(payload) != len(slots):
-        return None
-    try:
-        responses = [TaskContent.model_validate(raw) for raw in payload]
-    except ValueError:
+    stage = "revision.task_content"
+    payload = rows(payload, stage, "tasks")
+    responses = [validate_row(TaskContent, normalize_row(raw, integers=("slot",)), stage) for raw in payload]
+    expected = {slot.id for slot in slots}
+    if any(item is None for item in responses):
         return None
     by_slot = {item.slot: item for item in responses}
-    if set(by_slot) != {slot.id for slot in slots}:
+    if len(by_slot) != len(responses) or set(by_slot) != expected:
+        for slot in sorted(expected - by_slot.keys()):
+            reject(stage, "missing_slot", slot=slot)
+        for slot in sorted(by_slot.keys() - expected):
+            reject(stage, "unassigned_slot", slot=slot)
+        if len(by_slot) != len(responses):
+            reject(stage, "duplicate_slot")
         return None
     allowed = {topic.id: set(topic.sources) for topic in topics}
     for slot in slots:
@@ -210,28 +223,38 @@ def validate_batch(payload, slots, topics, passages):
         sources = set(data.sources)
         groups = [allowed[topic] for topic in slot.topic_ids]
         if len(sources) != len(data.sources) or not sources <= set().union(*groups):
+            reject("revision.citation", "invalid_or_duplicate_labels", slot=slot.id)
             return None
         if any(not sources & group for group in groups):
+            reject("revision.citation", "missing_topic_source", slot=slot.id)
             return None
-        quote = " ".join(data.support_quote.split())
-        if len(quote) < 20 or not any(quote in " ".join(passages[label - 1]["text"].split()) for label in sources):
+        if not any(supports_quote(data.support_quote, passages[label - 1]["text"]) for label in sources):
+            reject("revision.quote", "unsupported_excerpt", slot=slot.id)
             return None
         if not all(map(normalized_text, (data.objective, data.activity, data.practice, *data.knowledge))):
+            reject(stage, "empty_learning_content", slot=slot.id)
             return None
+    logger.info("study_output stage=revision.citation_quote accepted=%d", len(by_slot))
     return by_slot
 
 
 def assemble_plan(contents, chosen, slots, passages, *, today, exam_date, budget, level):
     if validate_batch([item.model_dump() for item in contents.values()], slots, chosen, passages) is None:
+        reject("revision.assembly", "batch_revalidation_failed")
         return None
     days, completed = defaultdict(list), set()
     objectives, activities = set(), set()
     for slot in slots:
         item = contents[slot.id]
         obj, activity = normalized_text(item.objective), normalized_text(item.activity)
-        if obj in objectives or activity in activities or not today <= slot.date < exam_date:
+        if obj in objectives or activity in activities:
+            reject("revision.assembly", "duplicate_objective_or_activity", slot=slot.id)
+            return None
+        if not today <= slot.date < exam_date:
+            reject("revision.assembly", "outside_study_period", slot=slot.id)
             return None
         if not set(slot.prerequisites) <= completed or (slot.kind != "learn" and not set(slot.topic_ids) <= completed):
+            reject("revision.assembly", "prerequisites_not_complete", slot=slot.id)
             return None
         objectives.add(obj)
         activities.add(activity)
@@ -242,9 +265,12 @@ def assemble_plan(contents, chosen, slots, passages, *, today, exam_date, budget
         if slot.kind == "learn":
             completed.update(slot.topic_ids)
     if list(days) != sorted(days) or any(sum(task.minutes for task in tasks) > budget for tasks in days.values()):
+        reject("revision.assembly", "invalid_day_order_or_budget")
         return None
     if completed != {topic.id for topic in chosen}:
+        reject("revision.assembly", "incomplete_topic_coverage")
         return None
+    logger.info("study_output stage=revision.assembly accepted=%d days=%d", len(slots), len(days))
     return StudyPlan(
         exam_date=exam_date, minutes_per_day=budget, level=level, topics=chosen,
         days=[StudyDay(date=day, tasks=tasks) for day, tasks in days.items()],
