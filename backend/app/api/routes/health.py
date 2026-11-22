@@ -11,5 +11,7 @@ async def health_check():
         "status": "healthy",
         "service": settings.APP_NAME,
         "environment": settings.ENV,
-        "version": "1.0.0"
+        "version": "1.0.0",
+        "study_request_timeouts": {task: settings.request_timeout(task)
+                                   for task in ("chat", "quiz", "revision")},
     }

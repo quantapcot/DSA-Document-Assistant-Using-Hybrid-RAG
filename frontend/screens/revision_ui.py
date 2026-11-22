@@ -80,8 +80,10 @@ def render_revision_ui(workspace_id="default-workspace", corpus_id="user-uploads
                 task_id = f"{day['date']}:{i}"
                 widget_key = f"{scope_key}:{version}:{task_id}"
                 title = topics[task["topic_id"]]
+                covered = task.get("covered_topic_ids") or [task["topic_id"]]
+                coverage_title = ", ".join(topics[item] for item in covered)
                 st.checkbox(
-                    f"{labels[task['kind']]} · {title} · {task['minutes']} phút",
+                    f"{labels[task['kind']]} · {coverage_title} · {task['minutes']} phút",
                     value=progress.get(task_id, False), key=widget_key,
                     on_change=_record_completion, args=(progress_key, task_id, widget_key),
                 )

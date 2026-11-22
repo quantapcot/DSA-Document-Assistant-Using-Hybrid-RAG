@@ -1,4 +1,3 @@
-from copy import deepcopy
 from datetime import date, timedelta
 import json
 
@@ -6,7 +5,10 @@ import pytest
 from pydantic import ValidationError
 
 from app.generation import quiz_generator, rag_engine, revision_generator
-from app.generation.study_planner import build_curriculum, schedule_topics, validate_plan
+from app.generation.llm_client import LLMError
+from app.generation.study_planner import (
+    assemble_plan, build_curriculum, schedule_topics, validate_batch,
+)
 from app.orchestration.study_evidence import diverse_evidence
 from app.schemas.contracts import QuizRequest, RevisionRequest
 
@@ -33,7 +35,7 @@ def question(slot, kind, *, text=None, difficulty="Hard"):
 
 def verification(slot, **overrides):
     return {
-        "slot": slot, "correct_index": 0, "unique_answer": True, "explanation_supported": True,
+        "slot": slot, "correct_index": 0, "unique_answer": True, "on_topic": True,
         "source": 1, "quote": QUOTE, **overrides,
     }
 
@@ -60,7 +62,8 @@ def test_quiz_blueprint_batches_and_filters(monkeypatch):
     second = [question(6, kinds[5], text="How do you check that a vertex is reachable?")]
     values = iter([
         first, [verification(1), verification(2), verification(3, correct_index=1)],
-        second, [verification(6, quote="The model supplied a sentence absent from the document.")],
+        [{"slot": 1, "supported": True}, {"slot": 2, "supported": True}],
+        second, [verification(6, quote="The model supplied a sentence absent from the document.")], [],
     ])
     prompts = []
 
@@ -74,8 +77,11 @@ def test_quiz_blueprint_batches_and_filters(monkeypatch):
     assert quiz.questions[0].question_type == "Algorithm Tracing"
     assert quiz.questions[0].difficulty == "Hard"
     assert quiz.citations[0].filename == "Chapter 1.pdf"
-    assert len(prompts) == 4 and "correct_index" not in json.loads(prompts[1][0])[0]
-    assert "Algorithm Tracing" in prompts[2][1]
+    assert len(prompts) == 6
+    assert {"correct_index", "explanation"}.isdisjoint(json.loads(prompts[1][0])[0])
+    assert "explanation" in json.loads(prompts[2][0])[0]
+    assert "Algorithm Tracing" in prompts[3][1]
+    assert '"1":' not in prompts[5][1]
 
 
 def test_invalid_json_and_missing_evidence_are_explicit(monkeypatch):
@@ -91,26 +97,59 @@ def test_invalid_json_and_missing_evidence_are_explicit(monkeypatch):
             QuizRequest(query="BFS", num_questions=invalid)
 
 
-def provider_plan(catalog, slots, passages, *, exam_date, budget, level):
-    days = {}
-    labels = {topic.id: topic.sources[0] for topic in catalog}
-    completed = []
-    for i, (day, kind, topic, minutes) in enumerate(slots, 1):
-        label = labels[topic]
-        prior = [item for item in completed if item != topic]
-        days.setdefault(day, []).append({
-            "kind": kind, "topic_id": topic, "objective": f"Objective {i}",
-            "knowledge": ["RAG-grounded study topic"], "activity": f"Activity {i}",
-            "practice": f"Exercise {i}", "minutes": minutes, "prerequisites": prior[-1:],
-            "sources": [label], "support_quote": passages[label - 1]["text"],
-        })
-        if kind == "learn":
-            completed.append(topic)
-    return {
-        "exam_date": exam_date, "minutes_per_day": budget, "level": level,
-        "topics": [topic.model_dump() for topic in catalog],
-        "days": [{"date": day, "tasks": tasks} for day, tasks in days.items()],
+@pytest.mark.parametrize(("count", "difficulty"), [(5, "Easy"), (10, "Medium"), (20, "Hard")])
+def test_quiz_exact_count_and_refills_only_rejected_slots(monkeypatch, count, difficulty):
+    prompts = [
+        "Where are duplicate keys stored?", "Describe the visitation order.",
+        "Can the root be removed safely?", "Pick the matching recurrence.",
+        "Compare space utilization.", "Explain the role of parity.",
+        "Which vertex is reachable?", "What changes after deletion?",
+        "Find an invalid operation.", "Identify the loop invariant.",
+        "When does rehashing happen?", "Choose a recursive base case.",
+        "How is a median selected?", "Recognize a stable ordering.",
+        "Estimate the amortized cost.", "Which path minimizes distance?",
+        "Evaluate the balance condition.", "Name the required stack action.",
+        "Select a suitable partition.", "Why use contiguous storage?",
+    ]
+    drafts = []
+    reject_slot = 2
+
+    def llm(query, passages, instructions, **kwargs):
+        if "Slots and exact types:" in instructions:
+            raw = instructions.split("Slots and exact types: ", 1)[1]
+            assignments, _ = json.JSONDecoder().raw_decode(raw)
+            assert len(assignments) <= 5
+            drafts.append(list(map(int, assignments)))
+            return [
+                question(int(slot), kind, text=prompts[int(slot) - 1], difficulty=difficulty)
+                for slot, kind in assignments.items()
+            ]
+        supplied = json.loads(query)
+        if "Independently solve" in instructions:
+            assert all("explanation" not in item and "correct_index" not in item for item in supplied)
+            return [verification(item["slot"]) for item in supplied]
+        return [
+            {"slot": item["slot"], "supported": item["slot"] != reject_slot or drafts.count([reject_slot]) == 1}
+            for item in supplied
+        ]
+
+    monkeypatch.setattr(quiz_generator, "generate_study_json", llm)
+    result = quiz_generator.generate_quiz("BFS", evidence(), num_questions=count, difficulty=difficulty)
+    assert result.requested_count == result.generated_count == count
+    assert drafts[-1] == [reject_slot]
+    assert {question.question_type for question in result.questions} == {
+        "Concept", "Complexity", "Algorithm Tracing", "Comparison", "Application",
     }
+
+
+def task_contents(slots, catalog, passages):
+    labels = {topic.id: topic.sources[0] for topic in catalog}
+    return [{
+        "slot": slot.id, "objective": f"Objective {slot.id}",
+        "knowledge": ["A sourced study topic"], "activity": f"Activity {slot.id}",
+        "practice": f"Exercise {slot.id}", "sources": [labels[topic] for topic in slot.topic_ids],
+        "support_quote": passages[labels[slot.topic_ids[0]] - 1]["text"],
+    } for slot in slots]
 
 
 def test_study_date_inputs():
@@ -124,44 +163,86 @@ def test_study_date_inputs():
         RevisionRequest(days_remaining=4, minutes_per_day=0)
 
 
-@pytest.mark.parametrize("problem", ["over_budget", "forward_prerequisite", "wrong_source",
-                                     "made_up_quote", "duplicate_activity", "exam_day"])
-def test_study_plan_validates_schedule_and_source_constraints(problem):
-    curriculum, passages = build_curriculum(evidence())
+@pytest.mark.parametrize("problem", ["injected_minutes", "injected_prerequisite", "wrong_source", "made_up_quote"])
+def test_study_batch_rejects_schedule_changes_and_bad_sources(problem):
+    catalog, passages = build_curriculum(evidence())
     settings = dict(exam_date=TODAY + timedelta(days=5), budget=30, level="Beginner")
-    chosen, slots = schedule_topics(curriculum, today=TODAY, **settings)
-    valid = provider_plan(chosen, slots, passages, **settings)
-    plan = validate_plan(valid, chosen, slots, passages, today=TODAY, **settings)
-    assert plan and len(plan.topics) == 3
-    assert {task.kind for day in plan.days for task in day.tasks} == {"learn", "review", "mock_test"}
-    assert plan.days[1].tasks[0].prerequisites == ["T1"]
-    broken = deepcopy(valid)
-    first = broken["days"][0]["tasks"][0]
-    if problem == "over_budget":
-        first["minutes"] = 31
-    elif problem == "forward_prerequisite":
+    chosen, slots = schedule_topics(catalog, passages, today=TODAY, **settings)
+    batch = task_contents(slots, chosen, passages)
+    assert validate_batch(batch, slots, chosen, passages)
+    first = batch[0]
+    if problem == "injected_minutes":
+        first["minutes"] = 200
+    elif problem == "injected_prerequisite":
         first["prerequisites"] = ["T2"]
     elif problem == "wrong_source":
         first["sources"] = [2]
-    elif problem == "made_up_quote":
-        first["support_quote"] = "This text does not exist in the document."
-    elif problem == "duplicate_activity":
-        broken["days"][1]["tasks"][0]["activity"] = first["activity"]
     else:
-        broken["days"][-1]["date"] = settings["exam_date"]
-    assert validate_plan(broken, chosen, slots, passages, today=TODAY, **settings) is None
+        first["support_quote"] = "This text does not exist in the document."
+    assert validate_batch(batch, slots, chosen, passages) is None
 
 
-def test_revision_reports_missing_coverage_and_does_not_fake_plan(monkeypatch):
+def test_revision_retries_truncated_batch_and_aborts_on_persistent_failure(monkeypatch):
     documents = evidence()
-    settings = dict(exam_date=TODAY + timedelta(days=1), budget=15, level="Beginner")
+    settings = dict(exam_date=TODAY + timedelta(days=5), budget=30, level="Beginner")
     catalog, passages = build_curriculum(documents)
-    chosen, slots = schedule_topics(catalog, today=TODAY, **settings)
-    mock_plan = provider_plan(chosen, slots, passages, **settings)
-    monkeypatch.setattr(revision_generator, "generate_study_json", lambda *args, **kwargs: mock_plan)
-    revision = revision_generator.generate_revision("DSA", documents, today=TODAY, **settings)
-    assert revision.plan.topics == chosen
-    assert len(revision.uncovered_topics) == 2 and len(revision.warnings) == 2
-    monkeypatch.setattr(revision_generator, "generate_study_json", lambda *args, **kwargs: None)
-    unavailable = revision_generator.generate_revision("DSA", documents, today=TODAY, **settings)
-    assert unavailable.plan is None and unavailable.generation_mode == "unavailable"
+    chosen, slots = schedule_topics(catalog, passages, today=TODAY, **settings)
+    payloads = {item["slot"]: item for item in task_contents(slots, chosen, passages)}
+    calls = []
+
+    def fake_model(query, sources, instructions, **kwargs):
+        assignments, _ = json.JSONDecoder().raw_decode(instructions.split("Assignments: ", 1)[1])
+        ids = [item["slot"] for item in assignments]
+        calls.append(ids)
+        assert kwargs["max_tokens"] <= 4000 and kwargs["task"] == "revision"
+        if calls == [[1, 2, 3]]:
+            raise LLMError("truncated_json")
+        return [payloads[i] for i in ids]
+
+    monkeypatch.setattr(revision_generator, "generate_study_json", fake_model)
+    response = revision_generator.generate_revision("DSA", documents, today=TODAY, **settings)
+    assert response.plan and calls[:4] == [[1, 2, 3], [1], [2], [3]]
+
+    def bad_model(query, sources, instructions, **kwargs):
+        assignments, _ = json.JSONDecoder().raw_decode(instructions.split("Assignments: ", 1)[1])
+        ids = [item["slot"] for item in assignments]
+        if ids == [1, 2, 3]:
+            return [payloads[i] for i in ids]
+        raise LLMError("invalid_json")
+
+    monkeypatch.setattr(revision_generator, "generate_study_json", bad_model)
+    response = revision_generator.generate_revision("DSA", documents, today=TODAY, **settings)
+    assert response.plan is None and response.generation_error == "invalid_json"
+
+
+def test_revision_coverage_dependencies_and_varying_minutes(monkeypatch):
+    chunks = [
+        {**evidence()[0], "section": None, "text": "BFS requires a queue. Complexity and invariants matter."},
+        {**evidence()[0], "section": None, "chunk_id": "queue", "page": 2, "text": "Queues keep inserted data in first-in first-out order."},
+        *[{**item, "document_id": "extra-" + item["chunk_id"]}
+          for item in evidence(15)],
+    ]
+    catalog, passages = build_curriculum(chunks)
+    assert len(catalog) == 17
+    monkeypatch.setattr("app.generation.study_planner.settings.REVISION_MAX_TOPICS", 14)
+    settings = dict(exam_date=TODAY + timedelta(days=12), budget=50, level="Intermediate")
+    chosen, slots = schedule_topics(catalog, passages, today=TODAY, **settings)
+    learn = [slot for slot in slots if slot.kind == "learn"]
+    assert len(chosen) == 14 and learn[0].topic_ids == ("T2",)
+    assert learn[1].prerequisites == ("T2",)
+    assert learn[0].minutes < learn[1].minutes
+    assert len({t for s in slots if s.kind == "mock_test" for t in s.topic_ids}) > 4
+    batch = validate_batch(task_contents(slots, chosen, passages), slots, chosen, passages)
+    assert assemble_plan(batch, chosen, slots, passages, today=TODAY, **settings)
+    batch[slots[1].id].activity = batch[slots[0].id].activity
+    assert assemble_plan(batch, chosen, slots, passages, today=TODAY, **settings) is None
+
+    monkeypatch.setattr("app.generation.study_planner.settings.REVISION_SOURCE_TOKEN_BUDGET", 300)
+    short, short_slots = schedule_topics(catalog, passages, today=TODAY,
+        exam_date=TODAY + timedelta(days=1), budget=15, level="Beginner")
+    assert len(short) == 1 and short_slots[0].minutes == 15
+    monkeypatch.setattr(revision_generator, "generate_study_json",
+        lambda *args, **kwargs: task_contents(short_slots, short, passages))
+    result = revision_generator.generate_revision("DSA", chunks, today=TODAY,
+        exam_date=TODAY + timedelta(days=1), budget=15, level="Beginner")
+    assert result.plan and len(result.uncovered_topics) == 16

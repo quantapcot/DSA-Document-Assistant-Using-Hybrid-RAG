@@ -1,6 +1,4 @@
 """Exercise uploads, real scoped retrieval and the Study APIs with a mock gateway."""
-from collections import defaultdict
-from datetime import date, timedelta
 import json
 import re
 from types import SimpleNamespace
@@ -74,18 +72,22 @@ def test_upload_retrieve_quiz_and_answer_key(study_client, monkeypatch):
     _upload(study_client, "Private.pdf", PRIVATE, "bob")
     calls = []
 
-    def mock_fit(system, prompt, *, provider, model, max_tokens):
+    def mock_fit(system, prompt, *, provider, model, max_tokens, task, raise_errors):
         assert provider == "openai" and model == "mock-qwen-27b"
         assert "Private.pdf" not in prompt and "bench.pdf" not in prompt
         passages = _passages(prompt)
         assert len(passages) == 2
         source = next(label for label, passage in passages.items() if BFS in passage)
         calls.append(system)
+        if "Audit each explanation" in system:
+            return json.dumps([{"slot": 1, "supported": True}])
         if "Independently solve" in system:
             return json.dumps([{
                 "slot": 1, "correct_index": 1, "unique_answer": True,
-                "explanation_supported": True, "source": source, "quote": BFS,
+                "on_topic": True, "source": source, "quote": BFS,
             }])
+        if '"1":' not in system:
+            return "[]"
         return json.dumps([{
             "slot": 1, "question": "Which data structure does BFS use?", "options": ["Stack", "Queue", "Heap", "Tree"],
             "correct_index": 1, "explanation": "A queue visits vertices in increasing distance.",
@@ -99,49 +101,56 @@ def test_upload_retrieve_quiz_and_answer_key(study_client, monkeypatch):
     assert response.status_code == 200, response.text
     quiz = response.json()
     assert (quiz["generated_count"], quiz["requested_count"]) == (1, 5)
-    assert len(calls) == 2 and [cite["filename"] for cite in quiz["citations"]] == ["BFS.pdf"]
+    assert len(calls) == 4 and [cite["filename"] for cite in quiz["citations"]] == ["BFS.pdf"]
     assert quiz["questions"][0]["options"][quiz["questions"][0]["correct_index"]] == "Queue"
 
 
-def test_all_topics_scheduler_uses_uploaded_chapters_and_empty_scope(study_client, monkeypatch):
+@pytest.mark.parametrize("extra_chapters", [0, 10])
+def test_all_topics_scheduler_uses_uploaded_chapters_and_empty_scope(study_client, monkeypatch, extra_chapters):
     _upload(study_client, "Chapter 1 BFS.pdf", BFS, "alice")
     _upload(study_client, "Chapter 2 Sorting.pdf", SORT, "alice")
+    for chapter in range(3, extra_chapters + 3):
+        _upload(study_client, f"Chapter {chapter} Arrays.pdf",
+                "An array stores elements in contiguous memory so an index identifies the position to read.",
+                "alice")
     _upload(study_client, "Private.pdf", PRIVATE, "bob")
     calls = []
 
     def mock_fit(system, prompt, **kwargs):
         assert "Private.pdf" not in prompt and "bench.pdf" not in prompt
         passages = _passages(prompt)
-        assert any(BFS in part for part in passages.values()) and any(SORT in part for part in passages.values())
         calls.append(system)
+        assert kwargs["max_tokens"] <= 4000 and kwargs["task"] == "revision"
         decoder = json.JSONDecoder()
         topics, _ = decoder.raw_decode(system.split("Topics: ", 1)[1])
-        assignments, _ = decoder.raw_decode(system.split("Assignments in order: ", 1)[1])
-        days = defaultdict(list)
-        for index, entry in enumerate(assignments, 1):
-            label = next(topic["sources"][0] for topic in topics if topic["id"] == entry["topic_id"])
-            days[entry["date"]].append({
-                **{k: v for k, v in entry.items() if k != "date"},
-                "objective": f"Objective {index}", "knowledge": ["Study source material"],
-                "activity": f"Practice {index}", "practice": "Solve an example", "prerequisites": [],
-                "sources": [label], "support_quote": passages[label],
+        assignments, _ = decoder.raw_decode(system.split("Assignments: ", 1)[1])
+        contents = []
+        for entry in assignments:
+            labels = [next(topic["sources"][0] for topic in topics if topic["id"] == topic_id)
+                      for topic_id in entry["topic_ids"]]
+            index = entry["slot"]
+            contents.append({
+                "slot": index, "objective": f"Objective {index}", "knowledge": ["Study source material"],
+                "activity": f"Practice {index}", "practice": "Solve an example",
+                "sources": labels, "support_quote": passages[labels[0]],
             })
-        return json.dumps({
-            "exam_date": (date.fromisoformat(max(days)) + timedelta(days=1)).isoformat(),
-            "minutes_per_day": 30, "level": "Beginner",
-            "topics": topics, "days": [{"date": day, "tasks": tasks} for day, tasks in days.items()],
-        })
+        return json.dumps(contents)
 
     monkeypatch.setattr(rag_engine, "generate_answer", mock_fit)
-    payload = {"all_topics": True, "days_remaining": 5, "minutes_per_day": 30, "level": "Beginner"}
+    payload = {"all_topics": True, "days_remaining": 12 if extra_chapters else 5,
+               "minutes_per_day": 50 if extra_chapters else 30, "level": "Beginner"}
     response = study_client.post("/api/revision", json={**payload, "workspace_id": "alice"})
     assert response.status_code == 200, response.text
     result = response.json()
-    assert {item["filename"] for item in result["citations"]} == {"Chapter 1 BFS.pdf", "Chapter 2 Sorting.pdf"}
-    assert len(result["plan"]["topics"]) == 2
-    assert all(sum(task["minutes"] for task in day["tasks"]) <= 30 for day in result["plan"]["days"])
+    filenames = {item["filename"] for item in result["citations"]}
+    assert {"Chapter 1 BFS.pdf", "Chapter 2 Sorting.pdf"} <= filenames
+    assert len(filenames) == len(result["plan"]["topics"]) == 2 + extra_chapters
+    assert all(sum(task["minutes"] for task in day["tasks"]) <= payload["minutes_per_day"]
+               for day in result["plan"]["days"])
     assert result["plan"]["days"][-1]["tasks"][0]["kind"] == "mock_test"
+    generated_batches = len(calls)
+    assert generated_batches >= (5 if extra_chapters else 2)
     for path, body in (("revision", payload), ("quiz", {"query": "BFS"})):
         empty = study_client.post(f"/api/{path}", json={**body, "workspace_id": "empty"})
         assert empty.status_code == 200 and empty.json()["generation_mode"] == "abstained"
-    assert len(calls) == 1
+    assert len(calls) == generated_batches

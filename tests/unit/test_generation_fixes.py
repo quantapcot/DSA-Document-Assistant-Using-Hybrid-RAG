@@ -46,14 +46,14 @@ def test_confidence_depends_on_citation_coverage_and_relevance(evidence):
 
 
 def test_chat_retains_original_citation_labels(monkeypatch, evidence):
-    monkeypatch.setattr(rag_engine, "generate_answer", lambda *args: "Graph [2], [2], [99].")
+    monkeypatch.setattr(rag_engine, "generate_answer", lambda *args, **kwargs: "Graph [2], [2], [99].")
     result = rag_engine.build_chat_response("graph", evidence, method_used="hybrid_rrf")
     assert result.generation_mode == "llm"
     assert [(c.label, c.filename) for c in result.citations] == [(2, "graphs.pdf")]
 
 
 def test_chat_preserves_provider_abstention(monkeypatch, evidence):
-    monkeypatch.setattr(rag_engine, "generate_answer", lambda *args: rag_engine.NO_EVIDENCE_MESSAGE)
+    monkeypatch.setattr(rag_engine, "generate_answer", lambda *args, **kwargs: rag_engine.NO_EVIDENCE_MESSAGE)
     result = rag_engine.build_chat_response("unrelated", evidence, method_used="hybrid_rrf")
     assert result.generation_mode == "abstained" and not result.citations
 
@@ -116,9 +116,9 @@ def test_quiz_api_uses_mock_llm_and_keeps_scope(monkeypatch, evidence):
     monkeypatch.setattr(rag_engine, "settings", SimpleNamespace(
         LLM_BASE_URL="https://fit.invalid/v1", LLM_MODEL="test-fit-model", OPENAI_API_KEY=SecretStr("test"),
     ))
-    verified = [{"slot": 1, "correct_index": 0, "unique_answer": True, "explanation_supported": True,
+    verified = [{"slot": 1, "correct_index": 0, "unique_answer": True, "on_topic": True,
                  "source": 1, "quote": evidence[0]["text"]}]
-    llm = MagicMock(side_effect=[f"```json\n{json.dumps([{**QUIZ, 'slot': 1}])}\n```", json.dumps(verified)])
+    llm = MagicMock(side_effect=[f"```json\n{json.dumps([{**QUIZ, 'slot': 1}])}\n```", json.dumps(verified), json.dumps([{"slot": 1, "supported": True}]), "[]"])
     monkeypatch.setattr(rag_engine, "generate_answer", llm)
     api = TestClient(app)
     quiz = api.post("/api/quiz", json={"query": "search", "workspace_id": "student"})
@@ -137,7 +137,7 @@ def test_empty_workspace_never_queries_benchmark(monkeypatch):
     retrieve = MagicMock(return_value=[])
     engine = SimpleNamespace(retrieve=retrieve, client=client, config=SimpleNamespace(collection="test"))
     monkeypatch.setattr(app.state, "retrieval_engine", engine, raising=False)
-    monkeypatch.setattr(rag_engine, "generate_answer", lambda *args: pytest.fail("called model"))
+    monkeypatch.setattr(rag_engine, "generate_answer", lambda *args, **kwargs: pytest.fail("called model"))
     try:
         api = TestClient(app)
         for path in ("chat", "quiz", "revision"):
@@ -163,7 +163,7 @@ def test_streamlit_chat_quiz_and_revision_with_mock_api(monkeypatch):
     citation = {"label": 2, "filename": "graphs.pdf", "page": 9, "snippet": "Use a queue."}
     data = {"generation_mode": "extractive", "citations": [citation], "confidence_score": .56}
     monkeypatch.setattr(api_client, "check_health", lambda: (True, {}))
-    monkeypatch.setattr(api_client, "ask_question", lambda *args: (True, {**data, "answer": "Use a queue [2]."}))
+    monkeypatch.setattr(api_client, "ask_question", lambda *args, **kwargs: (True, {**data, "answer": "Use a queue [2]."}))
     monkeypatch.setattr(api_client, "create_quiz", lambda *args, **kwargs: (True, {**data, "questions": [QUIZ]}))
     task = {
         "kind": "learn", "topic_id": "T1", "objective": "Understand BFS",

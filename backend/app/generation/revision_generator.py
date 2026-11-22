@@ -4,10 +4,13 @@ from datetime import datetime, timedelta, timezone
 from app.schemas.contracts import RevisionResponse
 
 from .abstention import ABSTENTION_RESPONSE, EMPTY_WORKSPACE_RESPONSE
+from .llm_client import ERROR_MESSAGES, LLMError
 from .rag_engine import generate_study_json, grounded_fields
-from .study_planner import build_curriculum, plan_instructions, schedule_topics, validate_plan
+from .study_planner import assemble_plan, batch_request, build_curriculum, schedule_topics, validate_batch
 
 _STUDY_TIMEZONE = timezone(timedelta(hours=7))
+REVISION_BATCH_SIZE = 3
+REVISION_BATCH_OUTPUT = 2300
 
 
 def resolve_exam_date(body, *, today=None):
@@ -25,27 +28,63 @@ def generate_revision(query, evidence, *, today, exam_date, budget, level, works
             confidence_score=0.0, generation_mode="abstained",
         )
     catalog, passages = build_curriculum(evidence)
-    chosen, slots = schedule_topics(catalog, today=today, exam_date=exam_date, budget=budget, level=level)
-    uncovered = [topic.title for topic in catalog[len(chosen):]]
+    chosen, slots = schedule_topics(catalog, passages, today=today, exam_date=exam_date, budget=budget, level=level)
+    chosen_ids = {topic.id for topic in chosen}
+    uncovered = [topic.title for topic in catalog if topic.id not in chosen_ids]
+    if not slots:
+        return RevisionResponse(
+            query=query, answer="Ngân sách hiện tại không đủ cho mục nào có nguồn tham khảo.",
+            confidence_score=0.0, generation_mode="unavailable", uncovered_topics=uncovered,
+        )
     warnings = []
     if uncovered:
         warnings.append(
-            f"Kế hoạch ưu tiên {len(chosen)}/{len(catalog)} mục theo thứ tự trong tài liệu. "
+            f"Kế hoạch xếp {len(chosen)}/{len(catalog)} mục theo tiên quyết, thời gian và giới hạn nguồn. "
             "Tăng thời gian hoặc thu hẹp chủ đề để học những mục còn lại."
         )
-    if not any(kind == "mock_test" for _, kind, _, _ in slots):
+    if not any(slot.kind == "mock_test" for slot in slots):
         warnings.append("Thời gian hiện tại chỉ đủ cho phần học ưu tiên, chưa đủ phiên ôn lại và kiểm tra.")
-    selected = passages[:chosen[-1].sources[-1]]
-    settings = dict(exam_date=exam_date, budget=budget, level=level)
-    request = plan_instructions(chosen, slots, **settings)
-    payload = generate_study_json(query or "Ôn tất cả tài liệu", selected, request, max_tokens=6000)
-    plan = validate_plan(payload, chosen, slots, selected, today=today, **settings)
-    if plan is None:
+    for kind, name in (("review", "Ôn lại"), ("mock_test", "Kiểm tra tổng hợp")):
+        covered = {topic for slot in slots if slot.kind == kind for topic in slot.topic_ids}
+        if covered and covered != chosen_ids:
+            warnings.append(f"{name} bao phủ {len(covered)}/{len(chosen_ids)} mục trong thời lượng đã chọn.")
+    parameters = dict(exam_date=exam_date, budget=budget, level=level)
+    try:
+        contents = {}
+        for start in range(0, len(slots), REVISION_BATCH_SIZE):
+            batch = slots[start:start + REVISION_BATCH_SIZE]
+            contents.update(_generate_batch(query, batch, chosen, passages, level))
+        plan = assemble_plan(contents, chosen, slots, passages, today=today, **parameters)
+        if plan is None:
+            raise LLMError("invalid_output")
+    except LLMError as error:
         return RevisionResponse(
-            query=query, answer="Chưa tạo được kế hoạch hợp lệ. Hãy thử lại hoặc kiểm tra kết nối FIT-AI.",
-            confidence_score=0.0, generation_mode="unavailable",
+            query=query, answer=ERROR_MESSAGES[error.code],
+            confidence_score=0.0, generation_mode="unavailable", generation_error=error.code,
         )
     labels = [label for day in plan.days for task in day.tasks for label in task.sources]
     answer = f"Kế hoạch gồm {len(plan.days)} ngày học, bao phủ {len(chosen)}/{len(catalog)} mục trong tài liệu."
-    fields = grounded_fields(query, answer, selected, "hybrid_rerank", "llm", labels)
+    fields = grounded_fields(query, answer, passages, "hybrid_rerank", "llm", labels)
     return RevisionResponse(**fields, plan=plan, uncovered_topics=uncovered, warnings=warnings)
+
+
+def _generate_batch(query, slots, chosen, passages, level, *, retry_single=True):
+    context, instructions = batch_request(slots, chosen, passages, level)
+    try:
+        payload = generate_study_json(
+            query or "Ôn tất cả tài liệu", context, instructions,
+            max_tokens=REVISION_BATCH_OUTPUT, task="revision",
+        )
+        result = validate_batch(payload, slots, chosen, passages)
+        if result is None:
+            raise LLMError("invalid_output")
+        return result
+    except LLMError as error:
+        if error.code not in {"invalid_json", "truncated_json", "invalid_output"} or not retry_single:
+            raise
+        # A failed batch gets one smaller attempt per slot, with the exact same
+        # scheduler IDs and citations. Failure of any slot aborts the plan.
+        result = {}
+        for slot in slots:
+            result.update(_generate_batch(query, [slot], chosen, passages, level, retry_single=False))
+        return result

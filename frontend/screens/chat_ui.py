@@ -1,7 +1,7 @@
 """Chat UI with bottom input, real Hybrid RAG retrieval, and citation viewer."""
 import streamlit as st
 
-from api_client import ask_question
+from api_client import ask_question, generation_error_message
 
 SAMPLE_PROMPTS = [
     "Cây AVL là gì và độ phức tạp tìm kiếm là bao nhiêu?",
@@ -13,7 +13,8 @@ SAMPLE_PROMPTS = [
 
 def show_study_metadata(item: dict) -> None:
     if item.get("generation_mode") == "extractive":
-        st.warning("Đang dùng chế độ trích xuất trực tiếp từ tài liệu.")
+        reason = generation_error_message(item.get("generation_error"))
+        st.warning("Đang dùng chế độ trích xuất trực tiếp từ tài liệu." + (f" {reason}" if reason else ""))
     confidence = item.get("confidence_score")
     if confidence is not None and item.get("generation_mode") != "abstained":
         st.caption(f"Điểm hỗ trợ từ nguồn · {confidence:.2f}/1")
@@ -104,6 +105,7 @@ def render_chat_ui(workspace_id="default-workspace", corpus_id="user-uploads") -
             "process_time_ms": data.get("process_time_ms"),
             "confidence_score": data.get("confidence_score"),
             "generation_mode": data.get("generation_mode"),
+            "generation_error": data.get("generation_error"),
         }
     else:
         assistant_item = {

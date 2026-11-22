@@ -12,14 +12,56 @@ QUIZ_FACETS = (
     "độ phức tạp so sánh ứng dụng / complexity comparison applications",
 )
 QUIZ_EVIDENCE_LIMIT = 16
+TOPIC_PATTERNS = {
+    "Mảng": r"\b(?:arrays?|mảng)\b",
+    "Danh sách liên kết": r"linked lists?|danh sách liên kết",
+    "Ngăn xếp": r"\b(?:stacks?|ngăn xếp)\b",
+    "Hàng đợi": r"\b(?:queues?|hàng đợi)\b",
+    "Tìm kiếm nhị phân": r"binary search(?! tree)|tìm kiếm nhị phân",
+    "Cây nhị phân tìm kiếm": r"binary search trees?|\bbst\b|cây nhị phân tìm kiếm",
+    "Cây AVL": r"\bavl\b",
+    "Đồ thị": r"\bgraphs?\b|đồ thị",
+    "BFS": r"\bbfs\b|breadth.first|duyệt theo chiều rộng",
+    "DFS": r"\bdfs\b|depth.first|duyệt theo chiều sâu",
+    "Dijkstra": r"\bdijkstra\b",
+    "Merge sort": r"merge[ -]?sort|sắp xếp trộn",
+    "Quick sort": r"quick[ -]?sort",
+    "Đệ quy": r"recurs(?:ion|ive)|đệ quy",
+    "Quy hoạch động": r"dynamic programming|quy hoạch động",
+    "Bảng băm": r"hash tables?|bảng băm",
+    "Độ phức tạp": r"big[ -]?o|time complexity|độ phức tạp",
+}
+_HEADING = re.compile(r"^(?:#{1,6}\s+|(?:chapter|chương|section|mục)\s+\d+\b|\d+(?:\.\d+)+\s+)", re.I)
 
 
 def normalized_text(text):
     return " ".join(re.findall(r"\w+", unicodedata.normalize("NFKC", text).casefold()))
 
 
+def study_topic(item):
+    if section := (item.get("section") or "").strip():
+        return section
+    lines = [line.strip() for line in item["text"].splitlines() if line.strip()]
+    if lines and len(lines[0]) <= 100 and _HEADING.match(lines[0]):
+        return lines[0].lstrip("# ")
+    # Earlier mentions usually identify the topic; incidental supporting terms
+    # later in the passage should not determine the grouping.
+    text = item["text"][:500].casefold()
+    matches = [(match.start(), -len(match[0]), name)
+               for name, pattern in TOPIC_PATTERNS.items() if (match := re.search(pattern, text))]
+    if matches:
+        return min(matches)[2]
+    page = max(1, item.get("page", 1))
+    section_start = ((page - 1) // 4) * 4 + 1
+    chunk = (item.get("metadata") or {}).get("chunk_index")
+    if isinstance(chunk, int) and chunk >= 0:
+        chunk_start = (chunk // 6) * 6 + 1
+        return f"Tr. {page} · Đoạn {chunk_start}–{chunk_start + 5}"
+    return f"Tr. {section_start}–{section_start + 3}"
+
+
 def topic_key(item):
-    return (item.get("document_id") or item["filename"], item.get("section") or "")
+    return (item.get("document_id") or item["filename"], study_topic(item))
 
 
 def diverse_evidence(result_sets, *, workspace, corpus, limit=QUIZ_EVIDENCE_LIMIT):

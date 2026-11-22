@@ -1,6 +1,6 @@
 # dsa_ai_agent/backend/app/schemas/contracts.py
 from datetime import date
-from typing import List, Optional, Dict, Any, Literal
+from typing import Annotated, List, Optional, Dict, Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 # ==========================================
@@ -32,6 +32,7 @@ class RAGResponse(BaseModel):
     confidence_score: float = Field(..., description="Độ tin cậy của câu trả lời (0.0 đến 1.0)")
     is_safe: bool = Field(True, description="Cờ đánh giá an toàn từ Guardrail")
     generation_mode: str | None = None
+    generation_error: str | None = None
 
 # Schema cho Request đầu vào của API Chat
 class ChatRequest(BaseModel):
@@ -47,6 +48,7 @@ class ChatRequest(BaseModel):
 Difficulty = Literal["Easy", "Medium", "Hard"]
 QuestionType = Literal["Concept", "Complexity", "Algorithm Tracing", "Comparison", "Application"]
 StudyLevel = Literal["Beginner", "Intermediate", "Advanced"]
+SourceLabel = Annotated[int, Field(strict=True, ge=1)]
 
 
 class QuizRequest(ChatRequest):
@@ -61,7 +63,7 @@ class QuizQuestion(BaseModel):
     options: list[str] = Field(min_length=4, max_length=4)
     correct_index: int = Field(ge=0, le=3, strict=True)
     explanation: str = Field(min_length=1)
-    sources: list[int] = Field(min_length=1, max_length=3)
+    sources: list[SourceLabel] = Field(min_length=1, max_length=3)
     question_type: QuestionType
     difficulty: Difficulty
     topic: str = Field(min_length=1, max_length=150)
@@ -95,6 +97,7 @@ class StudyTask(BaseModel):
 
     kind: Literal["learn", "review", "mock_test"]
     topic_id: str = Field(min_length=1)
+    covered_topic_ids: list[str] = Field(default_factory=list)
     objective: str = Field(min_length=1, max_length=300)
     knowledge: list[str] = Field(min_length=1, max_length=5)
     activity: str = Field(min_length=1, max_length=400)

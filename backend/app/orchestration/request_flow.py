@@ -2,17 +2,42 @@
 from __future__ import annotations
 
 import logging
+import asyncio
+from contextlib import asynccontextmanager
+from functools import partial
+from time import monotonic
 from typing import Any
 
+from anyio import to_thread
 from fastapi import HTTPException
-from fastapi.concurrency import run_in_threadpool
 
+from app.core.config import settings
+from app.generation.llm_client import ERROR_MESSAGES, request_deadline
 from app.retrieval.hybrid_search import RetrievalEngine
 from app.retrieval.vector_store import scope_filter
 from app.schemas.contracts import Citation
 from .study_evidence import QUIZ_FACETS, curriculum_inventory, diverse_evidence
 
 logger = logging.getLogger("app.orchestration.request_flow")
+
+
+@asynccontextmanager
+async def study_request_budget(task):
+    seconds = settings.request_timeout(task)
+    token = request_deadline.set(monotonic() + seconds)
+    try:
+        async with asyncio.timeout(seconds):
+            yield
+    except TimeoutError:
+        raise HTTPException(504, {"code": "timeout", "message": ERROR_MESSAGES["timeout"]}) from None
+    finally:
+        request_deadline.reset(token)
+
+
+async def run_in_threadpool(fn, *args, **kwargs):
+    # The HTTP deadline can release the caller. An in-flight SDK call keeps its
+    # own remaining-time limit, and later attempts see the expired deadline.
+    return await to_thread.run_sync(partial(fn, *args, **kwargs), abandon_on_cancel=True)
 
 
 def _scope_is_empty(engine, corpus_id, workspace_id):
