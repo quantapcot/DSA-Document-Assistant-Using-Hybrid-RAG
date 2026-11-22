@@ -103,6 +103,7 @@ def main():
     )
     assert len(empty_res) == 0, "Expected empty results for unauthorized workspace"
     print("\nScope isolation check: PASS (non-existent/unauthorized workspace returns 0 results)")
+    engine.client.close()
 
     print("\n" + "=" * 80)
     print("ALL BACKEND INTEGRATION CHECKS PASSED SUCCESSFULLY!")

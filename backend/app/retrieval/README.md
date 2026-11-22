@@ -215,3 +215,21 @@ $env:HF_HUB_DISABLE_XET = "1"
 # 3. Run full 5-query reranker benchmark on real corpus
 & C:\Users\USER\miniconda3\envs\dsa-rag-gpu\python.exe tests/smoke_reranker.py
 ```
+### Upload lifecycle and deployment
+
+The API uses the application engine's Qdrant client. A valid upload receives
+HTTP 503 when that client is unavailable. Use one backend worker for local
+Qdrant. For Docker or multiple backend workers, use `qdrant_mode: server`
+and a shared upload volume. Use a single writer for uploads and deletes to
+the same scope: the current mutation lock coordinates threads in one process.
+
+Uploads stage embeddings in memory and store a scoped file revision on disk.
+Successful replacement removes stale points and invalidates in-process BM25
+caches. If a Qdrant write fails, replacement attempts to restore the prior
+points. Qdrant and the filesystem do not share a transaction. A process crash
+or an outage during recovery can require manual reconciliation. Failed
+cleanup of a superseded file is logged. The benchmark scope is read-only
+through the upload and document deletion APIs.
+
+The MVP profile stages embeddings in batches of 64 and logs cumulative
+progress. Reduce `batch_size` for devices with less available memory.
