@@ -1,4 +1,5 @@
 """Mock provider tests for timing, error classification and safe fallback."""
+from pathlib import Path
 import time
 from types import SimpleNamespace
 from unittest.mock import MagicMock
@@ -106,3 +107,27 @@ def test_http_deadline_covers_retrieval_and_matches_health(monkeypatch):
     assert api.get("/health").json()["study_request_timeouts"]["chat"] == 0.02
     response = api.post("/api/chat", json={"query": "graph"})
     assert response.status_code == 504 and response.json()["detail"]["code"] == "timeout"
+
+
+def test_frontend_uses_health_deadline_and_displays_backend_timeout(monkeypatch):
+    monkeypatch.syspath_prepend(str(Path(__file__).resolve().parents[2] / "frontend"))
+    import api_client
+
+    monkeypatch.setattr(api_client, "_STUDY_TIMEOUTS", api_client._STUDY_TIMEOUTS.copy())
+    monkeypatch.setattr(request_flow.settings, "QUIZ_REQUEST_TIMEOUT", 37)
+    backend = TestClient(app)
+    health = backend.get("/health")
+    get = MagicMock(return_value=SimpleNamespace(ok=health.status_code == 200, json=health.json))
+    monkeypatch.setattr(api_client.requests, "get", get)
+    message = llm_client.ERROR_MESSAGES["timeout"]
+    post = MagicMock(return_value=SimpleNamespace(
+        ok=False, status_code=504, json=lambda: {"detail": {"code": "timeout", "message": message}},
+    ))
+    monkeypatch.setattr(api_client.requests, "post", post)
+
+    assert api_client.check_health()[0]
+    assert api_client.create_quiz("Graph traversal", workspace_id="student") == (
+        False, {"error": message},
+    )
+    assert post.call_args.kwargs["timeout"] == (10, 47)
+    assert post.call_args.kwargs["json"]["workspace_id"] == "student"
