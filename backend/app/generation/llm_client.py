@@ -1,134 +1,87 @@
-"""C2: model-provider client — gọi LLM để sinh câu trả lời từ context đã truy xuất.
-
-Hỗ trợ 2 provider:
-  - ``openai``  : OpenAI-compatible API (GPT-4o, GPT-4o-mini, v.v.)
-  - ``gemini``  : Google Gemini API (gemini-2.0-flash, v.v.)
-
-Provider mặc định được đọc từ biến môi trường ``LLM_PROVIDER`` (mặc định "gemini").
-Nếu không có API key hợp lệ, client tự động trả về chuỗi rỗng để caller xử lý fallback.
-"""
-from __future__ import annotations
-
+"""Provider calls with bounded retries and credential-safe logging."""
 import logging
-import os
-from typing import Any
+import time
+
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
+_TIMEOUT = 25
+_RETRY_DELAYS = (1, 2)
 
 
-# ---------------------------------------------------------------------------
-# Helpers — OpenAI-compatible
-# ---------------------------------------------------------------------------
+def _call_openai(messages, *, model, api_key, temperature, max_tokens):
+    import openai
 
-def _call_openai(messages: list[dict], *, model: str, api_key: str,
-                 temperature: float, max_tokens: int) -> str:
-    try:
-        import openai  # type: ignore
-    except ImportError:
-        raise ImportError("Cài đặt openai: pip install openai")
-
-    client = openai.OpenAI(api_key=api_key)
-    resp = client.chat.completions.create(
-        model=model,
-        messages=messages,
-        temperature=temperature,
-        max_tokens=max_tokens,
-    )
-    return resp.choices[0].message.content or ""
+    kwargs = {"api_key": api_key, "timeout": _TIMEOUT, "max_retries": 0}
+    if settings.LLM_BASE_URL:
+        kwargs["base_url"] = settings.LLM_BASE_URL
+    with openai.OpenAI(**kwargs) as client:
+        response = client.chat.completions.create(
+            model=model, messages=messages, temperature=temperature, max_tokens=max_tokens,
+        )
+        return response.choices[0].message.content or ""
 
 
-# ---------------------------------------------------------------------------
-# Helpers — Google Gemini
-# ---------------------------------------------------------------------------
-
-def _call_gemini(prompt: str, *, model: str, api_key: str,
-                 temperature: float, max_tokens: int) -> str:
-    try:
-        import google.generativeai as genai  # type: ignore
-    except ImportError:
-        raise ImportError("Cài đặt google-generativeai: pip install google-generativeai")
+def _call_gemini(prompt, *, model, api_key, temperature, max_tokens):
+    import google.generativeai as genai
 
     genai.configure(api_key=api_key)
-    gen_model = genai.GenerativeModel(model)
-    config = genai.GenerationConfig(
-        temperature=temperature,
-        max_output_tokens=max_tokens,
+    response = genai.GenerativeModel(model).generate_content(
+        prompt,
+        generation_config=genai.GenerationConfig(
+            temperature=temperature, max_output_tokens=max_tokens,
+        ),
+        request_options={"timeout": _TIMEOUT, "retry": None},
     )
-    resp = gen_model.generate_content(prompt, generation_config=config)
-    return resp.text or ""
+    return response.text or ""
 
 
-# ---------------------------------------------------------------------------
-# Public API
-# ---------------------------------------------------------------------------
+def _is_retryable(error):
+    code = getattr(error, "status_code", None) or getattr(error, "code", None)
+    if callable(code):
+        code = code()
+    return (
+        code in (429, 408, 504)
+        or getattr(code, "name", None) in {"RESOURCE_EXHAUSTED", "DEADLINE_EXCEEDED"}
+        or isinstance(error, TimeoutError)
+        or type(error).__name__ in {"APITimeoutError", "DeadlineExceeded", "ReadTimeout", "ConnectTimeout"}
+    )
 
-def generate_answer(
-    system_prompt: str,
-    user_prompt: str,
-    *,
-    provider: str | None = None,
-    model: str | None = None,
-    temperature: float = 0.3,
-    max_tokens: int = 1024,
-) -> str:
-    """Gửi prompt đến LLM và trả về chuỗi câu trả lời.
 
-    Parameters
-    ----------
-    system_prompt : Hướng dẫn role/persona cho LLM.
-    user_prompt   : Câu hỏi + context (đã được inject evidence).
-    provider      : ``"openai"`` hoặc ``"gemini"``. Mặc định đọc từ ``LLM_PROVIDER``.
-    model         : Tên model cụ thể. Mặc định đọc từ ``LLM_MODEL``.
-    temperature   : Độ sáng tạo (0 = deterministic, 1 = rất ngẫu nhiên).
-    max_tokens    : Giới hạn token đầu ra.
-
-    Returns
-    -------
-    str — Câu trả lời từ LLM. Trả về chuỗi rỗng nếu không có API key hoặc gặp lỗi.
-    """
-    effective_provider = (provider or os.getenv("LLM_PROVIDER", "gemini")).lower()
-
-    if effective_provider == "openai":
-        api_key = os.getenv("OPENAI_API_KEY", "")
-        if not api_key:
-            logger.warning("OPENAI_API_KEY chưa được cấu hình — bỏ qua LLM generation.")
-            return ""
-        effective_model = model or os.getenv("LLM_MODEL", "gpt-4o-mini")
-        messages = [
+def generate_answer(system_prompt, user_prompt, *, provider=None, model=None,
+                    temperature=0.3, max_tokens=1024):
+    """Generate text, returning an empty string when extraction is needed."""
+    provider = (provider or settings.LLM_PROVIDER).lower()
+    if provider == "openai":
+        key = settings.OPENAI_API_KEY
+        call = _call_openai
+        payload = [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ]
-        try:
-            return _call_openai(
-                messages,
-                model=effective_model,
-                api_key=api_key,
-                temperature=temperature,
-                max_tokens=max_tokens,
-            )
-        except Exception as exc:
-            logger.error("OpenAI generation thất bại: %s", exc)
-            return ""
-
-    elif effective_provider == "gemini":
-        api_key = os.getenv("GEMINI_API_KEY", "")
-        if not api_key:
-            logger.warning("GEMINI_API_KEY chưa được cấu hình — bỏ qua LLM generation.")
-            return ""
-        effective_model = model or os.getenv("LLM_MODEL", "gemini-2.0-flash")
-        full_prompt = f"{system_prompt}\n\n{user_prompt}"
-        try:
-            return _call_gemini(
-                full_prompt,
-                model=effective_model,
-                api_key=api_key,
-                temperature=temperature,
-                max_tokens=max_tokens,
-            )
-        except Exception as exc:
-            logger.error("Gemini generation thất bại: %s", exc)
-            return ""
-
+        default_model = "gpt-4o-mini"
+    elif provider == "gemini":
+        key = settings.GEMINI_API_KEY
+        call = _call_gemini
+        payload = f"{system_prompt}\n\n{user_prompt}"
+        default_model = "gemini-2.0-flash"
     else:
-        logger.error("LLM provider '%s' không được hỗ trợ.", effective_provider)
+        logger.warning("Unsupported LLM provider")
         return ""
+
+    if not key or not key.get_secret_value().strip():
+        return ""
+    for attempt in range(len(_RETRY_DELAYS) + 1):
+        try:
+            return call(
+                payload, model=model or settings.LLM_MODEL or default_model,
+                api_key=key.get_secret_value(), temperature=temperature, max_tokens=max_tokens,
+            ).strip()
+        except Exception as error:
+            # Provider exception bodies can include credentials or request content.
+            if attempt == len(_RETRY_DELAYS) or not _is_retryable(error):
+                logger.warning("LLM generation failed for %s", provider)
+                return ""
+            logger.info("Transient LLM failure for %s. Retrying.", provider)
+            time.sleep(_RETRY_DELAYS[attempt])
+    return ""

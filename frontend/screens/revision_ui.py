@@ -1,91 +1,43 @@
-"""Revision Roadmap UI framework for DSA Document Assistant.
-Tuần 4: Dựng khung giao diện (Skeleton).
-Tuần 7: Tích hợp hoàn thiện với Backend API (/api/revision) và Revision Engine.
-"""
+"""Study outline and flashcards from the scoped revision API."""
 import streamlit as st
 
+from api_client import create_revision
+from screens.chat_ui import show_study_metadata
 
-def render_revision_ui() -> None:
-    st.header("🗺️ Lộ trình Ôn tập DSA (Revision Roadmap)")
-    st.caption("Khung giao diện sơ đồ cây chủ đề và lộ trình ôn tập cá nhân hóa từ tài liệu.")
 
-    st.info(
-        "ℹ️ **Trạng thái**: Khung giao diện (Skeleton) cho Tuần 4. "
-        "Tính năng tổng hợp lộ trình ôn thi và tạo sơ đồ kiến thức sẽ được hoàn thiện vào **Tuần 7** "
-        "(phối hợp giữa Team C - Revision Engine và Team A - API `/api/revision`)."
-    )
+def render_revision_ui(workspace_id="default-workspace", corpus_id="user-uploads"):
+    st.header("Ôn tập DSA")
+    scope_key = f"revision:{(workspace_id, corpus_id)!r}"
+    with st.form("revision_generate"):
+        topic = st.text_input("Chủ đề hoặc mục tiêu ôn tập")
+        generate = st.form_submit_button("Tạo nội dung ôn tập")
+    if generate:
+        if not topic.strip():
+            st.warning("Nhập chủ đề cần ôn tập.")
+            return
+        with st.spinner("Đang tổng hợp tài liệu…"):
+            ok, data = create_revision(topic.strip(), workspace_id, corpus_id)
+        st.session_state[scope_key] = data if ok else {"error": data["error"]}
 
-    with st.expander("🎯 Thiết lập mục tiêu ôn tập", expanded=True):
-        col1, col2 = st.columns(2)
-        with col1:
-            target_scope = st.selectbox(
-                "Phạm vi kiến thức cần ôn tập",
-                [
-                    "Toàn bộ chương trình Cấu trúc dữ liệu & Giải thuật",
-                    "Chuyên đề 1: Cấu trúc Cây & Cây cân bằng (AVL, Red-Black)",
-                    "Chuyên đề 2: Lý thuyết Đồ thị & Các giải thuật duyệt đồ thị (BFS, DFS, Dijkstra)",
-                    "Chuyên đề 3: Các thuật toán Sắp xếp & Tìm kiếm",
-                    "Chuyên đề 4: Quy hoạch động & Đệ quy có nhớ",
-                ],
-            )
-            exam_date = st.selectbox(
-                "Thời gian còn lại đến kỳ thi",
-                ["3 ngày tới (Ôn cấp tốc)", "1 tuần tới (Ôn trọng tâm)", "2-4 tuần (Ôn toàn diện)"],
-                index=1,
-            )
-        with col2:
-            weak_points = st.multiselect(
-                "Các phần còn chưa vững",
-                [
-                    "Phép quay cây AVL (Single / Double rotation)",
-                    "Độ phức tạp thuật toán (Big-O)",
-                    "Duyệt đồ thị BFS / DFS",
-                    "Thuật toán tìm đường đi ngắn nhất Dijkstra",
-                    "Bảng băm và giải quyết đụng độ",
-                ],
-                default=["Phép quay cây AVL (Single / Double rotation)"],
-            )
+    data = st.session_state.get(scope_key)
+    if data is None:
+        return
+    if data.get("error"):
+        st.error(data["error"])
+        return
+    if data.get("generation_mode") == "abstained":
+        st.warning(data["answer"])
+        return
 
-        btn_create = st.button("📌 Tạo lộ trình gợi ý mẫu (Mock)", use_container_width=True)
-
-    if btn_create or True:
-        st.subheader("📚 Sơ đồ cây kiến thức & Lộ trình đề xuất (Mock)")
-
-        tab1, tab2 = st.tabs(["🌳 Cây chủ đề kiến thức", "📅 Kế hoạch từng bước"])
-
-        with tab1:
-            st.markdown(
-                """
-```text
-Cấu trúc Dữ liệu & Giải thuật
-├── 1. Danh sách tuyến tính (Linked List, Stack, Queue)
-├── 2. Cây (Tree)
-│   ├── Cây nhị phân (Binary Tree)
-│   ├── Cây nhị phân tìm kiếm (BST)
-│   └── Cây AVL (Tự cân bằng) 📍 [Trọng tâm cần ôn]
-│       ├── Điều kiện cân bằng (|Balance Factor| <= 1)
-│       ├── Các phép quay đơn: Left-Left (LL), Right-Right (RR)
-│       └── Các phép quay kép: Left-Right (LR), Right-Left (RL)
-├── 3. Đồ thị (Graph)
-│   ├── Biểu diễn: Ma trận kề, Danh sách kề
-│   └── Thuật toán: BFS, DFS, Dijkstra, Prim, Kruskal
-└── 4. Kỹ thuật thiết kế giải thuật
-    ├── Chia để trị (Divide and Conquer)
-    └── Quy hoạch động (Dynamic Programming)
-```
-                """
-            )
-
-        with tab2:
-            st.markdown(
-                """
-1. **Bước 1 — Nắm vững lý thuyết cơ bản (Ngày 1)**:
-   - Đọc slide `Chuong4_Trees_DSA.pdf` từ trang 1 đến trang 15.
-   - Nắm rõ công thức tính Balance Factor = Height(L) - Height(R).
-2. **Bước 2 — Thực hành các phép biến đổi cây (Ngày 2)**:
-   - Làm bài tập vẽ từng bước chèn các phần tử vào cây AVL và cân bằng lại.
-   - Ôn tập 4 trường hợp mất cân bằng và các phép quay tương ứng.
-3. **Bước 3 — Luyện câu hỏi trắc nghiệm & Red-Teaming (Ngày 3)**:
-   - Chuyển sang tab **Luyện tập Trắc nghiệm** để kiểm tra mức độ ghi nhớ.
-                """
-            )
+    show_study_metadata(data)
+    outline, cards = st.tabs(["Dàn bài", "Flashcards"])
+    with outline:
+        for section in data.get("sections", []):
+            st.subheader(section["title"])
+            st.write(section["summary"])
+            st.caption("Nguồn " + " ".join(f"[{i}]" for i in section["sources"]))
+    with cards:
+        for card in data.get("flashcards", []):
+            with st.expander(card["question"]):
+                st.write(card["answer"])
+                st.caption("Nguồn " + " ".join(f"[{i}]" for i in card["sources"]))

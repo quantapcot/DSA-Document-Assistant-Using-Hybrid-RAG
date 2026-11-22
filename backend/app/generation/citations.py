@@ -1,10 +1,32 @@
 """C2: citations — đóng gói evidence thành Citation object và snippet cho prompt."""
 from __future__ import annotations
+import re
 
 from app.schemas.contracts import Citation
 
 
 SNIPPET_MAX_CHARS = 250
+MAX_EVIDENCES = 5
+_CITATION = re.compile(r"\[([1-9][0-9]{0,8})\]")
+
+
+def cited_labels(answer: str, evidence_count: int) -> list[int]:
+    return list(dict.fromkeys(
+        label for match in _CITATION.finditer(answer)
+        if (label := int(match[1])) <= evidence_count
+    ))
+
+
+def filter_actual_citations(answer: str, evidences: list[dict]) -> list[Citation]:
+    return citations_for_labels(evidences, cited_labels(answer, len(evidences)))
+
+
+def citations_for_labels(evidences: list[dict], labels: list[int]) -> list[Citation]:
+    citations = evidences_to_citations(evidences)
+    return [
+        citations[label - 1].model_copy(update={"label": label})
+        for label in dict.fromkeys(labels) if 1 <= label <= len(citations)
+    ]
 
 
 def evidences_to_citations(evidences: list[dict]) -> list[Citation]:
@@ -26,7 +48,7 @@ def evidences_to_citations(evidences: list[dict]) -> list[Citation]:
     return citations
 
 
-def format_evidence_for_prompt(evidences: list[dict], max_chunks: int = 5) -> str:
+def format_evidence_for_prompt(evidences: list[dict], max_chunks: int = MAX_EVIDENCES) -> str:
     """Định dạng danh sách evidence thành khối văn bản để inject vào System Prompt.
 
     Mỗi đoạn được đánh số và gán nguồn gốc rõ ràng (file, trang, mục)

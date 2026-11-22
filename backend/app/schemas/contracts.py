@@ -22,6 +22,7 @@ class Citation(BaseModel):
     page: int = Field(..., description="Số trang trong slide")
     section: Optional[str] = Field(None, description="Tên tiêu đề mục trong slide")
     snippet: str = Field(..., description="Trích đoạn văn bản dùng làm bằng chứng")
+    label: int | None = None
 
 class RAGResponse(BaseModel):
     query: str = Field(..., description="Câu hỏi đầu vào của sinh viên")
@@ -29,6 +30,7 @@ class RAGResponse(BaseModel):
     citations: List[Citation] = Field(default_factory=list, description="Danh sách trích dẫn nguồn gốc")
     confidence_score: float = Field(..., description="Độ tin cậy của câu trả lời (0.0 đến 1.0)")
     is_safe: bool = Field(True, description="Cờ đánh giá an toàn từ Guardrail")
+    generation_mode: str | None = None
 
 # Schema cho Request đầu vào của API Chat
 class ChatRequest(BaseModel):
@@ -39,6 +41,39 @@ class ChatRequest(BaseModel):
     )
     workspace_id: Optional[str] = Field(None, description="Mã workspace của người dùng (tùy chọn)")
     corpus_id: Optional[str] = Field(None, description="Mã corpus cần tìm kiếm (tùy chọn)")
+
+
+class QuizRequest(ChatRequest):
+    num_questions: int = Field(5, ge=1, le=20)
+
+
+class QuizQuestion(BaseModel):
+    question: str = Field(min_length=1)
+    options: list[str] = Field(min_length=4, max_length=4)
+    correct_index: int = Field(ge=0, le=3)
+    explanation: str = Field(min_length=1)
+    sources: list[int] = Field(min_length=1)
+
+
+class Flashcard(BaseModel):
+    question: str = Field(min_length=1)
+    answer: str = Field(min_length=1)
+    sources: list[int] = Field(min_length=1)
+
+
+class StudySection(BaseModel):
+    title: str = Field(min_length=1)
+    summary: str = Field(min_length=1)
+    sources: list[int] = Field(min_length=1)
+
+
+class QuizResponse(RAGResponse):
+    questions: list[QuizQuestion] = Field(default_factory=list)
+
+
+class RevisionResponse(RAGResponse):
+    sections: list[StudySection] = Field(default_factory=list)
+    flashcards: list[Flashcard] = Field(default_factory=list)
 
 # ==========================================
 # 3. CONTRACT D -> A/C (Team D gán nhãn Guardrail & Safety)

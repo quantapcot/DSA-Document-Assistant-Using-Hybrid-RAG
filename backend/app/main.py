@@ -5,7 +5,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.api.routes import health, chat, upload, documents
+from app.api.routes import health, chat, quiz, revision, upload, documents
 from app.api.middleware.observability import ObservabilityMiddleware
 from app.retrieval.config import RetrievalConfig
 from app.retrieval.hybrid_search import RetrievalEngine
@@ -81,6 +81,8 @@ app.add_middleware(ObservabilityMiddleware)
 # Đăng ký các Routers
 app.include_router(health.router)
 app.include_router(chat.router)
+app.include_router(quiz.router)
+app.include_router(revision.router)
 app.include_router(upload.router)
 app.include_router(documents.router)
 

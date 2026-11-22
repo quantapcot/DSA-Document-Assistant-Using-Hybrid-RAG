@@ -37,14 +37,26 @@ def ask_question(
     workspace_id: str | None = None,
     corpus_id: str | None = None,
 ) -> tuple[bool, dict[str, Any]]:
+    return _study_request("chat", query, workspace_id, corpus_id)
+
+
+def create_quiz(query, num_questions=5, workspace_id=None, corpus_id=None):
+    return _study_request("quiz", query, workspace_id, corpus_id, num_questions=num_questions)
+
+
+def create_revision(query, workspace_id=None, corpus_id=None):
+    return _study_request("revision", query, workspace_id, corpus_id)
+
+
+def _study_request(endpoint, query, workspace_id, corpus_id, **fields):
     try:
-        payload: dict[str, Any] = {"query": query}
+        payload: dict[str, Any] = {"query": query, **fields}
         if workspace_id:
             payload["workspace_id"] = workspace_id
         if corpus_id:
             payload["corpus_id"] = corpus_id
         response = requests.post(
-            f"{BACKEND_URL}/api/chat",
+            f"{BACKEND_URL}/api/{endpoint}",
             json=payload,
             timeout=120,
         )
