@@ -10,6 +10,9 @@ import streamlit as st
 
 from api_client import upload_pdf, list_documents, delete_document
 
+MAX_FILES_PER_UPLOAD = 10
+MAX_UPLOAD_BYTES = 15 * 1024 * 1024
+
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -17,58 +20,79 @@ from api_client import upload_pdf, list_documents, delete_document
 
 def _render_upload_tab(workspace_id, corpus_id, cache_key) -> None:
     st.subheader("📤 Tải lên tài liệu mới")
-    st.caption("Hỗ trợ định dạng PDF và DOCX — Tối đa 15 MB.")
+    st.caption("Chọn tối đa 10 file PDF hoặc DOCX mỗi lượt, tối đa 15 MB mỗi file.")
 
-    file = st.file_uploader(
+    files = st.file_uploader(
         "Chọn file PDF hoặc DOCX tài liệu DSA",
         type=["pdf", "docx"],
+        accept_multiple_files=True,
         help="Slide bài giảng, giáo trình, đề cương môn Cấu trúc Dữ liệu & Giải thuật.",
         key="uploader_file",
     )
-    if file is not None:
+    if files:
+        st.write(f"Đã chọn {len(files)} file:")
+        for file in files:
+            st.text(f"{file.name} · {file.size / (1024 * 1024):.2f} MB")
+        if any(file.size > MAX_UPLOAD_BYTES for file in files):
+            st.warning("File vượt 15 MB sẽ được bỏ qua.")
         ok, listing = _load_documents(workspace_id, corpus_id, cache_key)
-        if ok and any(doc["filename"] == file.name for doc in listing.get("documents", [])):
-            st.warning("Tài liệu trùng tên. Tải lên sẽ thay thế bản hiện tại trong kho này.")
+        names = {file.name for file in files}
+        existing = {doc["filename"] for doc in listing.get("documents", [])} if ok else set()
+        if duplicates := sorted(names & existing):
+            st.warning("Sẽ thay thế tài liệu trùng tên trong kho này: " + ", ".join(duplicates))
+        if len(names) < len(files):
+            st.warning("File trùng tên trong lượt chọn sẽ được xử lý theo thứ tự; bản tải thành công cuối cùng sẽ được giữ.")
 
-    col1, _ = st.columns([1, 4])
-    with col1:
-        btn_upload = st.button(
-            "📤 Nạp vào Hệ thống",
-            disabled=file is None,
-            use_container_width=True,
-            key="btn_upload",
-        )
+    too_many = len(files) > MAX_FILES_PER_UPLOAD
+    if too_many:
+        st.warning(f"Chỉ được chọn tối đa {MAX_FILES_PER_UPLOAD} file mỗi lượt. Hãy bỏ bớt file.")
+    upload_clicked = st.button(
+        "📤 Nạp vào Hệ thống",
+        disabled=not files or too_many,
+        key="btn_upload",
+    )
 
-    if btn_upload and file is not None:
-        with st.spinner(
-            f"Đang bóc tách, làm sạch và lập chỉ mục '{file.name}'… "
-            "(có thể mất vài chục giây tùy kích thước file)"
-        ):
-            ok, data = upload_pdf(file.name, file.getvalue(), workspace_id, corpus_id)
-        st.session_state[f"upload_result_{cache_key}"] = (ok, data)
-        # Làm mới danh sách tài liệu ở tab quản lý
+    result_key = f"upload_batch_result_{cache_key}"
+    if upload_clicked and files and not too_many:
+        progress = st.progress(0, text=f"Đã xử lý 0/{len(files)} file")
+        results = []
+        for index, file in enumerate(files, start=1):
+            if file.size > MAX_UPLOAD_BYTES:
+                status, data = "skipped", {"error": "Vượt giới hạn 15 MB."}
+            else:
+                try:
+                    ok, data = upload_pdf(file.name, file.getvalue(), workspace_id, corpus_id)
+                    status = "success" if ok else "failed"
+                except OSError:
+                    status, data = "failed", {"error": "Không đọc được file hoặc kết nối bị gián đoạn."}
+            results.append((file.name, status, data))
+            progress.progress(index / len(files), text=f"Đã xử lý {index}/{len(files)} file")
+        st.session_state[result_key] = results
+        # The management tab reloads this scope later in the same run.
         st.session_state.pop(cache_key, None)
-        if ok and data.get("replaced"):
-            st.warning("Đã thay thế tài liệu cùng tên.")
 
-    result = st.session_state.get(f"upload_result_{cache_key}")
-    if result is not None:
-        ok, data = result
-        st.divider()
-        if ok:
-            st.success(f"✅ {data.get('message', 'Đã nạp tài liệu thành công!')}")
-            c1, c2, c3, c4 = st.columns(4)
-            c1.metric("📄 Tên tệp", data.get("filename", "N/A"))
-            c2.metric("💾 Kích thước", f"{data.get('size_kb', 0)} KB")
-            c3.metric("🔖 Chunks tạo ra", data.get("total_chunks", 0))
-            c4.metric("✅ Chunks đã lập chỉ mục", data.get("indexed_chunks", 0))
-            st.info(
-                f"🎉 **Chỉ mục sẵn sàng:** Đã lưu `{data.get('indexed_chunks', 0)}` chunks "
-                f"vào kho `{data.get('workspace_id', 'default-workspace')}`. "
-                "Chuyển sang tab **💬 Trò chuyện** để hỏi đáp về tài liệu này ngay!"
-            )
+    if results := st.session_state.get(result_key):
+        _show_upload_results(results)
+
+
+def _show_upload_results(results):
+    succeeded = [data for _, status, data in results if status == "success"]
+    failed = sum(status == "failed" for _, status, _ in results)
+    skipped = sum(status == "skipped" for _, status, _ in results)
+    chunks = sum(data.get("indexed_chunks", 0) for data in succeeded)
+    st.subheader("Kết quả lượt tải gần nhất")
+    st.write(
+        f"Thành công: {len(succeeded)} · Thất bại: {failed} · Bỏ qua: {skipped} "
+        f"· Chunks đã lập chỉ mục: {chunks}"
+    )
+    for name, status, data in results:
+        if status == "success":
+            replacement = " · Đã thay thế bản trước" if data.get("replaced") else ""
+            st.success(f"{name} · Thành công · {data.get('indexed_chunks', 0)} chunks{replacement}")
+        elif status == "failed":
+            st.error(f"{name} · Thất bại · {data.get('error', 'Lỗi không xác định')}")
         else:
-            st.error(f"❌ Nạp tài liệu thất bại: {data.get('error', 'Lỗi không xác định')}")
+            st.warning(f"{name} · Bỏ qua · {data['error']}")
 
 
 def _load_documents(workspace_id, corpus_id, cache_key):

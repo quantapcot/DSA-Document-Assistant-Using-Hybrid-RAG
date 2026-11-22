@@ -1,4 +1,8 @@
 from io import BytesIO
+from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import Mock
+from urllib.parse import urlsplit
 
 import fitz
 import pytest
@@ -55,6 +59,151 @@ def post(api, workspace, filename, content, corpus="user-uploads"):
 def query(engine, word, workspace, method="bm25"):
     return engine.retrieve(word, method, top_k=20, workspace_id=workspace,
                            corpus_id="user-uploads")
+
+
+@pytest.fixture
+def upload_screen(monkeypatch):
+    from streamlit.testing.v1 import AppTest
+
+    monkeypatch.syspath_prepend(str(Path(__file__).resolve().parents[2] / "frontend"))
+    import api_client
+    from screens import upload_ui
+
+    def start(files):
+        ui = AppTest.from_string("from screens.upload_ui import render_upload_ui\nrender_upload_ui()")
+        if hasattr(AppTest, "file_uploader"):
+            ui.run()
+            widget = ui.file_uploader[0]
+            assert widget.accept_multiple_files
+            widget.set_value([(name, content, "application/octet-stream") for name, content in files])
+        else:
+            # Older supported Streamlit releases expose AppTest without this widget.
+            import streamlit as st
+
+            def select_files(*args, **kwargs):
+                assert kwargs["accept_multiple_files"]
+                return [
+                    SimpleNamespace(name=name, size=len(content), getvalue=lambda data=content: data)
+                    for name, content in files
+                ]
+
+            monkeypatch.setattr(st, "file_uploader", select_files)
+            ui.run()
+        ui.text_input(key="mgmt_ws").set_value("student")
+        ui.text_input(key="mgmt_corpus").set_value("course")
+        return ui.run()
+
+    return start, upload_ui, api_client
+
+
+@pytest.mark.parametrize("count", [1, 3, 10])
+def test_upload_widget_lists_files_and_only_submits_on_click(upload_screen, monkeypatch, count):
+    start, ui_module, _ = upload_screen
+    files = [(f"notes-{i}.pdf", b"document") for i in range(count)]
+    uploader = Mock(return_value=(True, {"indexed_chunks": 2}))
+    monkeypatch.setattr(ui_module, "upload_pdf", uploader)
+    monkeypatch.setattr(ui_module, "list_documents", Mock(return_value=(True, {"total": 0, "documents": []})))
+    ui = start(files)
+    assert not ui.exception and not uploader.called
+    assert all(any(name in line.value for line in ui.text) for name, _ in files)
+
+    ui.button(key="btn_upload").click().run()
+    assert not ui.exception
+    assert [call.args for call in uploader.call_args_list] == [
+        (name, content, "student", "course") for name, content in files
+    ]
+    assert any(f"Thành công: {count} · Thất bại: 0 · Bỏ qua: 0" in item.value
+               and f"Chunks đã lập chỉ mục: {2 * count}" in item.value for item in ui.markdown)
+
+    ui.run()
+    assert uploader.call_count == count
+    assert len([item for item in ui.success if "chunks" in item.value]) == count
+
+
+def test_upload_widget_skips_oversize_and_continues_after_error(upload_screen, monkeypatch):
+    start, ui_module, _ = upload_screen
+    files = [("first.pdf", b"one"), ("failed.docx", b"two"),
+             ("large.pdf", b"x" * (15 * 1024 * 1024 + 1)), ("last.pdf", b"three")]
+    uploader = Mock(side_effect=[(True, {"indexed_chunks": 2}),
+                                 (False, {"error": "Invalid DOCX"}),
+                                 (True, {"indexed_chunks": 5})])
+    monkeypatch.setattr(ui_module, "upload_pdf", uploader)
+    monkeypatch.setattr(ui_module, "list_documents", Mock(return_value=(True, {"total": 0, "documents": []})))
+    ui = start(files)
+    assert any("vượt 15 MB" in item.value for item in ui.warning)
+
+    ui.button(key="btn_upload").click().run()
+    assert not ui.exception
+    assert [call.args[0] for call in uploader.call_args_list] == ["first.pdf", "failed.docx", "last.pdf"]
+    assert any("failed.docx" in item.value and "Invalid DOCX" in item.value for item in ui.error)
+    assert any("large.pdf" in item.value and "Bỏ qua" in item.value for item in ui.warning)
+    assert any("Thành công: 2 · Thất bại: 1 · Bỏ qua: 1" in item.value
+               and "Chunks đã lập chỉ mục: 7" in item.value for item in ui.markdown)
+    assert ui.get("progress")[0].proto.value == 100
+
+
+def test_upload_widget_blocks_more_than_ten_files(upload_screen, monkeypatch):
+    start, ui_module, _ = upload_screen
+    uploader = Mock()
+    monkeypatch.setattr(ui_module, "upload_pdf", uploader)
+    monkeypatch.setattr(ui_module, "list_documents", Mock(return_value=(True, {"total": 0, "documents": []})))
+    ui = start([(f"{i}.pdf", b"test") for i in range(11)])
+    assert not ui.exception
+    assert ui.button(key="btn_upload").proto.disabled
+    assert any("tối đa 10 file" in item.value for item in ui.warning)
+    assert not uploader.called
+
+
+def test_multi_upload_refreshes_scoped_document_management(lifecycle, upload_screen, monkeypatch):
+    api, engine, _ = lifecycle
+    start, _, api_client = upload_screen
+    assert post(api, "student", "notes.pdf", pdf(2, "oldgraph"), corpus="course").status_code == 200
+    assert post(api, "other", "private.pdf", pdf(1, "privategraph"), corpus="course").status_code == 200
+
+    def as_requests(response):
+        return SimpleNamespace(ok=response.is_success, json=response.json,
+                               headers=response.headers, status_code=response.status_code)
+
+    upload_http = Mock(side_effect=lambda url, *, files, data, timeout:
+                       as_requests(api.post(urlsplit(url).path, files=files, data=data)))
+    list_http = Mock(side_effect=lambda url, *, params, timeout:
+                     as_requests(api.get(urlsplit(url).path, params=params)))
+    monkeypatch.setattr(api_client, "requests", SimpleNamespace(
+        post=upload_http, get=list_http, RequestException=api_client.requests.RequestException,
+    ))
+    docx = Document()
+    docx.add_paragraph(
+        "Binary search finds a value in a sorted array by repeatedly narrowing the range. "
+        "The algorithm compares the target with the middle element and continues on one side."
+    )
+    stream = BytesIO()
+    docx.save(stream)
+    ui = start([("notes.pdf", pdf(1, "newgraph")), ("search.docx", stream.getvalue())])
+    assert not ui.exception
+    assert any("Sẽ thay thế" in item.value and "notes.pdf" in item.value for item in ui.warning)
+    assert all("private.pdf" not in item.value for item in ui.markdown)
+
+    ui.button(key="btn_upload").click().run()
+    assert not ui.exception
+    assert upload_http.call_count == 2
+    assert [call.kwargs["params"] for call in list_http.call_args_list
+            if call.kwargs["params"]["workspace_id"] == "student"] == [
+        {"workspace_id": "student", "corpus_id": "course"},
+        {"workspace_id": "student", "corpus_id": "course"},
+    ]
+    assert any("search.docx" in item.value for item in ui.markdown)
+    assert any("notes.pdf" in item.value and "Đã thay thế" in item.value for item in ui.success)
+    assert all(call.kwargs["data"] == {"workspace_id": "student", "corpus_id": "course"}
+               for call in upload_http.call_args_list)
+    listing = api.get("/api/documents", params={"workspace_id": "student", "corpus_id": "course"}).json()
+    assert {item["filename"]: item["chunk_count"] for item in listing["documents"]} == {
+        "notes.pdf": 1, "search.docx": 1,
+    }
+    assert engine.retrieve("oldgraph", "bm25", workspace_id="student", corpus_id="course") == []
+    other = api.get("/api/documents", params={"workspace_id": "other", "corpus_id": "course"}).json()
+    assert [item["filename"] for item in other["documents"]] == ["private.pdf"]
+    ui.run()
+    assert upload_http.call_count == 2
 
 
 def test_pdf_replace_abort_and_delete_across_workspaces(lifecycle, monkeypatch):
