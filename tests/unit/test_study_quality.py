@@ -184,7 +184,7 @@ def test_study_batch_rejects_schedule_changes_and_bad_sources(problem):
     assert validate_batch(batch, slots, chosen, passages) is None
 
 
-def test_revision_retries_truncated_batch_and_aborts_on_persistent_failure(monkeypatch):
+def test_revision_retries_truncated_batch_and_drops_failed_slots(monkeypatch):
     documents = evidence()
     settings = dict(exam_date=TODAY + timedelta(days=5), budget=30, level="Beginner")
     catalog, passages = build_curriculum(documents)
@@ -214,7 +214,14 @@ def test_revision_retries_truncated_batch_and_aborts_on_persistent_failure(monke
 
     monkeypatch.setattr(revision_generator, "generate_study_json", bad_model)
     response = revision_generator.generate_revision("DSA", documents, today=TODAY, **settings)
-    assert response.plan is None and response.generation_error == "invalid_json"
+    # Failed later slots are dropped; the plan keeps the sessions that passed.
+    assert response.plan is not None
+    assert any("Bỏ" in warning for warning in response.warnings)
+
+    monkeypatch.setattr(revision_generator, "generate_study_json",
+                        lambda *args, **kwargs: (_ for _ in ()).throw(LLMError("invalid_json")))
+    response = revision_generator.generate_revision("DSA", documents, today=TODAY, **settings)
+    assert response.plan is None and response.generation_error == "invalid_output"
 
 
 def test_revision_coverage_dependencies_and_varying_minutes(monkeypatch):
@@ -315,3 +322,20 @@ def test_quote_normalization_preserves_numbers_operators_and_word_order():
     assert not supports_quote("The runtime is proportional to n2.", "The runtime is proportional to n².")
     assert not supports_quote("The vertex is not inserted into the queue.",
                               "The vertex is inserted into the queue.")
+
+
+def test_topic_gate_rejects_topics_absent_from_documents():
+    from app.orchestration.study_evidence import mentions_topic, topic_terms
+    bfs = topic_terms("BFS")
+    assert mentions_topic({"text": "Breadth-first search uses a queue."}, bfs)
+    assert not mentions_topic({"text": "Merge sort splits the array in halves."}, bfs)
+    assert mentions_topic({"text": "Thuật toán sắp xếp nổi bọt"}, topic_terms("sort"))
+    assert not mentions_topic({"text": "Hash tables map keys"}, topic_terms("trie"))
+    assert mentions_topic({"text": "Recursion is when a function calls itself."}, topic_terms("đệ quy"))
+
+
+def test_vietnamese_topic_query_is_expanded_with_english_name():
+    from app.orchestration.study_evidence import expanded_query
+    assert expanded_query("đệ quy") == "đệ quy recursion"
+    assert expanded_query("recursion") == "recursion"
+    assert expanded_query("nấu phở") == "nấu phở"

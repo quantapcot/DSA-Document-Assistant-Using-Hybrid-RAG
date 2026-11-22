@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 from app.orchestration.study_evidence import normalized_text
 from app.schemas.contracts import QuizQuestion, QuizResponse
 
-from .abstention import ABSTENTION_RESPONSE, EMPTY_WORKSPACE_RESPONSE
+from .abstention import EMPTY_WORKSPACE_RESPONSE, topic_missing_response
 from .llm_client import ERROR_MESSAGES, LLMError
 from .rag_engine import generate_study_json, grounded_fields
 from .study_output import normalize_row, reject, rows, supports_quote, validate_row
@@ -49,10 +49,14 @@ def _candidates(payload, blueprint, difficulty, source_count):
     for item in payload[:BATCH_SIZE]:
         item = normalize_row(item, integers=("slot", "correct_index"))
         if isinstance(item, dict):
-            if isinstance(kind := item.get("question_type"), str):
+            # The scheduler owns slot type and difficulty; a label typo from the
+            # model should not discard an otherwise valid, verified question.
+            slot = item.get("slot")
+            if type(slot) is int and slot in blueprint:
+                item["question_type"] = blueprint[slot]
+            elif isinstance(kind := item.get("question_type"), str):
                 item["question_type"] = kinds.get(normalized_text(kind.replace("_", " ")), kind)
-            if isinstance(level := item.get("difficulty"), str) and level.strip().casefold() == difficulty.casefold():
-                item["difficulty"] = difficulty
+            item["difficulty"] = difficulty
         question = validate_row(Candidate, item, stage)
         if question is None:
             continue
@@ -197,7 +201,7 @@ def _draft_batch(query, evidence, difficulty, blueprint, seen):
 def generate_quiz(query, evidences, *, num_questions=5, difficulty="Medium", workspace_empty=False):
     if not evidences:
         return QuizResponse(
-            query=query, answer=EMPTY_WORKSPACE_RESPONSE if workspace_empty else ABSTENTION_RESPONSE,
+            query=query, answer=EMPTY_WORKSPACE_RESPONSE if workspace_empty else topic_missing_response(query),
             confidence_score=0.0, generation_mode="abstained", requested_count=num_questions,
         )
     kinds = BLUEPRINTS[difficulty]

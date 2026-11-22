@@ -112,7 +112,7 @@ def generate_study_json(query, evidence, instructions, *, max_tokens=FIT_OUTPUT_
     try:
         raw = generate_answer(
             system, build_user_prompt(query, context), provider="openai",
-            model=settings.LLM_MODEL, max_tokens=min(max_tokens, FIT_OUTPUT_LIMIT),
+            model=settings.LLM_MODEL, max_tokens=min(max_tokens, FIT_OUTPUT_LIMIT), temperature=0.0,
             task=task, raise_errors=True,
         )
     except LLMError as error:

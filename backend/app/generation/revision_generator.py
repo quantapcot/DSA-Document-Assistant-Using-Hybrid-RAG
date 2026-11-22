@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 
 from app.schemas.contracts import RevisionResponse
 
-from .abstention import ABSTENTION_RESPONSE, EMPTY_WORKSPACE_RESPONSE
+from .abstention import ABSTENTION_RESPONSE, EMPTY_WORKSPACE_RESPONSE, topic_missing_response
 from .llm_client import ERROR_MESSAGES, LLMError
 from .rag_engine import generate_study_json, grounded_fields
 from .study_planner import assemble_plan, batch_request, build_curriculum, schedule_topics, validate_batch
@@ -25,7 +25,8 @@ def resolve_exam_date(body, *, today=None):
 def generate_revision(query, evidence, *, today, exam_date, budget, level, workspace_empty=False):
     if not evidence:
         return RevisionResponse(
-            query=query, answer=EMPTY_WORKSPACE_RESPONSE if workspace_empty else ABSTENTION_RESPONSE,
+            query=query, answer=EMPTY_WORKSPACE_RESPONSE if workspace_empty
+            else (topic_missing_response(query) if query else ABSTENTION_RESPONSE),
             confidence_score=0.0, generation_mode="abstained",
         )
     catalog, passages = build_curriculum(evidence)
@@ -55,6 +56,16 @@ def generate_revision(query, evidence, *, today, exam_date, budget, level, works
         for start in range(0, len(slots), REVISION_BATCH_SIZE):
             batch = slots[start:start + REVISION_BATCH_SIZE]
             contents.update(_generate_batch(query, batch, chosen, passages, level))
+        if not contents:
+            raise LLMError("invalid_output")
+        planned = len(slots)
+        chosen, slots = _prune_failed(chosen, slots, contents)
+        dropped = planned - len(slots)
+        contents = {slot.id: contents[slot.id] for slot in slots}
+        if not slots:
+            raise LLMError("invalid_output")
+        if dropped:
+            warnings.append(f"Bỏ {dropped} buổi học vì FIT-AI không tạo được nội dung có trích dẫn hợp lệ.")
         plan = assemble_plan(contents, chosen, slots, passages, today=today, **parameters)
         if plan is None:
             raise LLMError("invalid_output")
@@ -85,8 +96,33 @@ def _generate_batch(query, slots, chosen, passages, level, *, retry_single=True)
         if error.code not in {"invalid_json", "truncated_json", "invalid_output"} or not retry_single:
             raise
         # A failed batch gets one smaller attempt per slot, with the exact same
-        # scheduler IDs and citations. Failure of any slot aborts the plan.
+        # scheduler IDs and citations. A slot that still fails is dropped and
+        # the plan is pruned later, instead of discarding the whole plan.
         result = {}
         for slot in slots:
-            result.update(_generate_batch(query, [slot], chosen, passages, level, retry_single=False))
+            try:
+                result.update(_generate_batch(query, [slot], chosen, passages, level, retry_single=False))
+            except LLMError as slot_error:
+                if slot_error.code not in {"invalid_json", "truncated_json", "invalid_output"}:
+                    raise
         return result
+
+
+def _prune_failed(chosen, slots, contents):
+    """Drop failed slots and everything that depends on a topic left unlearned."""
+    learned, kept = set(), []
+    for slot in slots:
+        if slot.id not in contents:
+            continue
+        if slot.kind == "learn":
+            if not set(slot.prerequisites) <= learned:
+                continue
+            learned.update(slot.topic_ids)
+            kept.append(slot)
+            continue
+        topics = tuple(topic for topic in slot.topic_ids if topic in learned)
+        if topics == slot.topic_ids:
+            kept.append(slot)
+    # Review slots reference topics by ID; drop any whose topics were removed.
+    kept = [slot for slot in kept if slot.kind == "learn" or set(slot.topic_ids) <= learned]
+    return [topic for topic in chosen if topic.id in learned], kept

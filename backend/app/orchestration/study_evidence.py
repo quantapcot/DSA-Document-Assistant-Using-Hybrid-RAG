@@ -64,7 +64,7 @@ def topic_key(item):
     return (item.get("document_id") or item["filename"], study_topic(item))
 
 
-def diverse_evidence(result_sets, *, workspace, corpus, limit=QUIZ_EVIDENCE_LIMIT):
+def diverse_evidence(result_sets, *, workspace, corpus, limit=QUIZ_EVIDENCE_LIMIT, apply_threshold=True):
     """Interleave ranked lists, preferring evidence from different chapters."""
     groups = defaultdict(list)
     seen_ids, seen_texts = set(), set()
@@ -83,7 +83,7 @@ def diverse_evidence(result_sets, *, workspace, corpus, limit=QUIZ_EVIDENCE_LIMI
                 continue
             method = item.get("retrieval_method")
             score = evidence_score(item)
-            if score is not None and method in SCORE_THRESHOLDS and score < SCORE_THRESHOLDS[method]:
+            if apply_threshold and score is not None and method in SCORE_THRESHOLDS and score < SCORE_THRESHOLDS[method]:
                 continue
             if chunk_id:
                 seen_ids.add(chunk_id)
@@ -144,3 +144,64 @@ def curriculum_inventory(engine, workspace, corpus, relevant=None):
 
     groups = sorted(candidates.values(), key=chapter_order)
     return [item for group in groups for item in group]
+
+
+_STOPWORDS = {
+    "và", "của", "các", "những", "cho", "về", "trong", "là", "một", "thuật", "toán", "bài",
+    "the", "and", "of", "for", "in", "on", "a", "an", "to", "algorithm", "algorithms",
+}
+
+
+# Extra aliases used only by the topic gate (they do not affect topic grouping).
+GATE_PATTERNS = {
+    "Sắp xếp": r"\bsort|sắp xếp",
+    "Cây": r"\btrees?\b|\bcây\b",
+    "Heap": r"\bheaps?\b|đống",
+}
+
+
+# English names used to expand Vietnamese topic queries, because the course
+# slides are mostly in English and cross-lingual retrieval is weak.
+ENGLISH_ALIASES = {
+    "Mảng": "array", "Danh sách liên kết": "linked list", "Ngăn xếp": "stack",
+    "Hàng đợi": "queue", "Tìm kiếm nhị phân": "binary search",
+    "Cây nhị phân tìm kiếm": "binary search tree", "Đồ thị": "graph",
+    "BFS": "breadth-first search", "DFS": "depth-first search", "Đệ quy": "recursion",
+    "Quy hoạch động": "dynamic programming", "Bảng băm": "hash table",
+    "Độ phức tạp": "time complexity", "Sắp xếp": "sorting", "Cây": "tree", "Heap": "heap",
+}
+
+
+def expanded_query(query):
+    """Append English names of recognised topics to the user's topic query."""
+    text = query.casefold()
+    patterns = {**GATE_PATTERNS, **TOPIC_PATTERNS}
+    extra = [ENGLISH_ALIASES[name] for name, pattern in patterns.items()
+             if name in ENGLISH_ALIASES and re.search(pattern, text, re.I)
+             and ENGLISH_ALIASES[name] not in text]
+    return " ".join([query, *extra])
+
+
+def topic_terms(query):
+    """Return regex patterns that a passage must contain to be about the topic."""
+    text = query.casefold()
+    patterns = {**GATE_PATTERNS, **TOPIC_PATTERNS}
+    known = [pattern for pattern in patterns.values() if re.search(pattern, text, re.I)]
+    if known:
+        return known
+    words = [word for word in normalized_text(query).split() if len(word) >= 3 and word not in _STOPWORDS]
+    return [rf"\b{re.escape(word)}" for word in words]
+
+
+def is_known_topic(terms):
+    return bool(terms) and all(term in TOPIC_PATTERNS.values() or term in GATE_PATTERNS.values() for term in terms)
+
+
+def mentions_topic(item, terms):
+    if not terms:
+        return True
+    text = normalized_text(" ".join((item.get("section") or "", item.get("text", ""))))
+    # Known topics match one alias; free-text topics must match every keyword.
+    if is_known_topic(terms):
+        return any(re.search(term, text, re.I) for term in terms)
+    return all(re.search(term, text, re.I) for term in terms)
