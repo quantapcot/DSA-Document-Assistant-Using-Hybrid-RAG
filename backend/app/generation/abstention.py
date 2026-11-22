@@ -39,3 +39,11 @@ def should_abstain(evidences: list[dict], method: str = "hybrid_rerank") -> bool
     threshold = SCORE_THRESHOLDS[method]
     scores = [score for evidence in evidences if (score := evidence_score(evidence)) is not None]
     return bool(scores) and max(scores) < threshold
+
+
+def topic_missing_response(topic: str) -> str:
+    return (
+        f"⚠️ **Không thể tạo nội dung cho chủ đề \"{topic}\".**\n\n"
+        "Chủ đề này không có trong các tài liệu bạn đã tải lên workspace. "
+        "Hãy tải tài liệu có nội dung về chủ đề này, hoặc chọn một chủ đề có trong tài liệu."
+    )

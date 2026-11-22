@@ -10,7 +10,7 @@ from pydantic import SecretStr
 from qdrant_client import QdrantClient
 
 from app.api.routes import upload
-from app.generation import rag_engine
+from app.generation import quiz_generator, rag_engine
 from app.main import app
 from app.retrieval import indexing
 from app.retrieval.config import RetrievalConfig
@@ -72,11 +72,13 @@ def test_upload_retrieve_quiz_and_answer_key(study_client, monkeypatch):
     _upload(study_client, "Private.pdf", PRIVATE, "bob")
     calls = []
 
-    def mock_fit(system, prompt, *, provider, model, max_tokens, task, raise_errors):
+    def mock_fit(system, prompt, *, provider, model, max_tokens, task, raise_errors, temperature=None):
+        assert temperature in (0.0, 0.7)
         assert provider == "openai" and model == "mock-qwen-27b"
         assert "Private.pdf" not in prompt and "bench.pdf" not in prompt
         passages = _passages(prompt)
-        assert len(passages) == 2
+        # The topic gate keeps the unrelated Sort.pdf chunk out of a BFS quiz.
+        assert len(passages) == 1
         source = next(label for label, passage in passages.items() if BFS in passage)
         calls.append(system)
         if "Audit each explanation" in system:
@@ -95,6 +97,7 @@ def test_upload_retrieve_quiz_and_answer_key(study_client, monkeypatch):
         }])
 
     monkeypatch.setattr(rag_engine, "generate_answer", mock_fit)
+    monkeypatch.setattr(quiz_generator, "MAX_PASSES", 2)
     response = study_client.post("/api/quiz", json={
         "query": "BFS graph traversal", "workspace_id": "alice", "num_questions": 5, "difficulty": "Easy",
     })
@@ -103,6 +106,11 @@ def test_upload_retrieve_quiz_and_answer_key(study_client, monkeypatch):
     assert (quiz["generated_count"], quiz["requested_count"]) == (1, 5)
     assert len(calls) == 4 and [cite["filename"] for cite in quiz["citations"]] == ["BFS.pdf"]
     assert quiz["questions"][0]["options"][quiz["questions"][0]["correct_index"]] == "Queue"
+
+    monkeypatch.setattr(rag_engine, "generate_answer", lambda *args, **kwargs: pytest.fail("called model"))
+    missing = study_client.post("/api/quiz", json={"query": "Trie", "workspace_id": "alice"}).json()
+    assert missing["generation_mode"] == "abstained" and not missing["questions"]
+    assert "không có trong các tài liệu" in missing["answer"]
 
 
 @pytest.mark.parametrize("extra_chapters", [0, 10])

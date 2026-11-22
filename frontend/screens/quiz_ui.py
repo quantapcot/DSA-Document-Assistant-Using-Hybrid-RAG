@@ -11,7 +11,7 @@ def render_quiz_ui(workspace_id="default-workspace", corpus_id="user-uploads"):
     prefill_key = f"quiz_topic:{(workspace_id, corpus_id)!r}"
     with st.form("quiz_generate"):
         topic = st.text_input("Chủ đề", key=prefill_key)
-        count = st.number_input("Số câu hỏi", min_value=1, max_value=20, value=5)
+        count = st.number_input("Số câu hỏi (tối đa 5)", min_value=1, max_value=5, value=5)
         difficulty = st.selectbox("Độ khó", ["Easy", "Medium", "Hard"], index=1)
         generate = st.form_submit_button("Tạo bài trắc nghiệm")
     if generate:

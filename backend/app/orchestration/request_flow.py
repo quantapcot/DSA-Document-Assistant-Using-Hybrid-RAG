@@ -16,7 +16,9 @@ from app.generation.llm_client import ERROR_MESSAGES, request_deadline
 from app.retrieval.hybrid_search import RetrievalEngine
 from app.retrieval.vector_store import scope_filter
 from app.schemas.contracts import Citation
-from .study_evidence import QUIZ_FACETS, curriculum_inventory, diverse_evidence
+from .study_evidence import (
+    QUIZ_FACETS, curriculum_inventory, diverse_evidence, expanded_query, mentions_topic, topic_terms,
+)
 
 logger = logging.getLogger("app.orchestration.request_flow")
 
@@ -94,13 +96,30 @@ async def retrieve_for_exercise(body, request, *, revision=False):
         if revision and body.all_topics:
             inventory = await run_in_threadpool(curriculum_inventory, engine, workspace, corpus)
             return query, inventory, not inventory
+        terms = topic_terms(query)
         batches = []
-        for search in (query, *(f"{query} — {facet}" for facet in QUIZ_FACETS)):
+        search_topic = expanded_query(query)
+        for index, search in enumerate((search_topic, *(f"{search_topic} — {facet}" for facet in QUIZ_FACETS))):
             evidence, method = await execute_retrieval(
                 engine, search, workspace_id=workspace, corpus_id=corpus, top_k=8,
             )
-            batches.append([{**item, "retrieval_method": method} for item in evidence])
-        diverse = diverse_evidence(batches, workspace=workspace, corpus=corpus)
+            if index == 0:
+                # Topic gate: the plain topic query must find relevant passages
+                # that actually mention the topic, otherwise the LLM is never called.
+                on_topic = [item for item in evidence if mentions_topic(item, terms)]
+                # The topic must literally appear in the retrieved passages (directly or
+                # via a known alias such as "đệ quy" -> "recursion"). Rerank scores are
+                # not used here: they are unreliable across languages and short chunks.
+                if not on_topic:
+                    logger.info("Study topic not found in workspace documents")
+                    return query, [], False
+            # Facet queries add generic words; keep only passages about the topic.
+            batches.append([{**item, "retrieval_method": method}
+                            for item in evidence if mentions_topic(item, terms)])
+        # Passages were already filtered by topic, so the score cutoff is skipped.
+        diverse = diverse_evidence(batches, workspace=workspace, corpus=corpus, apply_threshold=False)
+        if not diverse:
+            return query, [], False
         if revision and diverse:
             diverse = await run_in_threadpool(curriculum_inventory, engine, workspace, corpus, diverse)
         return query, diverse, False

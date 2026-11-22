@@ -74,8 +74,11 @@ def test_quiz_blueprint_batches_and_filters(monkeypatch):
         return next(values)
 
     monkeypatch.setattr(quiz_generator, "generate_study_json", mock)
+    monkeypatch.setattr(quiz_generator, "MAX_QUESTIONS", 6)
+    monkeypatch.setattr(quiz_generator, "MAX_PASSES", 2)
     quiz = quiz_generator.generate_quiz("BFS", evidence(), num_questions=6, difficulty="Hard")
-    assert (quiz.generated_count, quiz.requested_count) == (1, 6)
+    # Slot 6 failed only the verbatim-excerpt check, so it fills a missing slot.
+    assert (quiz.generated_count, quiz.requested_count) == (2, 6)
     assert quiz.questions[0].question_type == "Algorithm Tracing"
     assert quiz.questions[0].difficulty == "Hard"
     assert quiz.citations[0].filename == "Chapter 1.pdf"
@@ -94,7 +97,7 @@ def test_invalid_json_and_missing_evidence_are_explicit(monkeypatch):
     assert quiz_generator.generate_quiz("BFS", evidence()).generation_mode == "unavailable"
     result = quiz_generator.generate_quiz("BFS", [], workspace_empty=True)
     assert result.generation_mode == "abstained" and not result.questions
-    for invalid in (0, 21):
+    for invalid in (0, 6):
         with pytest.raises(ValidationError):
             QuizRequest(query="BFS", num_questions=invalid)
 
@@ -136,6 +139,9 @@ def test_quiz_exact_count_and_refills_only_rejected_slots(monkeypatch, count, di
         ]
 
     monkeypatch.setattr(quiz_generator, "generate_study_json", llm)
+    # Exercise multi-batch refills beyond the API's 5-question cap.
+    monkeypatch.setattr(quiz_generator, "MAX_QUESTIONS", 20)
+    monkeypatch.setattr(quiz_generator, "MAX_PASSES", 2)
     result = quiz_generator.generate_quiz("BFS", evidence(), num_questions=count, difficulty=difficulty)
     assert result.requested_count == result.generated_count == count
     assert drafts[-1] == [reject_slot]
@@ -184,7 +190,7 @@ def test_study_batch_rejects_schedule_changes_and_bad_sources(problem):
     assert validate_batch(batch, slots, chosen, passages) is None
 
 
-def test_revision_retries_truncated_batch_and_aborts_on_persistent_failure(monkeypatch):
+def test_revision_retries_truncated_batch_and_drops_failed_slots(monkeypatch):
     documents = evidence()
     settings = dict(exam_date=TODAY + timedelta(days=5), budget=30, level="Beginner")
     catalog, passages = build_curriculum(documents)
@@ -214,7 +220,14 @@ def test_revision_retries_truncated_batch_and_aborts_on_persistent_failure(monke
 
     monkeypatch.setattr(revision_generator, "generate_study_json", bad_model)
     response = revision_generator.generate_revision("DSA", documents, today=TODAY, **settings)
-    assert response.plan is None and response.generation_error == "invalid_json"
+    # Failed later slots are dropped; the plan keeps the sessions that passed.
+    assert response.plan is not None
+    assert any("Bỏ" in warning for warning in response.warnings)
+
+    monkeypatch.setattr(revision_generator, "generate_study_json",
+                        lambda *args, **kwargs: (_ for _ in ()).throw(LLMError("invalid_json")))
+    response = revision_generator.generate_revision("DSA", documents, today=TODAY, **settings)
+    assert response.plan is None and response.generation_error == "invalid_output"
 
 
 def test_revision_coverage_dependencies_and_varying_minutes(monkeypatch):
@@ -315,3 +328,34 @@ def test_quote_normalization_preserves_numbers_operators_and_word_order():
     assert not supports_quote("The runtime is proportional to n2.", "The runtime is proportional to n².")
     assert not supports_quote("The vertex is not inserted into the queue.",
                               "The vertex is inserted into the queue.")
+
+
+def test_topic_gate_rejects_topics_absent_from_documents():
+    from app.orchestration.study_evidence import mentions_topic, topic_terms
+    bfs = topic_terms("BFS")
+    assert mentions_topic({"text": "Breadth-first search uses a queue."}, bfs)
+    assert not mentions_topic({"text": "Merge sort splits the array in halves."}, bfs)
+    assert mentions_topic({"text": "Thuật toán sắp xếp nổi bọt"}, topic_terms("sort"))
+    assert not mentions_topic({"text": "Hash tables map keys"}, topic_terms("trie"))
+    assert mentions_topic({"text": "Recursion is when a function calls itself."}, topic_terms("đệ quy"))
+
+
+def test_vietnamese_topic_query_is_expanded_with_english_name():
+    from app.orchestration.study_evidence import expanded_query
+    assert expanded_query("đệ quy") == "đệ quy recursion"
+    assert expanded_query("recursion") == "recursion"
+    assert expanded_query("nấu phở") == "nấu phở"
+
+
+def test_rows_accepts_fit_ai_wrapper_variants():
+    from app.generation.study_output import rows
+    assert rows({"answers": [{"slot": 1}, {"slot": 2}]}, "t") == [{"slot": 1}, {"slot": 2}]
+    assert rows({"1": {"correct_index": 0}, "2": {"slot": 2}}, "t") == [
+        {"slot": "1", "correct_index": 0}, {"slot": 2}]
+    assert rows({"checks": [{"slot": 1}]}, "t", "checks") == [{"slot": 1}]
+
+
+def test_decode_json_recovers_embedded_value():
+    assert decode_json('Here is the quiz:\n[{"slot": 1}]\nHope it helps', "t") == [{"slot": 1}]
+    with pytest.raises(LLMError):
+        decode_json("{broken json", "t")
