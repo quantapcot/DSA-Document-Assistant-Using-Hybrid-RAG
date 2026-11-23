@@ -1,80 +1,70 @@
-"""Streamlit Main Application: DSA Document Assistant.
-Tuần 4: Dựng khung Streamlit UI với Sidebar Navigation và các màn hình khung (PoC).
-"""
+"""Streamlit frontend for one anonymous study workspace at a time."""
+import time
+
 import streamlit as st
 
-from api_client import BACKEND_URL, check_health
+from api_client import check_health, create_session, delete_session
 from screens.chat_ui import render_chat_ui
-from screens.upload_ui import render_upload_ui
 from screens.quiz_ui import render_quiz_ui
 from screens.revision_ui import render_revision_ui
+from screens.upload_ui import render_upload_ui
 
-# Cấu hình giao diện Streamlit
-st.set_page_config(
-    page_title="DSA Document Assistant",
-    page_icon="📚",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
+st.set_page_config(page_title="DSA Study Workspace", page_icon="📚", layout="wide")
 
-# ==========================================
-# SIDEBAR NAVIGATION & SYSTEM MONITORING
-# ==========================================
+_SESSION = "active_study_session"
+_MENU = {
+    "💬 Trò chuyện & Hỏi đáp": render_chat_ui,
+    "📤 Tải lên tài liệu": render_upload_ui,
+    "📝 Luyện tập Trắc nghiệm": render_quiz_ui,
+    "🗺️ Kế hoạch học tập": render_revision_ui,
+}
+
+
+def _replace_session(session=None, notice=None):
+    st.session_state.clear()
+    if session is not None:
+        st.session_state[_SESSION] = session
+    if notice:
+        st.session_state["session_notice"] = notice
+
+
 with st.sidebar:
-    st.title("📚 DSA Assistant")
-    st.caption("AI Agent Hỗ trợ Học tập & Ôn thi DSA (Track C)")
-    st.divider()
+    st.title("📚 DSA Study Workspace")
+    online, _ = check_health()
+    if not online:
+        st.error("Chưa kết nối được Backend.")
+        st.stop()
 
-    st.subheader("🧭 Điều hướng chức năng")
-    menu_options = [
-        "💬 Trò chuyện & Hỏi đáp",
-        "📤 Tải lên tài liệu",
-        "📝 Luyện tập Trắc nghiệm",
-        "🗺️ Lộ trình ôn tập",
-    ]
-    selected_page = st.radio(
-        "Chọn màn hình làm việc:",
-        menu_options,
-        index=0,
-        key="study_navigation",
-        label_visibility="collapsed",
-    )
+    session = st.session_state.get(_SESSION)
+    if session is None or session["expires_at"] <= time.time():
+        ok, data = create_session()
+        if not ok:
+            st.error(data["error"])
+            st.stop()
+        if session is not None:
+            _replace_session(data, "Phiên trước đã hết hạn. Bạn đang ở một phiên mới.")
+        else:
+            st.session_state[_SESSION] = data
+        session = data
 
-    st.divider()
+    if notice := st.session_state.pop("session_notice", None):
+        st.success(notice)
+    selected = st.radio("Chức năng", list(_MENU), key="study_navigation")
+    if st.button("Tạo phiên học mới"):
+        ok, data = create_session()
+        if ok:
+            _replace_session(data, "Đã mở phiên học mới.")
+            st.rerun()
+        st.error(data["error"])
 
-    # Trạng thái kết nối FastAPI Backend
-    st.subheader("🔌 Trạng thái Backend")
-    online, info = check_health()
-    if online:
-        st.success(f"● FastAPI: Hoạt động ({info.get('status', 'healthy')})")
-        st.caption(f"Phiên bản: {info.get('version', '1.0.0')} · Môi trường: {info.get('environment', 'dev')}")
-    else:
-        st.error("● FastAPI: Mất kết nối")
-        st.caption(f"Lỗi: {info.get('error', 'Chưa khởi động')}")
-        st.info("💡 Chạy lệnh sau tại thư mục `backend/`:\n```bash\nuvicorn app.main:app --reload\n```")
+    with st.expander("Xóa phiên học hiện tại"):
+        st.caption("Xóa tài liệu và kết thúc phiên này.")
+        if st.button("Xác nhận xóa phiên"):
+            ok, data = delete_session(session["token"])
+            if ok:
+                message = "Phiên đã kết thúc. Backend sẽ hoàn tất việc dọn dữ liệu." if data["pending"] else "Đã xóa phiên học."
+                _replace_session(notice=message)
+                st.rerun()
+            st.error(data["error"])
 
-    st.caption(f"API Target: `{BACKEND_URL}`")
-    if st.button("🔄 Kiểm tra kết nối lại", use_container_width=True):
-        st.rerun()
-
-    st.divider()
-    st.caption("© 2026 Nhóm Track C — Tuần 5 · LLM C2 + Doc Management")
-
-
-# ==========================================
-# MAIN CONTENT AREA
-# ==========================================
-if selected_page == "📤 Tải lên tài liệu":
-    render_upload_ui()
-else:
-    workspace_id = st.sidebar.text_input("Workspace", "default-workspace", key="study_workspace").strip()
-    corpus_id = st.sidebar.text_input("Corpus", "user-uploads", key="study_corpus").strip()
-    screens = {
-        menu_options[0]: render_chat_ui,
-        menu_options[2]: render_quiz_ui,
-        menu_options[3]: render_revision_ui,
-    }
-    if workspace_id and corpus_id:
-        screens[selected_page](workspace_id, corpus_id)
-    else:
-        st.warning("Nhập workspace và corpus để tiếp tục.")
+_MENU[selected](session["workspace_id"], session["corpus_id"], token=session["token"])

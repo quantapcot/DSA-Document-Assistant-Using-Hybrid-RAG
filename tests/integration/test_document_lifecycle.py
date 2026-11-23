@@ -70,7 +70,7 @@ def upload_screen(monkeypatch):
     from screens import upload_ui
 
     def start(files):
-        ui = AppTest.from_string("from screens.upload_ui import render_upload_ui\nrender_upload_ui()")
+        ui = AppTest.from_string("from screens.upload_ui import render_upload_ui\nrender_upload_ui('student', 'course')")
         if hasattr(AppTest, "file_uploader"):
             ui.run()
             widget = ui.file_uploader[0]
@@ -89,8 +89,6 @@ def upload_screen(monkeypatch):
 
             monkeypatch.setattr(st, "file_uploader", select_files)
             ui.run()
-        ui.text_input(key="mgmt_ws").set_value("student")
-        ui.text_input(key="mgmt_corpus").set_value("course")
         return ui.run()
 
     return start, upload_ui, api_client

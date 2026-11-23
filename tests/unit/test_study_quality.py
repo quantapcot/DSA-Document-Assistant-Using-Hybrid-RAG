@@ -1,7 +1,5 @@
-from datetime import date, timedelta
 import json
 import logging
-from types import SimpleNamespace
 
 import pytest
 from pydantic import ValidationError
@@ -11,12 +9,11 @@ from app.generation import llm_client, quiz_generator, rag_engine, revision_gene
 from app.generation.llm_client import LLMError
 from app.generation.study_output import decode_json, supports_quote
 from app.generation.study_planner import (
-    assemble_plan, build_curriculum, schedule_topics, validate_batch,
+    build_curriculum, curriculum_dependencies, order_topics,
 )
 from app.orchestration.study_evidence import diverse_evidence
-from app.schemas.contracts import QuizRequest, RevisionRequest
+from app.schemas.contracts import QuizRequest, RoadmapRequest
 
-TODAY = date(2026, 11, 22)
 QUOTE = "Breadth-first search visits vertices in ascending order of distance from the start."
 
 
@@ -40,6 +37,7 @@ def question(slot, *, text=None):
 def verification(slot, **overrides):
     return {
         "slot": slot, "correct_index": 0, "unique_answer": True, "on_topic": True,
+        "self_contained": True, "vietnamese": True,
         "source": 1, "quote": QUOTE, **overrides,
     }
 
@@ -62,6 +60,11 @@ def test_diversity_deduplicates_and_drops_wrong_scope():
     ({}, {"correct_index": 1}, {}, "answer_mismatch"),
     ({}, {"unique_answer": False}, {}, "answer_not_unique"),
     ({}, {"on_topic": False}, {}, "off_topic"),
+    ({}, {"self_contained": False}, {}, "missing_question_context"),
+    ({}, {"vietnamese": False}, {}, "non_vietnamese_question"),
+    ({"question": "According to the provided text, what is the answer?"}, {}, {}, "hidden_source_reference"),
+    ({"question": "Dựa trên tài liệu, BFS dùng cấu trúc nào?"}, {}, {}, "hidden_source_reference"),
+    ({"question": "As shown above, which vertex comes first?"}, {}, {}, "hidden_source_reference"),
     ({}, {"quote": "A fabricated sentence that is absent from the file."}, {}, "unsupported_excerpt"),
     ({}, {}, {"supported": False}, "unsupported_explanation"),
     ({}, {}, {"distinct": False}, "repeated_question"),
@@ -84,9 +87,6 @@ def test_rejected_questions_never_fill_a_missing_slot(monkeypatch, caplog, overr
 
 
 def test_invalid_json_and_missing_evidence_are_explicit(monkeypatch):
-    monkeypatch.setattr(rag_engine, "settings", type("Settings", (), {
-        "LLM_BASE_URL": "https://fit.invalid/v1", "LLM_MODEL": "test", "OPENAI_API_KEY": True,
-    }))
     monkeypatch.setattr(rag_engine, "generate_answer", lambda *args, **kwargs: "{broken json")
     invalid = quiz_generator.generate_quiz("BFS", evidence())
     assert invalid.generation_mode == "unavailable" and invalid.generation_error == "invalid_json"
@@ -173,9 +173,7 @@ def test_exact_duplicates_are_removed_even_if_auditor_approves_them(monkeypatch,
 
 
 def test_quiz_provider_timeout_logs_actual_attempts_without_secrets(monkeypatch, caplog):
-    config = Settings(_env_file=None, LLM_BASE_URL="https://fit.invalid/v1",
-                      LLM_MODEL="qwen-fixture", OPENAI_API_KEY="PRIVATE-MARKER")
-    monkeypatch.setattr(rag_engine, "settings", config)
+    config = Settings(_env_file=None, GROQ_API_KEY="PRIVATE-MARKER")
     monkeypatch.setattr(llm_client, "settings", config)
     monkeypatch.setattr(llm_client.time, "sleep", lambda _: None)
     attempts = []
@@ -184,142 +182,102 @@ def test_quiz_provider_timeout_logs_actual_attempts_without_secrets(monkeypatch,
         attempts.append(timeout)
         raise TimeoutError("PRIVATE-MARKER")
 
-    monkeypatch.setattr(llm_client, "_call_openai", call)
+    monkeypatch.setattr(llm_client, "_call_groq", call)
     with caplog.at_level(logging.INFO):
         result = quiz_generator.generate_quiz("BFS", evidence(), num_questions=1)
     assert attempts == [config.LLM_QUIZ_GENERATION_TIMEOUT] * 3
     assert result.generation_error == "timeout" and not result.questions
     assert "0/1" in result.answer
-    assert "llm_requests=1 fit_ai_calls=3" in caplog.text and "elapsed_ms=" in caplog.text
+    assert "llm_requests=1 provider_calls=3" in caplog.text and "elapsed_ms=" in caplog.text
     assert "PRIVATE-MARKER" not in caplog.text
 
 
-def task_contents(slots, catalog, passages):
-    labels = {topic.id: topic.sources[0] for topic in catalog}
+def _roadmap_drafts(instructions, sources):
+    catalog, _ = json.JSONDecoder().raw_decode(instructions.split("Assigned topics: ", 1)[1])
     return [{
-        "slot": slot.id, "objective": f"Objective {slot.id}",
-        "knowledge": ["A sourced study topic"], "activity": f"Activity {slot.id}",
-        "practice": f"Exercise {slot.id}", "sources": [labels[topic] for topic in slot.topic_ids],
-        "support_quote": passages[labels[slot.topic_ids[0]] - 1]["text"],
-    } for slot in slots]
+        "topic_id": topic["id"], "objective": f"Hiểu {topic['title']}",
+        "knowledge": [f"Nguyên lý của {topic['title']}"],
+        "activity": f"Thực hành {topic['title']}", "sources": [topic["sources"][0]],
+        "support_quote": sources[topic["sources"][0]]["text"],
+    } for topic in catalog]
 
 
-def test_study_date_inputs():
-    body = RevisionRequest(all_topics=True, days_remaining=4)
-    assert revision_generator.resolve_exam_date(body, today=TODAY) == (TODAY, TODAY + timedelta(days=4))
-    with pytest.raises(ValueError):
-        revision_generator.resolve_exam_date(RevisionRequest(all_topics=True, exam_date=TODAY), today=TODAY)
+def test_roadmap_has_no_calendar_inputs_and_abstains_when_empty(monkeypatch):
     with pytest.raises(ValidationError):
-        RevisionRequest(query="Graph", days_remaining=4, exam_date=TODAY)
-    with pytest.raises(ValidationError):
-        RevisionRequest(days_remaining=4, minutes_per_day=0)
+        RoadmapRequest(days_remaining=4)
+    monkeypatch.setattr(revision_generator, "generate_study_json", lambda *args, **kwargs: pytest.fail("LLM called"))
+    result = revision_generator.generate_roadmap([])
+    assert not result.items and result.generation_mode == "abstained"
 
 
-@pytest.mark.parametrize("problem", ["injected_minutes", "injected_prerequisite", "wrong_source", "made_up_quote"])
-def test_study_batch_rejects_schedule_changes_and_bad_sources(problem):
-    catalog, passages = build_curriculum(evidence())
-    settings = dict(exam_date=TODAY + timedelta(days=5), budget=30, level="Beginner")
-    chosen, slots = schedule_topics(catalog, passages, today=TODAY, **settings)
-    batch = task_contents(slots, chosen, passages)
-    assert validate_batch(batch, slots, chosen, passages)
-    first = batch[0]
-    if problem == "injected_minutes":
-        first["minutes"] = 200
-    elif problem == "injected_prerequisite":
-        first["prerequisites"] = ["T2"]
-    elif problem == "wrong_source":
-        first["sources"] = [2]
-    else:
-        first["support_quote"] = "This text does not exist in the document."
-    assert validate_batch(batch, slots, chosen, passages) is None
-
-
-def test_revision_retries_truncated_batch_and_drops_failed_slots(monkeypatch):
-    documents = evidence()
-    settings = dict(exam_date=TODAY + timedelta(days=5), budget=30, level="Beginner")
+def test_roadmap_deduplicates_and_orders_prerequisites_in_one_groq_call(monkeypatch):
+    bfs, graph, duplicate, alias = evidence(4)
+    bfs = {**bfs, "section": "BFS", "text": QUOTE + " BFS requires an understanding of a graph."}
+    graph = {**graph, "section": "Graph", "text": "A graph represents vertices and edges between them in a structure."}
+    alias = {**alias, "section": "Đồ thị", "text": "A graph is represented with an adjacency list or matrix."}
+    duplicate = {**duplicate, "section": "BFS", "text": bfs["text"]}
+    documents = [bfs, graph, duplicate, alias]
     catalog, passages = build_curriculum(documents)
-    chosen, slots = schedule_topics(catalog, passages, today=TODAY, **settings)
-    payloads = {item["slot"]: item for item in task_contents(slots, chosen, passages)}
+    assert len(catalog) == 2 and len(passages) == 3
+    assert [topic.title for topic in order_topics(catalog, curriculum_dependencies(catalog, passages))] == ["Đồ thị", "BFS"]
+
+    calls = []
+    def mock(query, sources, instructions, **kwargs):
+        calls.append(kwargs)
+        return {"items": _roadmap_drafts(instructions, sources)}
+
+    monkeypatch.setattr(revision_generator, "generate_study_json", mock)
+    result = revision_generator.generate_roadmap(documents)
+    assert len(calls) == 1 and calls[0]["row_model"] is revision_generator.RoadmapDraft
+    assert len(result.items) == 2 and result.items[1].prerequisites == [result.items[0].id]
+    assert {source.filename for source in result.citations} == {bfs["filename"], graph["filename"]}
+
+
+@pytest.mark.parametrize("problem", ["unknown_topic", "wrong_source", "fabricated_quote", "invented_date", "duplicate"])
+def test_roadmap_rejects_unfounded_learning_content(monkeypatch, problem):
+    documents = [{**evidence(1)[0], "section": "BFS"}]
+
+    def mock(query, sources, instructions, **kwargs):
+        drafts = _roadmap_drafts(instructions, sources)
+        updates = {
+            "unknown_topic": {"topic_id": "invented"}, "wrong_source": {"sources": [99]},
+            "fabricated_quote": {"support_quote": "A fabricated sentence that is not in the supplied passages."},
+            "invented_date": {"date": "invalid"},
+        }
+        if problem == "duplicate":
+            drafts.append(drafts[0].copy())
+        else:
+            drafts[0].update(updates[problem])
+        return {"items": drafts}
+
+    monkeypatch.setattr(revision_generator, "generate_study_json", mock)
+    result = revision_generator.generate_roadmap(documents)
+    assert not result.items and result.generation_error == "invalid_output"
+    assert result.uncovered_topics == ["BFS"]
+
+
+def test_roadmap_retries_truncated_json_once(monkeypatch):
+    documents = [{**evidence(1)[0], "section": "BFS"}]
     calls = []
 
-    def fake_model(query, sources, instructions, **kwargs):
-        assignments, _ = json.JSONDecoder().raw_decode(instructions.split("Assignments: ", 1)[1])
-        ids = [item["slot"] for item in assignments]
-        calls.append(ids)
-        assert kwargs["max_tokens"] <= 4000 and kwargs["task"] == "revision"
-        if calls == [[1, 2, 3]]:
+    def mock(query, sources, instructions, **kwargs):
+        calls.append(kwargs["temperature"])
+        if len(calls) == 1:
             raise LLMError("truncated_json")
-        return [payloads[i] for i in ids]
+        return {"items": _roadmap_drafts(instructions, sources)}
 
-    monkeypatch.setattr(revision_generator, "generate_study_json", fake_model)
-    response = revision_generator.generate_revision("DSA", documents, today=TODAY, **settings)
-    assert response.plan and calls[:4] == [[1, 2, 3], [1], [2], [3]]
-
-    def bad_model(query, sources, instructions, **kwargs):
-        assignments, _ = json.JSONDecoder().raw_decode(instructions.split("Assignments: ", 1)[1])
-        ids = [item["slot"] for item in assignments]
-        if ids == [1, 2, 3]:
-            return [payloads[i] for i in ids]
-        raise LLMError("invalid_json")
-
-    monkeypatch.setattr(revision_generator, "generate_study_json", bad_model)
-    response = revision_generator.generate_revision("DSA", documents, today=TODAY, **settings)
-    # Failed later slots are dropped; the plan keeps the sessions that passed.
-    assert response.plan is not None
-    assert any("Bỏ" in warning for warning in response.warnings)
-
-    monkeypatch.setattr(revision_generator, "generate_study_json",
-                        lambda *args, **kwargs: (_ for _ in ()).throw(LLMError("invalid_json")))
-    response = revision_generator.generate_revision("DSA", documents, today=TODAY, **settings)
-    assert response.plan is None and response.generation_error == "invalid_output"
+    monkeypatch.setattr(revision_generator, "generate_study_json", mock)
+    result = revision_generator.generate_roadmap(documents)
+    assert len(result.items) == 1 and calls == [0.0, 0.2]
 
 
-def test_revision_coverage_dependencies_and_varying_minutes(monkeypatch):
-    chunks = [
-        {**evidence()[0], "section": None, "text": "BFS requires a queue. Complexity and invariants matter."},
-        {**evidence()[0], "section": None, "chunk_id": "queue", "page": 2, "text": "Queues keep inserted data in first-in first-out order."},
-        *[{**item, "document_id": "extra-" + item["chunk_id"]}
-          for item in evidence(15)],
-    ]
-    catalog, passages = build_curriculum(chunks)
-    assert len(catalog) == 17
-    monkeypatch.setattr("app.generation.study_planner.settings.REVISION_MAX_TOPICS", 14)
-    settings = dict(exam_date=TODAY + timedelta(days=12), budget=50, level="Intermediate")
-    chosen, slots = schedule_topics(catalog, passages, today=TODAY, **settings)
-    learn = [slot for slot in slots if slot.kind == "learn"]
-    assert len(chosen) == 14 and learn[0].topic_ids == ("T2",)
-    assert learn[1].prerequisites == ("T2",)
-    assert learn[0].minutes < learn[1].minutes
-    assert len({t for s in slots if s.kind == "mock_test" for t in s.topic_ids}) > 4
-    batch = validate_batch(task_contents(slots, chosen, passages), slots, chosen, passages)
-    assert assemble_plan(batch, chosen, slots, passages, today=TODAY, **settings)
-    batch[slots[1].id].activity = batch[slots[0].id].activity
-    assert assemble_plan(batch, chosen, slots, passages, today=TODAY, **settings) is None
-
-    monkeypatch.setattr("app.generation.study_planner.settings.REVISION_SOURCE_TOKEN_BUDGET", 300)
-    short, short_slots = schedule_topics(catalog, passages, today=TODAY,
-        exam_date=TODAY + timedelta(days=1), budget=15, level="Beginner")
-    assert len(short) == 1 and short_slots[0].minutes == 15
-    monkeypatch.setattr(revision_generator, "generate_study_json",
-        lambda *args, **kwargs: task_contents(short_slots, short, passages))
-    result = revision_generator.generate_revision("DSA", chunks, today=TODAY,
-        exam_date=TODAY + timedelta(days=1), budget=15, level="Beginner")
-    assert result.plan and len(result.uncovered_topics) == 16
-
-
-@pytest.fixture
-def configured_fit(monkeypatch):
-    monkeypatch.setattr(rag_engine, "settings", SimpleNamespace(
-        LLM_BASE_URL="https://fit.invalid/v1", LLM_MODEL="qwen-fixture", OPENAI_API_KEY=True,
-    ))
-
-
-def test_quiz_one_accepts_unambiguous_qwen_representations(configured_fit, monkeypatch):
+def test_quiz_one_accepts_unambiguous_json_representations(monkeypatch):
     draft = {
         **question(1), "slot": "1", "sources": ["[1]"],
     }
     review = verification(
         "1", correct_index="0", source="[1]", unique_answer="true", on_topic="True",
+        self_contained="true", vietnamese="True",
         quote="“BREADTH-FIRST SEARCH visits vertices in ascending order of distance from the start!”",
     )
     answers = iter([
@@ -334,32 +292,13 @@ def test_quiz_one_accepts_unambiguous_qwen_representations(configured_fit, monke
     assert result.questions[0].sources == [1] and result.citations[0].label == 1
 
 
-def test_short_revision_accepts_source_strings_and_checks_quote(configured_fit, monkeypatch, caplog):
-    documents = evidence(1)
-    exam_date = TODAY + timedelta(days=1)
-    kwargs = dict(today=TODAY, exam_date=exam_date, budget=15, level="Beginner")
-    catalog, passages = build_curriculum(documents)
-    chosen, slots = schedule_topics(catalog, passages, **kwargs)
-    content = task_contents(slots, chosen, passages)[0]
-    content.update(slot="1", sources=["[1]"], support_quote=QUOTE.upper().rstrip(".") + "!")
-    monkeypatch.setattr(rag_engine, "generate_answer", lambda *args, **options: json.dumps({"tasks": [content]}))
-    result = revision_generator.generate_revision("BFS", documents, **kwargs)
-    assert result.plan is not None and len(result.plan.days) == 1
-    assert result.plan.days[0].tasks[0].sources == [1]
-    content["support_quote"] = "PRIVATE-MARKER: a stack is the only valid data structure"
-    result = revision_generator.generate_revision("BFS", documents, **kwargs)
-    assert result.plan is None and result.generation_error == "invalid_output"
-    assert "stage=revision.quote reason=unsupported_excerpt slot=1" in caplog.text
-    assert "PRIVATE-MARKER" not in caplog.text
-
-
 def test_rejection_logs_hide_raw_response_and_preserve_strict_semantics(caplog):
     malformed = '{"secret": "PRIVATE-MARKER"'
     with pytest.raises(LLMError, match="JSON"):
         decode_json(malformed, "quiz.candidate")
     assert "reason=parse_error" in caplog.text and "PRIVATE-MARKER" not in caplog.text
     draft = {**question(1), "slot": "PRIVATE-MARKER"}
-    assert quiz_generator._candidates([draft], [1], "BFS", 1) == []
+    assert quiz_generator._candidates([draft], [1], 1) == []
     assert "field=slot type=int_type" in caplog.text and "PRIVATE-MARKER" not in caplog.text
 
 
@@ -446,7 +385,7 @@ def test_quiz_request_requires_one_topic(topic):
     assert QuizRequest.model_validate({"query": "sort", "difficulty": "old value"}).topic == "sort"
 
 
-def test_rows_accepts_fit_ai_wrapper_variants():
+def test_rows_accepts_json_wrapper_variants():
     from app.generation.study_output import rows
     assert rows({"answers": [{"slot": 1}, {"slot": 2}]}, "t") == [{"slot": 1}, {"slot": 2}]
     assert rows({"1": {"correct_index": 0}, "2": {"slot": 2}}, "t") == [

@@ -11,6 +11,7 @@ from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
 from fastapi.concurrency import run_in_threadpool
 
 from app.orchestration.ingestion_flow import InvalidDocumentError, process_and_index_document, upload_document_id
+from app.orchestration.study_sessions import SESSION_CORPUS, resolve_scope
 from app.retrieval.indexing import scope_mutation_lock
 from app.retrieval.vector_store import scope_filter
 
@@ -34,7 +35,7 @@ def get_upload_backend(request):
 def validate_mutable_scope(corpus_id, workspace_id):
     if not corpus_id.strip() or not workspace_id.strip():
         raise HTTPException(status_code=400, detail="Both scope IDs are required.")
-    if (corpus_id, workspace_id) == ("benchmark-v1", "research"):
+    if (corpus_id, workspace_id) in {("benchmark-v1", "research"), ("dsa-eval-v1", "evaluation")}:
         raise HTTPException(status_code=403, detail="The benchmark scope is read-only.")
 
 
@@ -90,11 +91,14 @@ def _prior_uploads(client, config, corpus_id, workspace_id, filename, document_i
             return previous
 
 
-def _save_and_index(content, filename, suffix, client, config, corpus_id, workspace_id):
+def _save_and_index(content, filename, suffix, client, config, corpus_id, workspace_id, registry=None):
     document_id = upload_document_id(filename)
     revision = uuid4().hex
-    path = _upload_path(UPLOAD_DIR, corpus_id, workspace_id, document_id, revision, suffix)
     with scope_mutation_lock(config.collection, corpus_id, workspace_id):
+        if registry is not None:
+            registry.ensure_active(workspace_id)
+        root = registry.directory(workspace_id) / "uploads" if registry is not None else UPLOAD_DIR
+        path = _upload_path(root, corpus_id, workspace_id, document_id, revision, suffix)
         previous = _prior_uploads(client, config, corpus_id, workspace_id, filename, document_id)
         path.parent.mkdir(parents=True, exist_ok=True)
         try:
@@ -114,7 +118,7 @@ def _save_and_index(content, filename, suffix, client, config, corpus_id, worksp
             path.unlink(missing_ok=True)
             raise
         for payload in previous.values():
-            old_path = physical_upload(UPLOAD_DIR, corpus_id, workspace_id, payload)
+            old_path = physical_upload(root, corpus_id, workspace_id, payload)
             if old_path is not None and old_path != path:
                 try:
                     old_path.unlink(missing_ok=True)
@@ -128,9 +132,10 @@ def _save_and_index(content, filename, suffix, client, config, corpus_id, worksp
 async def upload_document(
     request: Request,
     file: UploadFile = File(...),
-    workspace_id: str = Form("default-workspace"),
-    corpus_id: str = Form("user-uploads"),
+    workspace_id: str | None = Form(None),
+    corpus_id: str | None = Form(None),
 ):
+    workspace_id, corpus_id = resolve_scope(request, workspace_id, corpus_id)
     validate_mutable_scope(corpus_id, workspace_id)
     filename = Path((file.filename or "").replace("\\", "/")).name
     suffix = Path(filename).suffix.lower()
@@ -142,10 +147,13 @@ async def upload_document(
     if len(content) > MAX_FILE_SIZE:
         raise HTTPException(status_code=413, detail="The maximum file size is 15 MB.")
     client, config = get_upload_backend(request)
+    registry = request.app.state.study_sessions if corpus_id == SESSION_CORPUS else None
     try:
         result = await run_in_threadpool(
-            _save_and_index, content, filename, suffix, client, config, corpus_id, workspace_id,
+            _save_and_index, content, filename, suffix, client, config, corpus_id, workspace_id, registry,
         )
+    except HTTPException:
+        raise
     except InvalidDocumentError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:

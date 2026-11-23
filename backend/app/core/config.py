@@ -17,16 +17,9 @@ class Settings(BaseSettings):
     # ── Vector DB ────────────────────────────────────────────────────────────
     QDRANT_URL: str = "http://localhost:6333"
 
-    # ── LLM Providers (C2) ──────────────────────────────────────────────────
-    # Provider ưu tiên: "gemini" | "openai"
-    LLM_PROVIDER: str = "gemini"
-    # Tên model cụ thể (để trống = dùng default của provider)
-    LLM_MODEL: str = ""
-    # Google Gemini
-    GEMINI_API_KEY: SecretStr | None = None
-    # OpenAI-compatible
-    OPENAI_API_KEY: SecretStr | None = None
-    LLM_BASE_URL: str | None = None
+    GROQ_API_KEY: SecretStr | None = None
+    GROQ_BASE_URL: str = "https://api.groq.com/openai/v1"
+    GROQ_MODEL: str = "openai/gpt-oss-120b"
     LLM_CHAT_TIMEOUT: float = Field(30, gt=0, le=300)
     LLM_QUIZ_GENERATION_TIMEOUT: float = Field(90, gt=0, le=300)
     LLM_QUIZ_VERIFICATION_TIMEOUT: float = Field(40, gt=0, le=300)
@@ -34,8 +27,11 @@ class Settings(BaseSettings):
     CHAT_REQUEST_TIMEOUT: float = Field(90, gt=0, le=900)
     QUIZ_REQUEST_TIMEOUT: float = Field(240, gt=0, le=900)
     REVISION_REQUEST_TIMEOUT: float = Field(240, gt=0, le=900)
-    REVISION_MAX_TOPICS: int = Field(20, ge=1, le=60)
-    REVISION_SOURCE_TOKEN_BUDGET: int = Field(12000, ge=300, le=40000)
+    ROADMAP_MAX_TOPICS: int = Field(20, ge=1, le=60)
+    ROADMAP_SOURCE_BUDGET: int = Field(14000, ge=1000, le=48000)
+    SESSION_TTL_SECONDS: int = Field(8 * 3600, gt=0)
+    SESSION_CLEANUP_SECONDS: int = Field(300, gt=0)
+    SESSION_RUNTIME_DIR: Path = _BACKEND_DIR.parent / "data" / "runtime"
 
     def request_timeout(self, task: str) -> float:
         return getattr(self, f"{task.upper()}_REQUEST_TIMEOUT")

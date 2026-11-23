@@ -31,7 +31,6 @@ RUN mkdir -p /app/data/runtime/uploads \
 EXPOSE 8000
 
 # ── Khởi động ───────────────────────────────────────────────────────────────
-# Single-worker để tránh xung đột file lock Qdrant local.
-# Khi dùng Qdrant server mode, có thể tăng lên --workers 4.
+# Một worker giữ khóa Qdrant local và đồng bộ upload/xóa phiên học.
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", \
      "--workers", "1", "--log-level", "info"]

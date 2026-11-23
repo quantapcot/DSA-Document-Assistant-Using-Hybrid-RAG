@@ -6,11 +6,6 @@ import unicodedata
 from app.generation.abstention import SCORE_THRESHOLDS, evidence_score
 from app.retrieval.vector_store import scope_filter
 
-QUIZ_FACETS = (
-    "khái niệm định nghĩa / definitions concepts",
-    "thuật toán ví dụ từng bước / algorithm trace examples",
-    "độ phức tạp so sánh ứng dụng / complexity comparison applications",
-)
 QUIZ_EVIDENCE_LIMIT = 16
 TOPIC_PATTERNS = {
     "Mảng": r"\b(?:arrays?|mảng)\b",
@@ -38,12 +33,13 @@ def normalized_text(text):
     return " ".join(re.findall(r"\w+", unicodedata.normalize("NFKC", text).casefold()))
 
 
-def study_topic(item):
-    if section := (item.get("section") or "").strip():
-        return section
-    lines = [line.strip() for line in item["text"].splitlines() if line.strip()]
-    if lines and len(lines[0]) <= 100 and _HEADING.match(lines[0]):
-        return lines[0].lstrip("# ")
+def study_topic(item, *, body_only=False):
+    if not body_only:
+        if section := (item.get("section") or "").strip():
+            return section
+        lines = [line.strip() for line in item["text"].splitlines() if line.strip()]
+        if lines and len(lines[0]) <= 100 and _HEADING.match(lines[0]):
+            return lines[0].lstrip("# ")
     # Earlier mentions usually identify the topic; incidental supporting terms
     # later in the passage should not determine the grouping.
     text = item["text"][:500].casefold()
@@ -99,16 +95,15 @@ def diverse_evidence(result_sets, *, workspace, corpus, limit=QUIZ_EVIDENCE_LIMI
     return selected
 
 
-def curriculum_inventory(engine, workspace, corpus, relevant=None):
-    """Enumerate the scoped index and retain up to two examples per section."""
+def curriculum_inventory(engine, workspace, corpus):
+    """Enumerate the scoped index before deduplicating topics in the roadmap."""
     client, config = getattr(engine, "client", None), getattr(engine, "config", None)
     if client is None or config is None:
-        return relevant or []
+        return []
     if not client.collection_exists(config.collection):
         return []
     scope = scope_filter(corpus, workspace)
-    keep = {topic_key(item) for item in relevant} if relevant is not None else None
-    candidates = defaultdict(list)
+    candidates = []
     offset = None
     while True:
         points, offset = client.scroll(
@@ -122,28 +117,15 @@ def curriculum_inventory(engine, workspace, corpus, relevant=None):
             if (item.get("workspace_id") != workspace or item.get("corpus_id") != corpus
                     or not item.get("filename") or not item.get("text", "").strip()):
                 continue
-            key = topic_key(item)
-            if keep is not None and key not in keep:
-                continue
-            group = candidates[key]
-            group.append(item)
-            group.sort(key=lambda chunk: (chunk["page"], chunk["chunk_id"]))
-            del group[2:]
+            candidates.append(item)
         if offset is None:
             break
-    # Prefer the actual ranked matches when focusing on a specific topic.
-    if relevant is not None:
-        for item in reversed(relevant):
-            group = candidates.get(topic_key(item))
-            if group:
-                group[:] = [item, *(chunk for chunk in group if chunk["chunk_id"] != item.get("chunk_id"))][:2]
-    def chapter_order(group):
-        filename = re.split(r"(\d+)", group[0]["filename"].casefold())
+    def chapter_order(item):
+        filename = re.split(r"(\d+)", item["filename"].casefold())
         return (tuple(int(value) if index % 2 else value for index, value in enumerate(filename)),
-                group[0]["page"], group[0].get("section") or "")
+                item["page"], item["chunk_id"])
 
-    groups = sorted(candidates.values(), key=chapter_order)
-    return [item for group in groups for item in group]
+    return sorted(candidates, key=chapter_order)
 
 
 _STOPWORDS = {

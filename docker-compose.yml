@@ -54,17 +54,13 @@ services:
       # Trỏ tới Qdrant container trong Docker network
       QDRANT_MODE: server
       QDRANT_URL: http://qdrant:6333
-      # LLM — điền API key thực tế vào file .env ở thư mục gốc
-      LLM_PROVIDER: ${LLM_PROVIDER:-gemini}
-      LLM_MODEL: ${LLM_MODEL:-}
-      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      SESSION_RUNTIME_DIR: /app/data/runtime
       ENV: production
     env_file:
       - ./backend/.env
     volumes:
-      # Persist uploaded files và configs giữa các lần restart
-      - ./data/runtime/uploads:/app/data/runtime/uploads
+      # Keep session registry and temporary uploads across backend restarts.
+      - ./data/runtime:/app/data/runtime
       - ./configs:/app/configs:ro
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]

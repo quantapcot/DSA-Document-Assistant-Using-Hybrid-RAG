@@ -8,12 +8,12 @@ from urllib.parse import urlsplit
 import fitz
 import pytest
 from fastapi.testclient import TestClient
-from pydantic import SecretStr
 from qdrant_client import QdrantClient
 
 from app.api.routes import upload
 from app.generation import quiz_generator, rag_engine
 from app.main import app
+from app.orchestration.study_sessions import SessionRegistry
 from app.retrieval import indexing
 from app.retrieval.config import RetrievalConfig
 from app.retrieval.hybrid_search import RetrievalEngine
@@ -38,22 +38,14 @@ def _passages(prompt):
             for label, passage in re.findall(r"(?m)^\[(\d+)\][^\n]*\n([^\n]+)", prompt)}
 
 
-def _revision_tasks(system, prompt):
+def _roadmap_items(system, prompt):
     passages = _passages(prompt)
-    decoder = json.JSONDecoder()
-    topics, _ = decoder.raw_decode(system.split("Topics: ", 1)[1])
-    assignments, _ = decoder.raw_decode(system.split("Assignments: ", 1)[1])
-    sources_by_topic = {topic["id"]: topic["sources"][0] for topic in topics}
-    contents = []
-    for entry in assignments:
-        labels = [sources_by_topic[topic_id] for topic_id in entry["topic_ids"]]
-        index = entry["slot"]
-        contents.append({
-            "slot": index, "objective": f"Objective {index}", "knowledge": ["Study source material"],
-            "activity": f"Practice {index}", "practice": "Solve an example",
-            "sources": labels, "support_quote": passages[labels[0]],
-        })
-    return json.dumps(contents)
+    topics, _ = json.JSONDecoder().raw_decode(system.split("Assigned topics: ", 1)[1])
+    return json.dumps({"items": [{
+        "topic_id": topic["id"], "objective": f"Hiểu {topic['title']}",
+        "activity": f"Thực hành {topic['title']}", "knowledge": [f"Ôn {topic['title']}"],
+        "sources": [topic["sources"][0]], "support_quote": passages[topic["sources"][0]],
+    } for topic in topics]})
 
 
 @pytest.fixture
@@ -68,9 +60,7 @@ def study_client(monkeypatch, tmp_path):
     monkeypatch.setattr(upload, "UPLOAD_DIR", tmp_path)
     monkeypatch.setattr(indexing, "embedding_dimension", lambda *args, **kwargs: 2)
     monkeypatch.setattr(indexing, "embed_texts", lambda texts, *args, **kwargs: [[1., 0.]] * len(texts))
-    monkeypatch.setattr(rag_engine, "settings", SimpleNamespace(
-        LLM_BASE_URL="https://fit.invalid/v1", LLM_MODEL="mock-qwen-27b", OPENAI_API_KEY=SecretStr("fake"),
-    ))
+    monkeypatch.setattr(app.state, "study_sessions", SessionRegistry(tmp_path / "runtime", 3600), raising=False)
     indexing.build_index([{
         "chunk_id": "benchmark", "document_id": "bench", "filename": "bench.pdf", "page": 1, "text": BENCH,
     }], client=client, config=config, workspace_id="research", corpus_id="benchmark-v1")
@@ -92,9 +82,9 @@ def test_upload_retrieve_quiz_and_answer_key(study_client, monkeypatch):
     _upload(study_client, "Private.pdf", PRIVATE, "bob")
     calls = []
 
-    def mock_fit(system, prompt, *, provider, model, max_tokens, task, raise_errors, temperature=None):
+    def mock_groq(system, prompt, *, response_format, temperature, **kwargs):
         assert temperature in (0.0, 0.7)
-        assert provider == "openai" and model == "mock-qwen-27b"
+        assert response_format["type"] == "json_schema"
         assert "Private.pdf" not in prompt and "bench.pdf" not in prompt
         passages = _passages(prompt)
         # The topic gate keeps the unrelated Sort.pdf chunk out of a BFS quiz.
@@ -106,7 +96,7 @@ def test_upload_retrieve_quiz_and_answer_key(study_client, monkeypatch):
         if "Independently solve" in system:
             return json.dumps([{
                 "slot": 1, "correct_index": 1, "unique_answer": True,
-                "on_topic": True, "source": source, "quote": BFS,
+                "on_topic": True, "self_contained": True, "vietnamese": True, "source": source, "quote": BFS,
             }])
         if "Slots: [1," not in system:
             return "[]"
@@ -116,7 +106,7 @@ def test_upload_retrieve_quiz_and_answer_key(study_client, monkeypatch):
             "sources": [source],
         }])
 
-    monkeypatch.setattr(rag_engine, "generate_answer", mock_fit)
+    monkeypatch.setattr(rag_engine, "generate_answer", mock_groq)
     monkeypatch.setattr(quiz_generator, "MAX_PASSES", 2)
     response = study_client.post("/api/quiz", json={
         "query": "BFS graph traversal", "workspace_id": "alice", "num_questions": 5, "difficulty": "Easy",
@@ -142,13 +132,13 @@ def test_quiz_one_short_topic_with_grounded_evidence(study_client, monkeypatch):
     _upload(study_client, "Sort.pdf", SORT, "alice")
     _upload(study_client, "Other.pdf", SORT, "bob")
 
-    def mock_fit(system, prompt, **kwargs):
+    def mock_groq(system, prompt, **kwargs):
         assert "BFS.pdf" not in prompt and "Other.pdf" not in prompt and "bench.pdf" not in prompt
         passages = _passages(prompt)
         assert len(passages) == 1
         source = next(label for label, text in passages.items() if SORT in text)
         if "Independently solve" in system:
-            return json.dumps([{"slot": 1, "correct_index": 0, "unique_answer": True, "on_topic": True,
+            return json.dumps([{"slot": 1, "correct_index": 0, "unique_answer": True, "on_topic": True, "self_contained": True, "vietnamese": True,
                                 "source": source, "quote": SORT}])
         if "Audit every question" in system:
             return json.dumps([{"slot": 1, "supported": True, "distinct": True}])
@@ -158,7 +148,7 @@ def test_quiz_one_short_topic_with_grounded_evidence(study_client, monkeypatch):
             "correct_index": 0, "explanation": "It merges the sorted halves in order.", "sources": [source],
         }])
 
-    monkeypatch.setattr(rag_engine, "generate_answer", mock_fit)
+    monkeypatch.setattr(rag_engine, "generate_answer", mock_groq)
     response = study_client.post("/api/quiz", json={"topic": "sort", "num_questions": 1, "workspace_id": "alice"})
     assert response.status_code == 200, response.text
     quiz = response.json()
@@ -166,33 +156,39 @@ def test_quiz_one_short_topic_with_grounded_evidence(study_client, monkeypatch):
     assert quiz["generation_error"] is None and [cite["filename"] for cite in quiz["citations"]] == ["Sort.pdf"]
 
 
-def test_revision_task_prefills_clean_topic_and_generates_quiz(study_client, monkeypatch):
+def test_session_roadmap_prefills_clean_topic_and_generates_quiz(study_client, monkeypatch):
     from streamlit.testing.v1 import AppTest
 
-    _upload(study_client, "Graph.pdf", BFS, "alice")
     frontend = Path(__file__).resolve().parents[2] / "frontend"
     monkeypatch.syspath_prepend(str(frontend))
     import api_client
 
     calls = []
 
-    def post(url, *, json, timeout):
+    def post(url, *, timeout, json=None, headers=None):
         endpoint = urlsplit(url).path
-        response = study_client.post(endpoint, json=json)
+        response = study_client.post(endpoint, json=json, headers=headers)
         calls.append((endpoint, json, response.json()))
         return SimpleNamespace(ok=response.is_success, status_code=response.status_code,
                                json=response.json, headers=response.headers)
 
     monkeypatch.setattr(api_client, "check_health", lambda: (True, {}))
     monkeypatch.setattr(api_client.requests, "post", post)
+    monkeypatch.setattr(api_client.requests, "delete",
+                        lambda url, *, timeout, headers: SimpleNamespace(
+                            ok=study_client.delete(urlsplit(url).path, headers=headers).is_success,
+                            status_code=200,
+                        ))
 
-    def mock_fit(system, prompt, *, task, **kwargs):
+    def mock_groq(system, prompt, *, task, **kwargs):
         if task == "revision":
-            return _revision_tasks(system, prompt)
+            return _roadmap_items(system, prompt)
+        if task == "chat":
+            return "BFS dùng Queue [1]."
         sources = _passages(prompt)
         label = next(label for label, passage in sources.items() if BFS in passage)
         if "Independently solve" in system:
-            return json.dumps([{"slot": 1, "correct_index": 0, "unique_answer": True, "on_topic": True,
+            return json.dumps([{"slot": 1, "correct_index": 0, "unique_answer": True, "on_topic": True, "self_contained": True, "vietnamese": True,
                                 "source": label, "quote": BFS}])
         if "Audit every question" in system:
             return json.dumps([{"slot": 1, "supported": True, "distinct": True}])
@@ -202,16 +198,24 @@ def test_revision_task_prefills_clean_topic_and_generates_quiz(study_client, mon
             "correct_index": 0, "explanation": "BFS uses a queue.", "sources": [label],
         }])
 
-    monkeypatch.setattr(rag_engine, "generate_answer", mock_fit)
+    monkeypatch.setattr(rag_engine, "generate_answer", mock_groq)
     ui = AppTest.from_file(str(frontend / "app.py")).run()
-    ui.sidebar.text_input[0].set_value("alice")
+    session = calls[0][2]
+    assert session["corpus_id"] == "study-sessions"
+    assert not ui.sidebar.text_input
+    response = study_client.post("/api/upload", headers={"Authorization": f"Bearer {session['token']}"},
+                                 files={"file": ("Graph.pdf", pdf(BFS))})
+    assert response.status_code == 200
+    ui.chat_input[0].set_value("BFS dùng cấu trúc nào?").run()
+    assert len(ui.chat_message) == 2
     navigation = ui.sidebar.radio[0]
     navigation.set_value(navigation.options[3]).run()
-    ui.checkbox[0].check().run()
-    next(button for button in ui.button if button.label == "Tạo kế hoạch học").click().run()
+    next(button for button in ui.button if button.label == "Tạo kế hoạch học tập").click().run()
     assert not ui.exception
-    assert calls[0][0] == "/api/revision"
-    assert calls[0][2]["plan"]["topics"][0]["title"] == "BFS · Graph.pdf"
+    roadmap = next(item for item in calls if item[0] == "/api/roadmap")
+    assert roadmap[1] == {} and roadmap[2]["items"][0]["title"] == "BFS"
+    ui.checkbox[0].check().run()
+    assert any("1/1" in item.value for item in ui.caption)
 
     next(button for button in ui.button if button.label == "Luyện quiz cho mục này").click().run()
     assert not ui.exception
@@ -221,13 +225,38 @@ def test_revision_task_prefills_clean_topic_and_generates_quiz(study_client, mon
     assert not ui.exception
     endpoint, body, quiz = calls[-1]
     assert endpoint == "/api/quiz"
-    assert body == {"topic": "BFS", "num_questions": 1, "workspace_id": "alice", "corpus_id": "user-uploads"}
+    assert body == {"topic": "BFS", "num_questions": 1}
     assert quiz["generated_count"] == 1 and quiz["generation_error"] is None
     assert quiz["citations"][0]["filename"] == "Graph.pdf"
+    assert not any("Graph.pdf" in item.label for item in ui.expander)
+    next(radio for radio in ui.radio if radio.label.startswith("1.")).set_value(0)
+    next(button for button in ui.button if button.label == "Chấm bài").click().run()
+    assert any("1/1" in item.value for item in ui.success)
+    assert any("Graph.pdf · Trang 1" in item.label for item in ui.expander)
+    assert quiz["questions"][0]["evidence"][0]["snippet"] == BFS
+
+    next(button for button in ui.sidebar.button if button.label == "Tạo phiên học mới").click().run()
+    fresh = calls[-1][2]
+    assert fresh["workspace_id"] != session["workspace_id"]
+    assert not ui.exception and not ui.chat_message
+    fresh_auth = {"Authorization": f"Bearer {fresh['token']}"}
+    assert study_client.get("/api/documents", headers=fresh_auth).json()["total"] == 0
+    navigation = ui.sidebar.radio[0]
+    navigation.set_value(navigation.options[3]).run()
+    assert not ui.checkbox
+    navigation = ui.sidebar.radio[0]
+    navigation.set_value(navigation.options[2]).run()
+    assert next(field for field in ui.text_input if field.label == "Chủ đề").value == ""
+    assert not any(radio.label.startswith("1.") for radio in ui.radio)
+    next(button for button in ui.sidebar.button if button.label == "Xác nhận xóa phiên").click().run()
+    assert not ui.exception and study_client.get("/api/documents", headers=fresh_auth).status_code == 401
+    after_delete = calls[-1][2]["workspace_id"]
+    reopened = AppTest.from_file(str(frontend / "app.py")).run()
+    assert not reopened.exception and calls[-1][2]["workspace_id"] != after_delete
 
 
 @pytest.mark.parametrize("extra_chapters", [0, 10])
-def test_all_topics_scheduler_uses_uploaded_chapters_and_empty_scope(study_client, monkeypatch, extra_chapters):
+def test_roadmap_uses_uploaded_chapters_and_empty_scope(study_client, monkeypatch, extra_chapters):
     _upload(study_client, "Chapter 1 BFS.pdf", BFS, "alice")
     _upload(study_client, "Chapter 2 Sorting.pdf", SORT, "alice")
     for chapter in range(3, extra_chapters + 3):
@@ -237,27 +266,22 @@ def test_all_topics_scheduler_uses_uploaded_chapters_and_empty_scope(study_clien
     _upload(study_client, "Private.pdf", PRIVATE, "bob")
     calls = []
 
-    def mock_fit(system, prompt, **kwargs):
+    def mock_groq(system, prompt, **kwargs):
         assert "Private.pdf" not in prompt and "bench.pdf" not in prompt
         calls.append(system)
         assert kwargs["max_tokens"] <= 4000 and kwargs["task"] == "revision"
-        return _revision_tasks(system, prompt)
+        return _roadmap_items(system, prompt)
 
-    monkeypatch.setattr(rag_engine, "generate_answer", mock_fit)
-    payload = {"all_topics": True, "days_remaining": 12 if extra_chapters else 5,
-               "minutes_per_day": 50 if extra_chapters else 30, "level": "Beginner"}
-    response = study_client.post("/api/revision", json={**payload, "workspace_id": "alice"})
+    monkeypatch.setattr(rag_engine, "generate_answer", mock_groq)
+    response = study_client.post("/api/roadmap", json={"workspace_id": "alice"})
     assert response.status_code == 200, response.text
     result = response.json()
     filenames = {item["filename"] for item in result["citations"]}
     assert {"Chapter 1 BFS.pdf", "Chapter 2 Sorting.pdf"} <= filenames
-    assert len(filenames) == len(result["plan"]["topics"]) == 2 + extra_chapters
-    assert all(sum(task["minutes"] for task in day["tasks"]) <= payload["minutes_per_day"]
-               for day in result["plan"]["days"])
-    assert result["plan"]["days"][-1]["tasks"][0]["kind"] == "mock_test"
+    assert len(result["items"]) == 2 + bool(extra_chapters)
     generated_batches = len(calls)
-    assert generated_batches >= (5 if extra_chapters else 2)
-    for path, body in (("revision", payload), ("quiz", {"query": "BFS"})):
+    assert generated_batches == 1
+    for path, body in (("roadmap", {}), ("quiz", {"query": "BFS"})):
         empty = study_client.post(f"/api/{path}", json={**body, "workspace_id": "empty"})
         assert empty.status_code == 200 and empty.json()["generation_mode"] == "abstained"
     assert len(calls) == generated_batches

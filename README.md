@@ -1,125 +1,56 @@
 # DSA Document Assistant Using Hybrid RAG
-**Track C — Intelligent Document Workspace**  
-**Trợ lý Học tập & Ôn thi môn Cấu trúc Dữ liệu và Giải thuật (DSA)**
 
----
+Intelligent Document Workspace là trợ lý học DSA dùng tài liệu của từng phiên. Streamlit quản lý phiên an danh, FastAPI xác minh token và Hybrid Retrieval tìm nguồn trong Qdrant. Chat, Quiz và Study Roadmap dùng Groq.
 
-## 1. Trạng thái dự án: Mốc bàn giao Tuần 4 (PoC & Khung hạ tầng)
+## Chạy trên máy local
 
-Ở mốc **Tuần 4**, dự án đã hoàn thành khung hệ thống cơ bản, cấu hình môi trường dùng chung và giao diện Proof of Concept (PoC) kết nối **FastAPI Backend (Port 8000)** và **Streamlit Frontend (Port 8501)**. 
-
-### Tập trung vào các file thay đổi cụ thể của A2 và A3:
-
-#### 🟢 Phân công của A3 (Hạ tầng, Môi trường & Tích hợp)
-- [`requirements.txt`](requirements.txt): File khai báo thư viện khung ở thư mục gốc, liên kết trực tiếp `-r backend/requirements.txt` và `-r frontend/requirements.txt`, cho phép thiết lập toàn bộ môi trường chỉ với một câu lệnh.
-- [`.env.example`](.env.example): Template biến môi trường chuẩn ở thư mục gốc (`HOST=0.0.0.0`, `PORT=8000`, `BACKEND_URL=http://127.0.0.1:8000`, và cấu hình Vector DB `QDRANT_URL=http://localhost:6333` — thay thế hoàn toàn ChromaDB).
-- [`.vscode/launch.json`](.vscode/launch.json) & [`.vscode/tasks.json`](.vscode/tasks.json): Cung cấp sẵn cấu hình Run & Debug và Tasks cho **Visual Studio / VS Code**, hỗ trợ chạy song song cả Backend và Frontend chỉ với một phím tắt (`F5`).
-
-#### 🟢 Phân công của A2 (Giao diện người dùng Streamlit)
-- [`frontend/app.py`](frontend/app.py): Điểm vào chính của ứng dụng Streamlit, hoàn thiện **Sidebar Navigation** 4 phân hệ chuyển trang và widget giám sát trạng thái Backend (`/health`) theo thời gian thực.
-- [`frontend/screens/chat_ui.py`](frontend/screens/chat_ui.py): Màn hình Hỏi đáp kiến thức DSA. Tích hợp nút bấm 1-click gửi nhanh câu hỏi mẫu Cây AVL, nút xóa lịch sử chat, hiển thị trích dẫn tài liệu giả lập (**Mock Citation** theo Data Contract) và thời gian phản hồi API (`X-Process-Time-MS`).
-- [`frontend/screens/upload_ui.py`](frontend/screens/upload_ui.py): Màn hình Quản lý & Tải lên tài liệu PDF độc lập, kiểm tra định dạng PDF hợp lệ (header `%PDF-`), giới hạn kích thước ≤10MB và lưu trữ file an toàn tại `data/runtime/uploads/`.
-- [`frontend/screens/quiz_ui.py`](frontend/screens/quiz_ui.py): Dựng khung giao diện (Skeleton) cho tính năng **Luyện tập Trắc nghiệm DSA** với câu hỏi mẫu và trích dẫn lời giải (chuẩn bị tích hợp Core & API ở Tuần 7).
-- [`frontend/screens/revision_ui.py`](frontend/screens/revision_ui.py): Dựng khung giao diện (Skeleton) cho tính năng **Lộ trình Ôn tập DSA** với sơ đồ cây chủ đề kiến thức (Mindmap) và kế hoạch từng bước (chuẩn bị tích hợp ở Tuần 7).
-- [`frontend/api_client.py`](frontend/api_client.py): Module HTTP Client xử lý kết nối từ giao diện Streamlit sang API FastAPI (`/health`, `/api/chat`, `/api/upload`).
-
----
-
-## 2. Hướng dẫn chạy dự án trên Terminal của Visual Studio Code
-
-### 2.1. Yêu cầu môi trường
-- **Python**: Phiên bản **3.11.x** (khuyến nghị dùng thống nhất trong toàn nhóm).
-- Khởi chạy trực tiếp từ Terminal tích hợp của VS Code (PowerShell trên Windows).
-
----
-
-### 2.2. Bước 1: Khởi tạo Virtual Environment và cài đặt thư viện
-
-Mở terminal trong VS Code tại thư mục gốc của dự án (`DSA-Document-Assistant-Using-Hybrid-RAG`):
+Dùng Python 3.11. Từ thư mục gốc trong PowerShell:
 
 ```powershell
-# 1. Tạo môi trường ảo với Python 3.11
 py -3.11 -m venv .venv
-
-# 2. Nâng cấp pip
-.\.venv\Scripts\python.exe -m pip install --upgrade pip
-
-# 3. Cài đặt thư viện: Có thể cài riêng từng phần:
-.\.venv\Scripts\python.exe -m pip install -r backend/requirements.txt
-.\.venv\Scripts\python.exe -m pip install -r frontend/requirements.txt
-
-# (Hoặc cài đặt đồng thời toàn bộ qua file requirements.txt gốc):
-# .\.venv\Scripts\python.exe -m pip install -r requirements.txt
-```
-
----
-
-### 2.3. Bước 2: Tạo file cấu hình môi trường (.env)
-
-Chạy lệnh sau tại terminal để sao chép file cấu hình mẫu:
-
-```powershell
-# Tạo .env ở thư mục gốc và thư mục backend
-Copy-Item .env.example .env
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
 if (-not (Test-Path backend/.env)) {
     Copy-Item backend/.env.example backend/.env
 }
 ```
 
----
+Điền `GROQ_API_KEY` trong `backend/.env`. Mặc định dùng `https://api.groq.com/openai/v1` và `openai/gpt-oss-120b`. Xem [cấu hình Groq](backend/app/generation/README.md).
 
-### 2.4. Bước 3: Khởi chạy dự án bằng lệnh Terminal trên VS Code
-
-Dự án gồm 2 dịch vụ độc lập, chạy trên 2 cửa sổ Terminal riêng biệt trong VS Code:
-
-#### 🔹 Cửa sổ Terminal 1 — Khởi động Backend (FastAPI):
-Nhấn biểu tượng `+` hoặc `Ctrl + Shift + \`` để mở terminal mới và chạy:
+Chạy hai terminal riêng:
 
 ```powershell
-cd backend
-..\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000
 ```
-- API Docs (Swagger UI): [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
-- Kiểm tra Health: [http://127.0.0.1:8000/health](http://127.0.0.1:8000/health)
-
-#### 🔹 Cửa sổ Terminal 2 — Khởi động Frontend (Streamlit):
-Mở tiếp một terminal thứ hai trong VS Code và chạy:
 
 ```powershell
-cd frontend
-..\.venv\Scripts\python.exe -m streamlit run app.py
+.\.venv\Scripts\python.exe -m streamlit run frontend/app.py
 ```
-- Giao diện Web Streamlit: [http://127.0.0.1:8501](http://127.0.0.1:8501)
 
-*(Lưu ý: Nếu bạn đã kích hoạt môi trường `.venv` trong terminal, bạn có thể gọi trực tiếp lệnh ngắn: `python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload` và `python -m streamlit run app.py`).*
+Streamlit mở tại [localhost:8501](http://localhost:8501). Tài liệu API ở [localhost:8000/docs](http://localhost:8000/docs). Dùng chung `backend/.env` nếu chạy `docker compose up --build`. Volume `data/runtime` giữ registry phiên và file tạm qua restart backend.
 
----
+## Demo
 
-### 2.5. (Cách khác) Khởi chạy một chạm bằng Debugger của VS Code
+1. Mở Streamlit. Backend tự tạo một phiên rỗng.
+2. Tải PDF hoặc DOCX, tối đa 10 file/lượt và 15 MB/file.
+3. Hỏi ở Chat và mở nguồn tham khảo. Trong Quiz, chọn một chủ đề và 1–5 câu. Trích đoạn và đáp án hiện sau khi chấm.
+4. Chọn **Kế hoạch học tập**, nhấn tạo roadmap. Đánh dấu mục đã học hoặc mở Quiz từ chủ đề đó.
+5. Tạo phiên mới để bắt đầu với tài liệu và lịch sử trống. Dùng **Xóa phiên học hiện tại** để thu hồi token và xóa file, embeddings của phiên đó.
 
-Dự án đã được cấu hình sẵn file [`.vscode/launch.json`](.vscode/launch.json):
-1. Nhấn tổ hợp phím `Ctrl + Shift + D` trên VS Code để mở tab **Run & Debug**.
-2. Trên thanh menu dropdown chọn: **`Run Both (Backend + Frontend)`**.
-3. Nhấn **`F5`** (hoặc nút Play xanh). VS Code sẽ tự động khởi động đồng thời cả FastAPI và Streamlit trong 2 tiến trình riêng.
+Phiên mặc định hết hạn sau 8 giờ. Backend dọn dữ liệu hết hạn lúc khởi động và mỗi 5 phút. Trạng thái học của giao diện thuộc phiên Streamlit. Xem [hợp đồng API](docs/data_contracts.md) và [kiến trúc MVP V2](docs/MVP_V2_IMPLEMENTATION_PLAN.md).
 
----
+## Kiểm thử
 
-## 3. Kiểm thử nhanh các chức năng đã bàn giao
+```powershell
+.\.venv\Scripts\python.exe -m pip install pytest -r evaluation/requirements.txt
+.\.venv\Scripts\python.exe -m pytest -q
+```
 
-1. **Kiểm tra kết nối**: Quan sát Sidebar bên trái của Streamlit, biểu tượng hiển thị `● FastAPI: Hoạt động (healthy)`.
-2. **Hỏi đáp Cây AVL (Mock)**:
-   - Vào mục **💬 Trò chuyện & Hỏi đáp**.
-   - Bấm nút **👉 Thử ngay: "Cây AVL là gì và độ phức tạp tìm kiếm là bao nhiêu?"**.
-   - Xem câu trả lời giải thích cây AVL và mở mục **📌 Nguồn minh họa (MOCK Trích dẫn)** để xem trích dẫn nguồn slide và thời gian phản hồi API.
-3. **Tải lên PDF**:
-   - Chuyển sang mục **📤 Tải lên tài liệu**.
-   - Chọn một file `.pdf` bất kỳ (≤ 10MB) và nhấn **Tải lên Backend** để kiểm tra cơ chế nhận diện và lưu file tạm.
-4. **Khung màn hình Tuần 7**:
-   - Chuyển sang **📝 Luyện tập Trắc nghiệm** và **🗺️ Lộ trình ôn tập** để xem trước bộ khung giao diện mẫu.
+Các test tự động dùng provider giả lập. Nếu có `GROQ_API_KEY`, chạy
+`python tests/smoke_groq.py` để kiểm tra Chat, Quiz và Roadmap với một đoạn
+tài liệu mẫu. Lệnh trả mã 77 khi thiếu key. Hướng dẫn benchmark nằm trong
+[Evaluation README](evaluation/README.md).
 
----
-
-## 4. Phân công trách nhiệm nhóm
+## Phân công ở mốc Tuần 4
 
 | Mã | Thành viên | Vai trò chính | Phần bàn giao cụ thể Tuần 4 |
 |---|---|---|---|

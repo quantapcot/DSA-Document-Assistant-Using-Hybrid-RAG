@@ -1,8 +1,7 @@
 # dsa_ai_agent/backend/app/schemas/contracts.py
-from datetime import date
-from typing import Annotated, List, Optional, Dict, Any, Literal
+from typing import Annotated, List, Optional, Dict, Any
 from unicodedata import normalize
-from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator
 
 # ==========================================
 # 1. CONTRACT B -> C (Team B bàn giao cho Team C)
@@ -46,7 +45,6 @@ class ChatRequest(BaseModel):
     corpus_id: Optional[str] = Field(None, description="Mã corpus cần tìm kiếm (tùy chọn)")
 
 
-StudyLevel = Literal["Beginner", "Intermediate", "Advanced"]
 SourceLabel = Annotated[int, Field(strict=True, ge=1)]
 
 
@@ -69,7 +67,7 @@ class QuizRequest(BaseModel):
         return topic
 
 
-class QuizQuestion(BaseModel):
+class QuizContent(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True)
 
     question: str = Field(min_length=1)
@@ -77,7 +75,11 @@ class QuizQuestion(BaseModel):
     correct_index: int = Field(ge=0, le=3, strict=True)
     explanation: str = Field(min_length=1)
     sources: list[SourceLabel] = Field(min_length=1, max_length=3)
+
+
+class QuizQuestion(QuizContent):
     topic: str = Field(min_length=1, max_length=150)
+    evidence: list[Citation] = Field(default_factory=list)
 
 
 class QuizResponse(RAGResponse):
@@ -86,60 +88,34 @@ class QuizResponse(RAGResponse):
     generated_count: int = 0
 
 
-class RevisionRequest(ChatRequest):
-    query: str = Field("", max_length=500)
-    exam_date: date | None = None
-    days_remaining: int | None = Field(None, ge=1, le=90)
-    minutes_per_day: int = Field(45, ge=15, le=240)
-    level: StudyLevel = "Intermediate"
-    all_topics: bool = False
-
-    @model_validator(mode="after")
-    def validate_planning_input(self):
-        if (self.exam_date is None) == (self.days_remaining is None):
-            raise ValueError("Provide an exam date or remaining days, not both")
-        if not self.all_topics and not self.query.strip():
-            raise ValueError("Provide a topic or select all topics")
-        return self
+class RoadmapRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    workspace_id: str | None = None
+    corpus_id: str | None = None
 
 
-class StudyTask(BaseModel):
+class SessionResponse(BaseModel):
+    token: str
+    workspace_id: str
+    corpus_id: str
+    expires_at: float
+
+
+class RoadmapItem(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True)
 
-    kind: Literal["learn", "review", "mock_test"]
-    topic_id: str = Field(min_length=1)
-    covered_topic_ids: list[str] = Field(default_factory=list)
+    id: str = Field(min_length=1)
+    title: str = Field(min_length=1, max_length=150)
     objective: str = Field(min_length=1, max_length=300)
     knowledge: list[str] = Field(min_length=1, max_length=5)
     activity: str = Field(min_length=1, max_length=400)
-    practice: str = Field(min_length=1, max_length=300)
-    minutes: int = Field(ge=5, le=240, strict=True)
     prerequisites: list[str] = Field(default_factory=list)
-    sources: list[int] = Field(min_length=1, max_length=4)
+    sources: list[SourceLabel] = Field(min_length=1, max_length=2)
     support_quote: str = Field(min_length=20, max_length=500)
 
 
-class StudyDay(BaseModel):
-    date: date
-    tasks: list[StudyTask] = Field(min_length=1)
-
-
-class StudyTopic(BaseModel):
-    id: str
-    title: str
-    sources: list[int]
-
-
-class StudyPlan(BaseModel):
-    exam_date: date
-    minutes_per_day: int = Field(ge=15, le=240)
-    level: StudyLevel
-    days: list[StudyDay] = Field(min_length=1)
-    topics: list[StudyTopic]
-
-
-class RevisionResponse(RAGResponse):
-    plan: StudyPlan | None = None
+class RoadmapResponse(RAGResponse):
+    items: list[RoadmapItem] = Field(default_factory=list)
     uncovered_topics: list[str] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
 

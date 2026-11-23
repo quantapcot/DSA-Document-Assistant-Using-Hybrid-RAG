@@ -12,13 +12,13 @@ from anyio import to_thread
 from fastapi import HTTPException
 
 from app.core.config import settings
+from app.core.telemetry import study_metrics
 from app.generation.llm_client import ERROR_MESSAGES, request_deadline
 from app.retrieval.hybrid_search import RetrievalEngine
 from app.retrieval.vector_store import scope_filter
 from app.schemas.contracts import Citation
-from .study_evidence import (
-    QUIZ_FACETS, curriculum_inventory, diverse_evidence, expanded_query, mentions_topic, quiz_topic_filter, topic_terms,
-)
+from .study_evidence import curriculum_inventory, diverse_evidence, quiz_topic_filter
+from .study_sessions import resolve_scope
 
 logger = logging.getLogger("app.orchestration.request_flow")
 
@@ -57,13 +57,10 @@ def _scope_is_empty(engine, corpus_id, workspace_id):
 
 
 def _study_scope(body, request):
+    workspace, corpus = resolve_scope(request, body.workspace_id, body.corpus_id)
     engine = getattr(request.app.state, "retrieval_engine", None)
     if engine is None:
         raise HTTPException(503, "Hệ thống truy xuất chưa sẵn sàng.")
-    workspace = (body.workspace_id or request.headers.get("X-Workspace-Id") or "default-workspace").strip()
-    corpus = (body.corpus_id or request.headers.get("X-Corpus-Id") or "user-uploads").strip()
-    if not workspace or not corpus:
-        raise HTTPException(400, "Workspace và corpus không được để trống.")
     return engine, workspace, corpus
 
 
@@ -83,53 +80,45 @@ async def retrieve_for_study(body, request):
     return query, evidence, method, empty
 
 
-async def retrieve_for_exercise(body, request, *, revision=False):
-    """Collect diverse quiz evidence or a curriculum inventory for planning."""
-    query = " ".join(body.query.split()) if revision else body.topic
-    if not query and not (revision and body.all_topics):
-        raise HTTPException(400, "Chủ đề không được để trống.")
+async def retrieve_for_quiz(body, request):
+    """Use the plain topic first and one additional search only when evidence is thin."""
+    query = body.topic
     engine, workspace, corpus = _study_scope(body, request)
     try:
-        empty = await run_in_threadpool(_scope_is_empty, engine, corpus, workspace)
-        if empty:
+        if await run_in_threadpool(_scope_is_empty, engine, corpus, workspace):
             return query, [], True
-        if revision and body.all_topics:
-            inventory = await run_in_threadpool(curriculum_inventory, engine, workspace, corpus)
-            return query, inventory, not inventory
-        batches = []
-        if revision:
-            search_topic, terms = expanded_query(query), topic_terms(query)
+        search_topic, matches = quiz_topic_filter(query)
 
-            def matches(item):
-                return mentions_topic(item, terms)
-        else:
-            search_topic, matches = quiz_topic_filter(query)
-        for index, search in enumerate((search_topic, *(f"{search_topic} — {facet}" for facet in QUIZ_FACETS))):
+        async def matching(search):
             evidence, method = await execute_retrieval(
                 engine, search, workspace_id=workspace, corpus_id=corpus, top_k=8,
             )
-            on_topic = [item for item in evidence if matches(item)]
-            if index == 0 and not on_topic:
-                # Topic gate: the plain topic query must find relevant passages
-                # that actually mention the topic, otherwise the LLM is never called.
-                # The topic must literally appear in the retrieved passages (directly or
-                # via a known alias such as "đệ quy" -> "recursion"). Rerank scores are
-                # not used here: they are unreliable across languages and short chunks.
-                logger.info("Study topic not found in workspace documents")
-                return query, [], False
-            # Facet queries add generic words; keep only passages about the topic.
-            batches.append([{**item, "retrieval_method": method}
-                            for item in on_topic])
-        # Passages were already filtered by topic, so the score cutoff is skipped.
-        diverse = diverse_evidence(batches, workspace=workspace, corpus=corpus, apply_threshold=False)
-        if not diverse:
-            return query, [], False
-        if revision and diverse:
-            diverse = await run_in_threadpool(curriculum_inventory, engine, workspace, corpus, diverse)
+            return [{**item, "retrieval_method": method} for item in evidence if matches(item)]
+
+        primary = await matching(search_topic)
+        scope = {"workspace": workspace, "corpus": corpus, "apply_threshold": False}
+        diverse = diverse_evidence([primary], **scope)
+        if diverse and len(diverse) < min(body.num_questions, 3):
+            extra = await matching(f"{search_topic} — nguyên lý và ví dụ / principles and examples")
+            diverse = diverse_evidence([primary, extra], **scope)
         return query, diverse, False
     except Exception:
         logger.exception("Study evidence gathering failed")
         raise HTTPException(500, "Lỗi truy xuất tài liệu.") from None
+
+
+async def inventory_for_roadmap(body, request):
+    engine, workspace, corpus = _study_scope(body, request)
+    started = monotonic()
+    try:
+        return await run_in_threadpool(curriculum_inventory, engine, workspace, corpus)
+    except Exception:
+        logger.error("Roadmap inventory failed")
+        raise HTTPException(500, "Lỗi đọc tài liệu trong phiên.") from None
+    finally:
+        if metrics := study_metrics.get():
+            metrics.inventory_reads += 1
+            metrics.retrieval_ms += (monotonic() - started) * 1000
 
 
 async def execute_retrieval(
@@ -148,6 +137,15 @@ async def execute_retrieval(
     3. Ném ngoại lệ trực tiếp nếu lỗi database / cấu hình scope.
     """
     method_used = "hybrid_rerank"
+
+    async def measured(fn):
+        started = monotonic()
+        try:
+            return await run_in_threadpool(fn)
+        finally:
+            if metrics := study_metrics.get():
+                metrics.retrieval_calls += 1
+                metrics.retrieval_ms += (monotonic() - started) * 1000
 
     def _retrieve_sync() -> list[dict[str, Any]]:
         return engine.retrieve(
@@ -168,13 +166,13 @@ async def execute_retrieval(
         )
 
     try:
-        evidences = await run_in_threadpool(_retrieve_sync)
+        evidences = await measured(_retrieve_sync)
     except Exception as exc:
         err_str = str(exc).lower()
         if any(term in err_str for term in ["cuda", "out of memory", "oom", "rerank", "torch", "device"]):
             logger.warning("Reranking failed. Trying RRF in the same scope.")
             method_used = "hybrid_rrf"
-            evidences = await run_in_threadpool(_retrieve_fallback)
+            evidences = await measured(_retrieve_fallback)
         else:
             raise
 

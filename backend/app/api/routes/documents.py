@@ -14,6 +14,7 @@ from pathlib import Path
 from fastapi import APIRouter, HTTPException, Query, Request
 
 from app.api.routes.upload import get_upload_backend, physical_upload, validate_mutable_scope
+from app.orchestration.study_sessions import SESSION_CORPUS, resolve_scope
 from app.retrieval.indexing import document_filter, delete_document_from_index, scope_mutation_lock
 
 logger = logging.getLogger("app.api.routes.documents")
@@ -29,14 +30,15 @@ UPLOAD_DIR = Path(__file__).resolve().parents[4] / "data" / "runtime" / "uploads
 @router.get("/api/documents", tags=["Document Management"])
 def list_documents(
     request: Request,
-    workspace_id: str = Query("default-workspace", description="Workspace cần liệt kê tài liệu"),
-    corpus_id: str = Query("user-uploads", description="Corpus cần liệt kê tài liệu"),
+    workspace_id: str | None = Query(None, description="Workspace legacy"),
+    corpus_id: str | None = Query(None, description="Corpus legacy"),
 ):
     """Trả về danh sách tài liệu đã lập chỉ mục trong workspace/corpus chỉ định.
 
     Dữ liệu được đọc trực tiếp từ payload của Qdrant (không cần CSDL phụ).
     Mỗi document được tổng hợp từ các chunks có cùng ``document_id``.
     """
+    workspace_id, corpus_id = resolve_scope(request, workspace_id, corpus_id)
     client, config = get_upload_backend(request)
 
     if not client.collection_exists(config.collection):
@@ -114,17 +116,23 @@ def list_documents(
 def delete_document(
     document_id: str,
     request: Request,
-    workspace_id: str = Query("default-workspace"),
-    corpus_id: str = Query("user-uploads"),
+    workspace_id: str | None = Query(None),
+    corpus_id: str | None = Query(None),
 ):
     """Xóa tất cả chunks của ``document_id`` khỏi Qdrant và file vật lý tương ứng.
 
     Sau khi xóa thành công, BM25 cache của scope được invalidate tự động.
     """
+    workspace_id, corpus_id = resolve_scope(request, workspace_id, corpus_id)
     validate_mutable_scope(corpus_id, workspace_id)
     client, config = get_upload_backend(request)
     selector = document_filter(document_id, corpus_id, workspace_id)
     with scope_mutation_lock(config.collection, corpus_id, workspace_id):
+        root = UPLOAD_DIR
+        if corpus_id == SESSION_CORPUS:
+            registry = request.app.state.study_sessions
+            registry.ensure_active(workspace_id)
+            root = registry.directory(workspace_id) / "uploads"
         points = []
         if client.collection_exists(config.collection):
             points, _ = client.scroll(
@@ -134,7 +142,7 @@ def delete_document(
         if not points:
             raise HTTPException(status_code=404, detail="Document not found in this scope.")
         payload = points[0].payload or {}
-        path = physical_upload(UPLOAD_DIR, corpus_id, workspace_id, payload)
+        path = physical_upload(root, corpus_id, workspace_id, payload)
         deleted_chunks = delete_document_from_index(
             document_id, corpus_id=corpus_id, workspace_id=workspace_id,
             client=client, config=config,

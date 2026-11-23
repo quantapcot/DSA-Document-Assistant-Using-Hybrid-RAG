@@ -1,20 +1,35 @@
 # dsa_ai_agent/backend/app/main.py
 from contextlib import asynccontextmanager
+import asyncio
 import logging
 from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.api.routes import health, chat, quiz, revision, upload, documents
+from app.api.routes import health, chat, quiz, revision, upload, documents, sessions
 from app.api.middleware.observability import ObservabilityMiddleware
 from app.retrieval.config import RetrievalConfig
 from app.retrieval.hybrid_search import RetrievalEngine
+from app.orchestration.study_sessions import SessionRegistry
 
 logger = logging.getLogger("app.main")
 
 
+async def _sweep_sessions(app, stopping):
+    while not stopping.is_set():
+        try:
+            await asyncio.to_thread(app.state.study_sessions.cleanup, app.state.retrieval_engine)
+        except Exception as exc:
+            logger.warning("Session sweep failed error=%s", type(exc).__name__)
+        try:
+            await asyncio.wait_for(stopping.wait(), timeout=settings.SESSION_CLEANUP_SECONDS)
+        except TimeoutError:
+            continue
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    logging.basicConfig(level=logging.INFO)
     # Khởi tạo RetrievalEngine Singleton một lần duy nhất khi ứng dụng khởi động
     logger.info("Initializing Retrieval Engine Singleton...")
     config_path = Path(__file__).resolve().parents[2] / "configs" / "retrieval.mvp.yaml"
@@ -54,9 +69,17 @@ async def lifespan(app: FastAPI):
         logger.error(f"Failed to initialize RetrievalEngine at startup: {exc}")
         app.state.retrieval_engine = None
 
-    yield
-
-    logger.info("Application shutdown: cleaning up resources...")
+    stopping = asyncio.Event()
+    sweeper = (asyncio.create_task(_sweep_sessions(app, stopping))
+               if app.state.retrieval_engine is not None else None)
+    try:
+        yield
+    finally:
+        stopping.set()
+        if sweeper is not None:
+            await sweeper
+        if app.state.retrieval_engine is not None:
+            app.state.retrieval_engine.client.close()
 
 
 app = FastAPI(
@@ -65,6 +88,7 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+app.state.study_sessions = SessionRegistry(settings.SESSION_RUNTIME_DIR, settings.SESSION_TTL_SECONDS)
 
 # Cấu hình CORS cho phép Streamlit Frontend (Port 8501) kết nối sang
 app.add_middleware(
@@ -85,6 +109,7 @@ app.include_router(quiz.router)
 app.include_router(revision.router)
 app.include_router(upload.router)
 app.include_router(documents.router)
+app.include_router(sessions.router)
 
 @app.get("/", tags=["Root"])
 async def root():

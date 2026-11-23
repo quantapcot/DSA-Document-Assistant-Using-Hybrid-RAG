@@ -5,7 +5,7 @@ from api_client import create_quiz
 from screens.chat_ui import show_study_metadata
 
 
-def render_quiz_ui(workspace_id="default-workspace", corpus_id="user-uploads"):
+def render_quiz_ui(workspace_id="default-workspace", corpus_id="user-uploads", *, token=None):
     st.header("Luyện tập trắc nghiệm DSA")
     scope_key = f"quiz:{(workspace_id, corpus_id)!r}"
     prefill_key = f"quiz_topic:{(workspace_id, corpus_id)!r}"
@@ -21,7 +21,7 @@ def render_quiz_ui(workspace_id="default-workspace", corpus_id="user-uploads"):
             st.warning("Mỗi bài Quiz chỉ nhận một chủ đề. Bỏ dấu phẩy hoặc chấm phẩy.")
             return
         with st.spinner("Đang tạo câu hỏi từ tài liệu…"):
-            ok, data = create_quiz(topic.strip(), count, workspace_id, corpus_id)
+            ok, data = create_quiz(topic.strip(), count, workspace_id, corpus_id, token=token)
         version = st.session_state.get(scope_key, (0, None))[0] + 1
         st.session_state[scope_key] = (version, data if ok else {"error": data["error"]})
 
@@ -69,4 +69,8 @@ def render_quiz_ui(workspace_id="default-workspace", corpus_id="user-uploads"):
             result = "Đúng" if submitted[i - 1] == question["correct_index"] else "Sai"
             st.markdown(f"**Câu {i} · {result} · Đáp án: {correct}**")
             st.write(question["explanation"], sources)
-        show_study_metadata(data)
+            for evidence in question.get("evidence", []):
+                with st.expander(f"[{evidence['label']}] {evidence['filename']} · Trang {evidence['page']}"):
+                    st.write(evidence["snippet"])
+        if not any(question.get("evidence") for question in questions):
+            show_study_metadata(data)
