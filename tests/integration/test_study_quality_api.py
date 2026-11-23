@@ -81,19 +81,19 @@ def test_upload_retrieve_quiz_and_answer_key(study_client, monkeypatch):
         assert len(passages) == 1
         source = next(label for label, passage in passages.items() if BFS in passage)
         calls.append(system)
-        if "Audit each explanation" in system:
-            return json.dumps([{"slot": 1, "supported": True}])
+        if "Audit every question" in system:
+            return json.dumps([{"slot": 1, "supported": True, "distinct": True}])
         if "Independently solve" in system:
             return json.dumps([{
                 "slot": 1, "correct_index": 1, "unique_answer": True,
                 "on_topic": True, "source": source, "quote": BFS,
             }])
-        if '"1":' not in system:
+        if "Slots: [1," not in system:
             return "[]"
         return json.dumps([{
             "slot": 1, "question": "Which data structure does BFS use?", "options": ["Stack", "Queue", "Heap", "Tree"],
             "correct_index": 1, "explanation": "A queue visits vertices in increasing distance.",
-            "sources": [source], "question_type": "Concept", "difficulty": "Easy", "topic": "BFS",
+            "sources": [source],
         }])
 
     monkeypatch.setattr(rag_engine, "generate_answer", mock_fit)
@@ -104,13 +104,46 @@ def test_upload_retrieve_quiz_and_answer_key(study_client, monkeypatch):
     assert response.status_code == 200, response.text
     quiz = response.json()
     assert (quiz["generated_count"], quiz["requested_count"]) == (1, 5)
+    assert quiz["generation_error"] == "invalid_output" and "1/5" in quiz["answer"]
     assert len(calls) == 4 and [cite["filename"] for cite in quiz["citations"]] == ["BFS.pdf"]
     assert quiz["questions"][0]["options"][quiz["questions"][0]["correct_index"]] == "Queue"
+    assert "difficulty" not in quiz["questions"][0]
 
     monkeypatch.setattr(rag_engine, "generate_answer", lambda *args, **kwargs: pytest.fail("called model"))
+    invalid = study_client.post("/api/quiz", json={"topic": "BFS, graph", "workspace_id": "alice"})
+    assert invalid.status_code == 422 and "chỉ nhận một chủ đề" in invalid.json()["detail"][0]["msg"]
     missing = study_client.post("/api/quiz", json={"query": "Trie", "workspace_id": "alice"}).json()
     assert missing["generation_mode"] == "abstained" and not missing["questions"]
     assert "không có trong các tài liệu" in missing["answer"]
+
+
+def test_quiz_one_short_topic_with_grounded_evidence(study_client, monkeypatch):
+    _upload(study_client, "BFS.pdf", BFS, "alice")
+    _upload(study_client, "Sort.pdf", SORT, "alice")
+    _upload(study_client, "Other.pdf", SORT, "bob")
+
+    def mock_fit(system, prompt, **kwargs):
+        assert "BFS.pdf" not in prompt and "Other.pdf" not in prompt and "bench.pdf" not in prompt
+        passages = _passages(prompt)
+        assert len(passages) == 1
+        source = next(label for label, text in passages.items() if SORT in text)
+        if "Independently solve" in system:
+            return json.dumps([{"slot": 1, "correct_index": 0, "unique_answer": True, "on_topic": True,
+                                "source": source, "quote": SORT}])
+        if "Audit every question" in system:
+            return json.dumps([{"slot": 1, "supported": True, "distinct": True}])
+        return json.dumps([{
+            "slot": 1, "question": "What does merge sort do after sorting both halves?",
+            "options": ["Merge them", "Discard one", "Reverse both", "Hash them"],
+            "correct_index": 0, "explanation": "It merges the sorted halves in order.", "sources": [source],
+        }])
+
+    monkeypatch.setattr(rag_engine, "generate_answer", mock_fit)
+    response = study_client.post("/api/quiz", json={"topic": "sort", "num_questions": 1, "workspace_id": "alice"})
+    assert response.status_code == 200, response.text
+    quiz = response.json()
+    assert quiz["requested_count"] == quiz["generated_count"] == 1
+    assert quiz["generation_error"] is None and [cite["filename"] for cite in quiz["citations"]] == ["Sort.pdf"]
 
 
 @pytest.mark.parametrize("extra_chapters", [0, 10])

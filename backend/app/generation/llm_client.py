@@ -8,6 +8,7 @@ from app.core.config import settings
 logger = logging.getLogger(__name__)
 _RETRY_DELAYS = (1, 2)
 request_deadline: ContextVar[float | None] = ContextVar("llm_request_deadline", default=None)
+quiz_provider_calls: ContextVar[int | None] = ContextVar("quiz_provider_calls", default=None)
 FIT_OUTPUT_LIMIT = 4000
 ERROR_MESSAGES = {
     "timeout": "FIT-AI đã vượt thời gian xử lý cho phép.",
@@ -126,6 +127,8 @@ def generate_answer(system_prompt, user_prompt, *, provider=None, model=None,
             failure = "timeout"
             break
         try:
+            if task in {"quiz_generation", "quiz_verification"} and (calls := quiz_provider_calls.get()) is not None:
+                quiz_provider_calls.set(calls + 1)
             result = call(
                 payload, model=model or settings.LLM_MODEL or default_model,
                 api_key=key.get_secret_value(), temperature=temperature, max_tokens=max_tokens,

@@ -105,7 +105,7 @@ def test_llm_retries_without_logging_key(monkeypatch, caplog, failure):
 QUIZ = {
     "question": "What is compared?", "options": ["target", "root", "edge", "height"],
     "correct_index": 0, "explanation": "The target is compared.", "sources": [1],
-    "difficulty": "Medium", "question_type": "Concept", "topic": "Binary search",
+    "topic": "Binary search",
 }
 
 
@@ -120,10 +120,13 @@ def test_quiz_api_uses_mock_llm_and_keeps_scope(monkeypatch, evidence):
                  "source": 1, "quote": evidence[0]["text"]}]
     from app.generation import quiz_generator
     monkeypatch.setattr(quiz_generator, "MAX_PASSES", 2)
-    llm = MagicMock(side_effect=[f"```json\n{json.dumps([{**QUIZ, 'slot': 1}])}\n```", json.dumps(verified), json.dumps([{"slot": 1, "supported": True}]), "[]"])
+    llm = MagicMock(side_effect=[
+        f"```json\n{json.dumps([{**QUIZ, 'slot': 1}])}\n```", json.dumps(verified),
+        json.dumps([{"slot": 1, "supported": True, "distinct": True}]), "[]",
+    ])
     monkeypatch.setattr(rag_engine, "generate_answer", llm)
     api = TestClient(app)
-    quiz = api.post("/api/quiz", json={"query": "search", "workspace_id": "student"})
+    quiz = api.post("/api/quiz", json={"topic": "Binary search", "workspace_id": "student"})
     assert quiz.status_code == 200
     assert quiz.json()["questions"] == [QUIZ]
     assert quiz.json()["generation_mode"] == "llm"
@@ -183,6 +186,10 @@ def test_streamlit_chat_quiz_and_revision_with_mock_api(monkeypatch):
     assert any("[2] graphs.pdf" in item.value for item in ui.markdown)
     navigation = ui.sidebar.radio[0]
     navigation.set_value(navigation.options[2]).run()
+    assert not any(widget.label == "Độ khó" for widget in ui.selectbox)
+    ui.text_input[0].set_value("tree; graph")
+    next(button for button in ui.button if button.label == "Tạo bài trắc nghiệm").click().run()
+    assert any("chỉ nhận một chủ đề" in warning.value for warning in ui.warning)
     ui.text_input[0].set_value("trees")
     next(button for button in ui.button if button.label == "Tạo bài trắc nghiệm").click().run()
     assert not any(QUIZ["explanation"] in item.value for item in ui.markdown)
