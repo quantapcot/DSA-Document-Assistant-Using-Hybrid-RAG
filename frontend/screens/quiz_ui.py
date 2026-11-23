@@ -12,14 +12,16 @@ def render_quiz_ui(workspace_id="default-workspace", corpus_id="user-uploads"):
     with st.form("quiz_generate"):
         topic = st.text_input("Chủ đề", key=prefill_key)
         count = st.number_input("Số câu hỏi (tối đa 5)", min_value=1, max_value=5, value=5)
-        difficulty = st.selectbox("Độ khó", ["Easy", "Medium", "Hard"], index=1)
         generate = st.form_submit_button("Tạo bài trắc nghiệm")
     if generate:
         if not topic.strip():
             st.warning("Nhập chủ đề cần luyện tập.")
             return
+        if any(separator in topic for separator in ",;，；"):
+            st.warning("Mỗi bài Quiz chỉ nhận một chủ đề. Bỏ dấu phẩy hoặc chấm phẩy.")
+            return
         with st.spinner("Đang tạo câu hỏi từ tài liệu…"):
-            ok, data = create_quiz(topic.strip(), count, workspace_id, corpus_id, difficulty=difficulty)
+            ok, data = create_quiz(topic.strip(), count, workspace_id, corpus_id)
         version = st.session_state.get(scope_key, (0, None))[0] + 1
         st.session_state[scope_key] = (version, data if ok else {"error": data["error"]})
 

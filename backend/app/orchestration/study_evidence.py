@@ -205,3 +205,70 @@ def mentions_topic(item, terms):
     if is_known_topic(terms):
         return any(re.search(term, text, re.I) for term in terms)
     return all(re.search(term, text, re.I) for term in terms)
+
+
+_BINARY_SEARCH = r"\b(?:binary search(?! trees?\b)|(?<!cay )tim kiem nhi phan)\b"
+_BINARY_SEARCH_TREE = r"\b(?:binary search trees?|bst|cay (?:nhi phan tim kiem|tim kiem nhi phan))\b"
+_SPECIALIZED_SEARCH = re.compile(
+    rf"{_BINARY_SEARCH_TREE}|{_BINARY_SEARCH}|\b(?:(?:breadth|depth) first search|bfs|dfs)\b"
+)
+_SEARCH = re.compile(r"\b(?:search(?:ing)?|tim kiem)\b")
+_SEARCH_OVERVIEW = re.compile(
+    r"\b(?:(?:linear|sequential) search|tim kiem (?:tuyen tinh|tuan tu)|"
+    r"search(?:ing)? (?:algorithms|methods|techniques|problem)|"
+    r"search(?:ing)? is (?:the|a) (?:process|task|operation) of|"
+    r"bai toan tim kiem|cac (?:thuat toan|phuong phap) tim kiem)\b"
+)
+
+
+# Exact topic aliases for Quiz. Match the passage body so a broad section
+# title or an English substring like "graph" in "paragraph" is insufficient.
+_QUIZ_ALIASES = (
+    (r"(?:sort|sorting)(?: algorithms?)?|(?:thuat toan )?sap xep",
+     "sorting sắp xếp",
+     r"\b(?:sort|sorts|sorted order|sorting|(?:merge|quick|heap)sort|sap xep)\b"),
+    (r"graphs?|graph theory|(?:ly thuyet )?do thi",
+     "graph đồ thị", r"\b(?:graphs?|do thi)\b"),
+    (r"binary search(?: algorithm)?|(?:thuat toan )?tim kiem nhi phan",
+     "binary search tìm kiếm nhị phân", _BINARY_SEARCH),
+    (r"binary search trees?|bst|cay (?:nhi phan tim kiem|tim kiem nhi phan)",
+     "binary search tree BST cây nhị phân tìm kiếm", _BINARY_SEARCH_TREE),
+    (r"avl(?: trees?)?|cay avl", "AVL cây AVL", r"\bavl\b"),
+    (r"bfs(?: graph traversal)?|breadth first search|duyet theo chieu rong",
+     "BFS breadth-first search duyệt theo chiều rộng",
+     r"\b(?:bfs|breadth first search|duyet theo chieu rong)\b"),
+    (r"dfs(?: graph traversal)?|depth first search|duyet theo chieu sau",
+     "DFS depth-first search duyệt theo chiều sâu",
+     r"\b(?:dfs|depth first search|duyet theo chieu sau)\b"),
+)
+
+
+def _quiz_alias_text(text):
+    text = unicodedata.normalize("NFD", normalized_text(text)).replace("đ", "d")
+    return "".join(char for char in text if not unicodedata.combining(char))
+
+
+def _matches_general_search(item):
+    text, specialized_mentions = _SPECIALIZED_SEARCH.subn(" ", _quiz_alias_text(item["text"]))
+    section = _quiz_alias_text(item.get("section") or "")
+    # A specialized passage needs evidence of a broader discussion, such as
+    # linear search or a comparison of search methods.
+    pattern = _SEARCH_OVERVIEW if specialized_mentions or _SPECIALIZED_SEARCH.search(section) else _SEARCH
+    return bool(pattern.search(text))
+
+
+def quiz_topic_filter(topic):
+    """Return a bilingual search query and a Quiz-only evidence predicate."""
+    alias_topic = _quiz_alias_text(topic)
+    if re.fullmatch(r"search(?:ing)?(?: algorithms?)?|(?:thuat toan )?tim kiem", alias_topic):
+        return "searching search algorithms tìm kiếm", _matches_general_search
+    for aliases, search, pattern in _QUIZ_ALIASES:
+        if re.fullmatch(aliases, alias_topic):
+            return search, lambda item: bool(re.search(pattern, _quiz_alias_text(item["text"])))
+    normalized = normalized_text(topic)
+    for name, pattern in TOPIC_PATTERNS.items():
+        if normalized == normalized_text(name) or re.fullmatch(pattern, normalized):
+            return expanded_query(topic), lambda item: bool(re.search(pattern, normalized_text(item["text"])))
+    words = normalized.split()
+    terms = set(words) - _STOPWORDS or set(words)
+    return topic, lambda item: bool(terms) and terms.issubset(normalized_text(item["text"]).split())

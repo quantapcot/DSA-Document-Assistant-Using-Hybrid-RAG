@@ -5,7 +5,7 @@ from typing import Any
 import requests
 
 BACKEND_URL = os.getenv("BACKEND_URL", "http://127.0.0.1:8000").rstrip("/")
-_STUDY_TIMEOUTS = {"chat": 90, "quiz": 360, "revision": 240}
+_STUDY_TIMEOUTS = {"chat": 90, "quiz": 240, "revision": 240}
 _HTTP_TIMEOUT_MARGIN = 10
 _GENERATION_MESSAGES = {
     "timeout": "LLM vượt thời gian xử lý cho phép.",
@@ -62,11 +62,8 @@ def ask_question(
     return _study_request("chat", query, workspace_id, corpus_id)
 
 
-def create_quiz(query, num_questions=5, workspace_id=None, corpus_id=None, *, difficulty="Medium"):
-    return _study_request(
-        "quiz", query, workspace_id, corpus_id,
-        num_questions=num_questions, difficulty=difficulty,
-    )
+def create_quiz(topic, num_questions=5, workspace_id=None, corpus_id=None):
+    return _study_request("quiz", topic, workspace_id, corpus_id, num_questions=num_questions)
 
 
 def create_revision(query, workspace_id=None, corpus_id=None, *, exam_date=None,
@@ -80,7 +77,7 @@ def create_revision(query, workspace_id=None, corpus_id=None, *, exam_date=None,
 
 def _study_request(endpoint, query, workspace_id, corpus_id, **fields):
     try:
-        payload: dict[str, Any] = {"query": query, **fields}
+        payload: dict[str, Any] = {"topic" if endpoint == "quiz" else "query": query, **fields}
         if workspace_id:
             payload["workspace_id"] = workspace_id
         if corpus_id:

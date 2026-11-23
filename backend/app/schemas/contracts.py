@@ -1,7 +1,8 @@
 # dsa_ai_agent/backend/app/schemas/contracts.py
 from datetime import date
 from typing import Annotated, List, Optional, Dict, Any, Literal
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from unicodedata import normalize
+from pydantic import AliasChoices, BaseModel, ConfigDict, Field, field_validator, model_validator
 
 # ==========================================
 # 1. CONTRACT B -> C (Team B bàn giao cho Team C)
@@ -45,15 +46,27 @@ class ChatRequest(BaseModel):
     corpus_id: Optional[str] = Field(None, description="Mã corpus cần tìm kiếm (tùy chọn)")
 
 
-Difficulty = Literal["Easy", "Medium", "Hard"]
-QuestionType = Literal["Concept", "Complexity", "Algorithm Tracing", "Comparison", "Application"]
 StudyLevel = Literal["Beginner", "Intermediate", "Advanced"]
 SourceLabel = Annotated[int, Field(strict=True, ge=1)]
 
 
-class QuizRequest(ChatRequest):
+class QuizRequest(BaseModel):
+    topic: str = Field(validation_alias=AliasChoices("topic", "query"))
     num_questions: int = Field(5, ge=1, le=5)
-    difficulty: Difficulty = "Medium"
+    workspace_id: str | None = None
+    corpus_id: str | None = None
+
+    @field_validator("topic")
+    @classmethod
+    def single_topic(cls, value: str) -> str:
+        topic = " ".join(normalize("NFKC", value).split())
+        if not topic:
+            raise ValueError("Chủ đề không được để trống.")
+        if any(separator in topic for separator in ",;"):
+            raise ValueError("Mỗi bài Quiz chỉ nhận một chủ đề. Bỏ dấu phẩy hoặc chấm phẩy.")
+        if len(topic) > 150:
+            raise ValueError("Chủ đề không được vượt quá 150 ký tự.")
+        return topic
 
 
 class QuizQuestion(BaseModel):
@@ -64,8 +77,6 @@ class QuizQuestion(BaseModel):
     correct_index: int = Field(ge=0, le=3, strict=True)
     explanation: str = Field(min_length=1)
     sources: list[SourceLabel] = Field(min_length=1, max_length=3)
-    question_type: QuestionType
-    difficulty: Difficulty
     topic: str = Field(min_length=1, max_length=150)
 
 

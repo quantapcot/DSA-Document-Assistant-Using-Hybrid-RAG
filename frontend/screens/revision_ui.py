@@ -1,5 +1,6 @@
 """Calendar, references, and session-local study progress."""
 from datetime import datetime, timedelta, timezone
+import re
 
 import streamlit as st
 
@@ -12,7 +13,11 @@ def _record_completion(progress_key, task_id, widget_key):
 
 
 def _open_quiz(workspace, corpus, title):
-    st.session_state[f"quiz_topic:{(workspace, corpus)!r}"] = title
+    topic = title.partition("·")[0].strip()
+    # A page-range fallback labels a source location and has no topic name.
+    if re.fullmatch(r"Tr\.\s*\d+(?:[–-]\d+)?", topic, re.IGNORECASE):
+        topic = ""
+    st.session_state[f"quiz_topic:{(workspace, corpus)!r}"] = topic
     st.session_state["study_navigation"] = "📝 Luyện tập Trắc nghiệm"
 
 

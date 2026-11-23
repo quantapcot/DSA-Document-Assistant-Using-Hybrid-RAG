@@ -105,7 +105,7 @@ def test_llm_retries_without_logging_key(monkeypatch, caplog, failure):
 QUIZ = {
     "question": "What is compared?", "options": ["target", "root", "edge", "height"],
     "correct_index": 0, "explanation": "The target is compared.", "sources": [1],
-    "difficulty": "Medium", "question_type": "Concept", "topic": "Binary search",
+    "topic": "Binary search",
 }
 
 
@@ -120,10 +120,13 @@ def test_quiz_api_uses_mock_llm_and_keeps_scope(monkeypatch, evidence):
                  "source": 1, "quote": evidence[0]["text"]}]
     from app.generation import quiz_generator
     monkeypatch.setattr(quiz_generator, "MAX_PASSES", 2)
-    llm = MagicMock(side_effect=[f"```json\n{json.dumps([{**QUIZ, 'slot': 1}])}\n```", json.dumps(verified), json.dumps([{"slot": 1, "supported": True}]), "[]"])
+    llm = MagicMock(side_effect=[
+        f"```json\n{json.dumps([{**QUIZ, 'slot': 1}])}\n```", json.dumps(verified),
+        json.dumps([{"slot": 1, "supported": True, "distinct": True}]), "[]",
+    ])
     monkeypatch.setattr(rag_engine, "generate_answer", llm)
     api = TestClient(app)
-    quiz = api.post("/api/quiz", json={"query": "search", "workspace_id": "student"})
+    quiz = api.post("/api/quiz", json={"topic": "Binary search", "workspace_id": "student"})
     assert quiz.status_code == 200
     assert quiz.json()["questions"] == [QUIZ]
     assert quiz.json()["generation_mode"] == "llm"
@@ -156,17 +159,33 @@ def test_empty_workspace_never_queries_benchmark(monkeypatch):
         client.close()
 
 
+@pytest.mark.parametrize(("title", "expected"), [
+    ("BFS · Graph.pdf · Trang 3", "BFS"),
+    ("Tr. 3 · Đoạn 1–6 · Graph.pdf", ""),
+    ("Tr. 1–4 · Graph.pdf", ""),
+])
+def test_revision_quiz_prefill_excludes_source_metadata(monkeypatch, title, expected):
+    monkeypatch.syspath_prepend(str(Path(__file__).resolve().parents[2] / "frontend"))
+    from screens import revision_ui
+
+    session = {}
+    monkeypatch.setattr(revision_ui, "st", SimpleNamespace(session_state=session))
+    revision_ui._open_quiz("student", "uploads", title)
+    assert session["quiz_topic:('student', 'uploads')"] == expected
+
+
 def test_streamlit_chat_quiz_and_revision_with_mock_api(monkeypatch):
     from streamlit.testing.v1 import AppTest
 
     monkeypatch.syspath_prepend(str(Path(__file__).resolve().parents[2] / "frontend"))
     import api_client
+    from screens import chat_ui, quiz_ui, revision_ui
 
     citation = {"label": 2, "filename": "graphs.pdf", "page": 9, "snippet": "Use a queue."}
     data = {"generation_mode": "extractive", "citations": [citation], "confidence_score": .56}
     monkeypatch.setattr(api_client, "check_health", lambda: (True, {}))
-    monkeypatch.setattr(api_client, "ask_question", lambda *args, **kwargs: (True, {**data, "answer": "Use a queue [2]."}))
-    monkeypatch.setattr(api_client, "create_quiz", lambda *args, **kwargs: (True, {**data, "questions": [QUIZ]}))
+    monkeypatch.setattr(chat_ui, "ask_question", lambda *args, **kwargs: (True, {**data, "answer": "Use a queue [2]."}))
+    monkeypatch.setattr(quiz_ui, "create_quiz", lambda *args, **kwargs: (True, {**data, "questions": [QUIZ]}))
     task = {
         "kind": "learn", "topic_id": "T1", "objective": "Understand BFS",
         "knowledge": ["Queue"], "activity": "Trace BFS", "practice": "Quiz",
@@ -175,7 +194,7 @@ def test_streamlit_chat_quiz_and_revision_with_mock_api(monkeypatch):
     plan = {"exam_date": "2026-12-15", "minutes_per_day": 30, "level": "Intermediate",
             "topics": [{"id": "T1", "title": "Graphs"}],
             "days": [{"date": "2026-12-12", "tasks": [task]}]}
-    monkeypatch.setattr(api_client, "create_revision",
+    monkeypatch.setattr(revision_ui, "create_revision",
                         lambda *args, **kwargs: (True, {**data, "answer": "Study plan", "plan": plan}))
     ui = AppTest.from_file(str(Path(api_client.__file__).with_name("app.py"))).run()
     ui.chat_input[0].set_value("What is a queue?").run()
@@ -183,6 +202,10 @@ def test_streamlit_chat_quiz_and_revision_with_mock_api(monkeypatch):
     assert any("[2] graphs.pdf" in item.value for item in ui.markdown)
     navigation = ui.sidebar.radio[0]
     navigation.set_value(navigation.options[2]).run()
+    assert not any(widget.label == "Độ khó" for widget in ui.selectbox)
+    ui.text_input[0].set_value("tree; graph")
+    next(button for button in ui.button if button.label == "Tạo bài trắc nghiệm").click().run()
+    assert any("chỉ nhận một chủ đề" in warning.value for warning in ui.warning)
     ui.text_input[0].set_value("trees")
     next(button for button in ui.button if button.label == "Tạo bài trắc nghiệm").click().run()
     assert not any(QUIZ["explanation"] in item.value for item in ui.markdown)

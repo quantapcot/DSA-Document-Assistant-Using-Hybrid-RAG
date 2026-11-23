@@ -130,4 +130,6 @@ def test_frontend_uses_health_deadline_and_displays_backend_timeout(monkeypatch)
         False, {"error": message},
     )
     assert post.call_args.kwargs["timeout"] == (10, 47)
-    assert post.call_args.kwargs["json"]["workspace_id"] == "student"
+    assert post.call_args.kwargs["json"] == {
+        "topic": "Graph traversal", "num_questions": 5, "workspace_id": "student",
+    }
