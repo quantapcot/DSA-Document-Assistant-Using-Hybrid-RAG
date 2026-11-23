@@ -33,12 +33,16 @@ def test_end_to_end_and_isolation():
 
 
 def test_benchmark_four_methods_and_unlabeled_rejection():
-    from evaluation.scripts.run_benchmark import run
+    from evaluation.scripts.run_benchmark import evaluation_config, run
+    from evaluation.retrieval_results import KS, summarize
     client = QdrantClient(":memory:")
-    config = RetrievalConfig(qdrant_mode="memory", embedding_model="test")
+    config = evaluation_config(RetrievalConfig(qdrant_mode="memory", embedding_model="test"))
     build_index(docs(), corpus_id="c", workspace_id="w", client=client, config=config, embedder=embed, dimension=3)
     engine = RetrievalEngine(client=client, config=config, query_embedder=lambda q: [1., 0., 0.], rerank_scorer=lambda pairs: [1.] * len(pairs))
-    results = run(engine, [{"query_id":"q1", "query":"binary tree", "relevant_ids":["a"]}], "c", "w")
+    results = run(engine, [{"query_id": "q1", "query": "binary tree", "relevant_ids": ["a"],
+                            "relevance_grades": {"a": 2}, "labels_complete": True}], "c", "w")
     assert len(results) == 4
-    assert all(r["recall_at_k"] == 1 for r in results)
-    with pytest.raises(ValueError, match="labeled"): run(engine, [{"query":"tree", "relevant_ids":[]}], "c", "w")
+    assert all(row["recall_at_k"] == 1 for row in summarize(results, ["bm25", "dense", "hybrid_rrf", "hybrid_rerank"], KS)["metrics"])
+    with pytest.raises(ValueError, match="relevance_grades"):
+        run(engine, [{"query_id": "q1", "query": "tree", "relevant_ids": []}], "c", "w")
+    client.close()
