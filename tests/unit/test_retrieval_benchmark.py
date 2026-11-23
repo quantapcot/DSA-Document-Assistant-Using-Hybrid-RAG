@@ -5,8 +5,9 @@ from unittest.mock import Mock
 import pytest
 
 from app.retrieval.config import RetrievalConfig
-from evaluation.retrieval_results import KS, METHODS, summarize
-from evaluation.scripts.run_benchmark import evaluation_config, run
+from evaluation.retrieval_results import KS, METHODS, summarize, summarize_latency
+from evaluation.scripts import run_benchmark
+from evaluation.scripts.run_benchmark import evaluation_config, measure_latency, run
 
 
 def test_each_method_retrieves_top_15_once_without_changing_base_config():
@@ -51,18 +52,74 @@ def test_pool_validation_and_benchmark_uses_selected_override():
 
 def test_latency_summary_counts_rankings_not_cutoffs():
     rows = [{
-        "query_id": str(i), "method": "dense", "retrieved_ids": ["a"],
-        "relevance_grades": {"a": 2}, "relevant_ids": ["a"], "labels_complete": True,
-        "latency_ms": latency,
-    } for i, latency in enumerate([10, 20, 100])]
-    summary = summarize(rows, ["dense"], KS)
-    assert len(summary["metrics"]) == 5
-    assert summary["latency"] == [{
+        "query_id": "q", "method": "dense", "repeat": repeat, "latency_ms": latency,
+    } for repeat, latency in enumerate([10, 20, 100], start=1)]
+    summary = summarize_latency(rows, ["dense"], 3)
+    assert summary == [{
         "method": "dense", "samples": 3, "mean_ms": pytest.approx(130 / 3),
         "p50_ms": 20, "p95_ms": pytest.approx(92),
     }]
-    singleton = summarize(rows[:1], ["dense"], KS)["latency"][0]
+    singleton = summarize_latency(rows[:1], ["dense"], 1)[0]
     assert singleton["mean_ms"] == singleton["p50_ms"] == singleton["p95_ms"] == 10
+    with pytest.raises(ValueError, match="configured number"):
+        summarize_latency(rows[:2], ["dense"], 3)
+    with pytest.raises(ValueError, match="duplicate"):
+        summarize_latency([*rows, rows[0]], ["dense"], 3)
+
+
+def test_warmup_uses_full_workload_and_is_not_timed(monkeypatch):
+    engine = Mock()
+    queries = [{"query_id": str(i), "query": f"fixture {i}"} for i in range(2)]
+    round_size = len(queries) * len(METHODS)
+    now = 0
+
+    def retrieve(*args, **kwargs):
+        nonlocal now
+        # Warmup is deliberately much slower than any measured call.
+        now += 700_000_000 if engine.retrieve.call_count <= round_size else 11_000_000
+
+    engine.retrieve.side_effect = retrieve
+    clock = Mock(side_effect=lambda: now)
+    monkeypatch.setattr(run_benchmark.time, "perf_counter_ns", clock)
+    samples = measure_latency(engine, queries, "c", "w", seed=42)
+    assert len(samples) == round_size * 5
+    assert clock.call_count == 2 * len(samples) and engine.retrieve.call_count == round_size * 6
+    expected = {(query["query"], method) for query in queries for method in METHODS}
+    calls = engine.retrieve.call_args_list
+    rounds = [calls[i:i + round_size] for i in range(0, len(calls), round_size)]
+    assert all({call.args for call in batch} == expected for batch in rounds)
+    assert len({tuple(call.args for call in batch) for batch in rounds[1:]}) > 1
+    assert all(call.kwargs == {"top_k": 15, "corpus_id": "c", "workspace_id": "w"} for call in calls)
+    assert {sample["repeat"] for sample in samples} == {1, 2, 3, 4, 5}
+    assert all(sample["latency_ms"] == 11 for sample in samples)
+
+
+def test_latency_pass_does_not_supply_rankings_to_quality_metrics():
+    engine = Mock(config=evaluation_config(RetrievalConfig()))
+    query = [{
+        "query_id": "q", "query": "fixture", "relevant_ids": ["good"],
+        "relevance_grades": {"good": 2}, "labels_complete": True,
+    }]
+    methods = ["dense"]
+    engine.retrieve.side_effect = [
+        [{"chunk_id": "good"}],                          # quality baseline
+        *[[{"chunk_id": "wrong"}] for _ in range(5)],   # 2 warmups and 3 timed
+        [{"chunk_id": "good"}],                          # separate quality pass
+    ]
+    baseline = summarize(run(engine, query, "c", "w", methods), methods, KS)
+    samples = measure_latency(engine, query, "c", "w", methods, repeats=3, warmup_rounds=2)
+    after = summarize(run(engine, query, "c", "w", methods), methods, KS)
+    assert len(samples) == 3 and all("retrieved_ids" not in sample for sample in samples)
+    assert engine.retrieve.call_count == 7
+    assert after == baseline and after["metrics"][0]["recall_at_k"] == 1
+
+
+@pytest.mark.parametrize("options", [{"repeats": 0}, {"repeats": True}, {"warmup_rounds": 0}])
+def test_invalid_latency_options_fail_before_retrieval(options):
+    engine = Mock()
+    with pytest.raises(ValueError, match="positive integer"):
+        measure_latency(engine, [{"query_id": "q", "query": "fixture"}], "c", "w", **options)
+    assert not engine.retrieve.called
 
 
 @pytest.mark.parametrize("extra", [

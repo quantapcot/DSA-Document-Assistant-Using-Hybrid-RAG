@@ -12,10 +12,13 @@ METHODS = ("bm25", "dense", "hybrid_rrf", "hybrid_rerank")
 KS = (1, 3, 5, 10, 15)
 RETRIEVE_TOP_K = KS[-1]
 DEFAULT_CANDIDATE_POOL = 30
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 METRIC_KEYS = ("precision_at_k", "recall_at_k", "mrr_at_k", "ndcg_at_k")
 JSON_FIELDS = ("relevant_ids", "relevance_grades", "retrieved_ids")
-ROW_FIELDS = ("query_id", "method", *JSON_FIELDS, "labels_complete", "latency_ms")
+ROW_FIELDS = ("query_id", "method", *JSON_FIELDS, "labels_complete")
+SAMPLE_FIELDS = ("query_id", "method", "repeat", "latency_ms")
+PRODUCTION_TOP_K = 5
+PRODUCTION_CANDIDATE_POOL = 10
 
 
 def validate_options(methods, ks):
@@ -49,7 +52,7 @@ def validate_labels(row):
 
 
 def summarize(rows, methods, ks):
-    """Build macro averages over the same queries and one latency per ranking."""
+    """Build macro averages exclusively from the quality rankings."""
     validate_options(methods, ks)
     by_method = defaultdict(list)
     labels_by_query = {}
@@ -64,18 +67,16 @@ def summarize(rows, methods, ks):
         grades = row["relevance_grades"]
         if labels_by_query.setdefault(qid, grades) != grades:
             raise ValueError(f"{qid}: inconsistent labels across methods")
-        ranking, latency = row.get("retrieved_ids"), row.get("latency_ms")
+        ranking = row.get("retrieved_ids")
         if not isinstance(ranking, list) or len(ranking) > RETRIEVE_TOP_K or not all(
             isinstance(item, str) and item.strip() for item in ranking
         ):
             raise ValueError(f"{key}: invalid Top-{RETRIEVE_TOP_K} ranking")
-        if type(latency) not in (int, float) or not isfinite(latency) or latency < 0:
-            raise ValueError(f"{key}: invalid latency")
         by_method[method].append(row)
     if not labels_by_query or any(len(by_method[method]) != len(labels_by_query) for method in methods):
         raise ValueError("Every selected method must use the same nonempty query set")
 
-    metrics, latencies = [], []
+    metrics = []
     for method in methods:
         group = by_method[method]
         for k in sorted(ks):
@@ -89,28 +90,93 @@ def summarize(rows, methods, ks):
                 for row in group
             ]
             metrics.append({"method": method, "k": k, **dict(zip(METRIC_KEYS, map(mean, zip(*scores))))})
-        samples = [row["latency_ms"] for row in group]
+    return {"metrics": metrics}
+
+
+def summarize_latency(rows, methods, repeats, *, query_ids=None, query_count=None):
+    if type(repeats) is not int or repeats < 1:
+        raise ValueError("Latency repeats must be a positive integer")
+    grouped = defaultdict(list)
+    seen, measured_queries = set(), set()
+    for row in rows:
+        latency = row["latency_ms"]
+        qid, method, repeat = row["query_id"], row["method"], row["repeat"]
+        key = (qid, method, repeat)
+        if (not isinstance(qid, str) or not qid.strip() or method not in methods or key in seen
+                or type(repeat) is not int or not 1 <= repeat <= repeats):
+            raise ValueError(f"Invalid or duplicate latency observation: {key}")
+        if type(latency) not in (int, float) or not isfinite(latency) or latency < 0:
+            raise ValueError(f"{key}: invalid latency")
+        measured_queries.add(qid)
+        seen.add(key)
+        grouped[method].append(latency)
+    if (not measured_queries or (query_ids is not None and measured_queries != query_ids)
+            or (query_count is not None and len(measured_queries) != query_count)
+            or any(len(grouped[method]) != len(measured_queries) * repeats for method in methods)):
+        raise ValueError("Every query and method must have the configured number of latency samples")
+
+    latencies = []
+    for method in methods:
+        samples = grouped[method]
         p95 = quantiles(samples, n=20, method="inclusive")[-1] if len(samples) > 1 else samples[0]
         latencies.append({"method": method, "samples": len(samples),
                           "mean_ms": mean(samples), "p50_ms": median(samples), "p95_ms": p95})
-    return {"metrics": metrics, "latency": latencies}
+    return latencies
 
 
-def write_results(output, provenance, rows, summary):
+def report_summary(data):
+    provenance = data["provenance"]
+    methods, ks = provenance["methods"], provenance["ks"]
+    if data["schema_version"] == 1:
+        rows = data["queries"]
+        metrics = summarize(rows, methods, ks)["metrics"]
+        samples = [{**row, "repeat": 1} for row in rows]
+        return {"metrics": metrics, "latency": summarize_latency(samples, methods, 1)}
+    profile = provenance["latency_profile"]
+    if profile == "production":
+        validate_options(methods, KS)
+        if (ks or data["queries"] or provenance["latency_top_k"] != PRODUCTION_TOP_K
+                or provenance["candidate_pool"] != PRODUCTION_CANDIDATE_POOL):
+            raise ValueError("Production latency must use Top-5/pool 10 without quality rankings")
+        metrics, query_ids = [], None
+    elif profile == "evaluation":
+        if (provenance["retrieved_top_k"] != RETRIEVE_TOP_K or provenance["latency_top_k"] != RETRIEVE_TOP_K
+                or provenance["candidate_pool"] < RETRIEVE_TOP_K):
+            raise ValueError("Evaluation measurements must use Top-15")
+        metrics = summarize(data["queries"], methods, ks)["metrics"]
+        query_ids = {row["query_id"] for row in data["queries"]}
+    else:
+        raise ValueError("Unknown latency profile")
+    latency = summarize_latency(
+        data["latency_samples"], methods, provenance["latency_repeats"],
+        query_ids=query_ids, query_count=provenance["query_count"],
+    )
+    return {"metrics": metrics, "latency": latency}
+
+
+def write_results(output, provenance, rows, latency_samples):
     output = Path(output)
     if output.suffix.lower() not in {".json", ".csv"}:
         raise ValueError("Output must end in .json or .csv")
     output.parent.mkdir(parents=True, exist_ok=True)
-    header = {"schema_version": SCHEMA_VERSION, "provenance": provenance, "summary": summary}
+    header = {"schema_version": SCHEMA_VERSION, "provenance": provenance}
+    data = {**header, "queries": rows, "latency_samples": latency_samples}
+    header["summary"] = report_summary(data)
     if output.suffix.lower() == ".json":
-        output.write_text(json.dumps({**header, "queries": rows}, ensure_ascii=False, indent=2), encoding="utf-8")
+        output.write_text(json.dumps({**header, "queries": rows, "latency_samples": latency_samples},
+                                     ensure_ascii=False, indent=2), encoding="utf-8")
         return
     with output.open("w", encoding="utf-8", newline="") as stream:
-        writer = csv.DictWriter(stream, fieldnames=ROW_FIELDS)
+        production = provenance["latency_profile"] == "production"
+        writer = csv.DictWriter(stream, fieldnames=SAMPLE_FIELDS if production else ROW_FIELDS)
         writer.writeheader()
-        for row in rows:
-            packed = {key: json.dumps(row[key], ensure_ascii=False) for key in (*JSON_FIELDS, "labels_complete")}
-            writer.writerow({**row, **packed})
+        if production:
+            writer.writerows(latency_samples)
+        else:
+            for row in rows:
+                packed = {key: json.dumps(row[key], ensure_ascii=False) for key in (*JSON_FIELDS, "labels_complete")}
+                writer.writerow({**row, **packed})
+            header["latency_samples"] = latency_samples
     output.with_suffix(".metadata.json").write_text(
         json.dumps(header, ensure_ascii=False, indent=2), encoding="utf-8",
     )
@@ -123,16 +189,26 @@ def load_results(path):
         raise ValueError("Use benchmark .json or .csv output as input")
     header_path = path.with_suffix(".metadata.json") if path.suffix.lower() == ".csv" else path
     data = json.loads(header_path.read_text(encoding="utf-8-sig"))
-    if not isinstance(data, dict) or data.get("schema_version") != SCHEMA_VERSION:
+    if not isinstance(data, dict) or data.get("schema_version") not in (1, SCHEMA_VERSION):
         raise ValueError("Unsupported result schema; run the benchmark with the current runner")
     if path.suffix.lower() == ".csv":
         with path.open("r", encoding="utf-8-sig", newline="") as stream:
             reader = csv.DictReader(stream)
-            if not reader.fieldnames or set(reader.fieldnames) != set(ROW_FIELDS):
+            legacy = data["schema_version"] == 1
+            production = data["provenance"].get("latency_profile") == "production"
+            fields = SAMPLE_FIELDS if production else (*ROW_FIELDS, "latency_ms") if legacy else ROW_FIELDS
+            if not reader.fieldnames or tuple(reader.fieldnames) != fields:
                 raise ValueError("Invalid benchmark CSV columns")
-            data["queries"] = [
-                {**row, **{key: json.loads(row[key]) for key in (*JSON_FIELDS, "labels_complete")},
-                 "latency_ms": float(row["latency_ms"])}
-                for row in reader
-            ]
+            if production:
+                data["queries"] = []
+                data["latency_samples"] = [
+                    {**row, "repeat": int(row["repeat"]), "latency_ms": float(row["latency_ms"])}
+                    for row in reader
+                ]
+            else:
+                data["queries"] = [
+                    {**row, **{key: json.loads(row[key]) for key in (*JSON_FIELDS, "labels_complete")},
+                     **({"latency_ms": float(row["latency_ms"])} if legacy else {})}
+                    for row in reader
+                ]
     return data

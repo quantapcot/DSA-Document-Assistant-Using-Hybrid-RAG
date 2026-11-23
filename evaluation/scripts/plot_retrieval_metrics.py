@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[2]
 if __package__ in (None, ""):
     sys.path.insert(0, str(ROOT))
 
-from evaluation.retrieval_results import KS, METRIC_KEYS, RETRIEVE_TOP_K, load_results, summarize
+from evaluation.retrieval_results import KS, METRIC_KEYS, load_results, report_summary
 
 METRICS = tuple(zip(METRIC_KEYS, ("Precision", "Recall", "MRR", "nDCG")))
 METHOD_LABELS = {"bm25": "BM25", "dense": "Dense", "hybrid_rrf": "Hybrid RRF",
@@ -65,17 +65,22 @@ def plot_by_k(rows, methods, ks, output_dir):
     return save_plot(fig, output_dir / "metrics_by_k.png")
 
 
-def plot_latency(rows, output_dir):
+def plot_latency(rows, output_dir, provenance):
     fig, ax = plt.subplots(figsize=(10, 5))
     width = 0.23
     for index, (key, label) in enumerate(LATENCIES):
         positions = [position + (index - 1) * width for position in range(len(rows))]
         ax.bar(positions, [row[key] for row in rows], width, label=label)
     ax.set_xticks(range(len(rows)), [METHOD_LABELS[row["method"]] for row in rows])
-    ax.set(ylabel="Latency (ms)", title=f"Top-{RETRIEVE_TOP_K} retrieval latency by method")
+    profile = provenance.get("latency_profile")
+    top_k = provenance.get("latency_top_k", provenance["retrieved_top_k"])
+    pool = provenance["candidate_pool"]
+    protocol = f"{profile}, warmed" if profile else "legacy, no warmup"
+    ax.set(ylabel="Latency (ms)", title=f"Top-{top_k}/pool {pool} retrieval latency ({protocol})")
     ax.grid(axis="y", alpha=0.2)
     ax.legend()
-    return save_plot(fig, output_dir / "latency_comparison.png")
+    filename = "latency_comparison_production.png" if profile == "production" else "latency_comparison.png"
+    return save_plot(fig, output_dir / filename)
 
 
 def main(argv=None):
@@ -88,24 +93,28 @@ def main(argv=None):
         data = load_results(args.input)
         provenance = data["provenance"]
         methods, ks = provenance["methods"], provenance["ks"]
-        if provenance.get("retrieved_top_k") != RETRIEVE_TOP_K:
-            raise ValueError(f"Expected one Top-{RETRIEVE_TOP_K} ranking per query and method")
-        summary = summarize(data["queries"], methods, ks)
-        k = args.comparison_k if args.comparison_k is not None else max(ks)
-        if k not in ks:
+        summary = report_summary(data)
+        k = args.comparison_k if args.comparison_k is not None else max(ks, default=None)
+        if k is not None and k not in ks:
             raise ValueError(f"K={k} is not present in this benchmark")
     except (OSError, ValueError, KeyError, TypeError) as exc:
         parser.error(str(exc))
 
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
-    for path in (
-        save_csv(summary["metrics"], output_dir / "metrics_summary.csv"),
-        save_csv(summary["latency"], output_dir / "latency_summary.csv"),
-        plot_comparison(summary["metrics"], methods, k, output_dir),
-        plot_by_k(summary["metrics"], methods, ks, output_dir),
-        plot_latency(summary["latency"], output_dir),
-    ):
+    production = provenance.get("latency_profile") == "production"
+    latency_csv = "latency_summary_production.csv" if production else "latency_summary.csv"
+    paths = [
+        save_csv(summary["latency"], output_dir / latency_csv),
+        plot_latency(summary["latency"], output_dir, provenance),
+    ]
+    if summary["metrics"]:
+        paths += [
+            save_csv(summary["metrics"], output_dir / "metrics_summary.csv"),
+            plot_comparison(summary["metrics"], methods, k, output_dir),
+            plot_by_k(summary["metrics"], methods, ks, output_dir),
+        ]
+    for path in paths:
         print(f"Created: {path}")
 
 
