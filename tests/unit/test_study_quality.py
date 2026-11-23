@@ -409,6 +409,36 @@ def test_quiz_short_topic_aliases_filter_passage_body(aliases, matching, unrelat
         assert not matches({"section": alias, "text": unrelated})
 
 
+@pytest.mark.parametrize("alias", ["search", "searching", "tìm kiếm", "tim kiem"])
+def test_general_search_aliases_require_general_or_comparative_evidence(alias):
+    from app.orchestration.study_evidence import quiz_topic_filter
+
+    search, matches = quiz_topic_filter(alias)
+    assert search == quiz_topic_filter("search")[0]
+    assert matches({"text": "Searching is the process of finding a key in a collection."})
+    assert matches({"text": "Tìm kiếm là quá trình tìm một khóa trong tập dữ liệu."})
+    assert matches({"text": "Linear search scans every item. Binary search splits the range."})
+    assert matches({"text": "Các thuật toán tìm kiếm gồm tìm kiếm tuần tự và tìm kiếm nhị phân."})
+    assert not matches({"section": "Searching", "text": "Binary search is an algorithm for searching sorted arrays."})
+    assert not matches({"text": "Searching is efficient when a binary search tree is balanced."})
+    assert not matches({"text": "Cây tìm kiếm nhị phân hỗ trợ tìm kiếm theo khóa."})
+    assert not matches({"text": "Breadth-first search uses a queue."})
+    assert not matches({"section": "Tìm kiếm nhị phân", "text": "Tìm kiếm tiếp ở nửa còn lại."})
+    assert not matches({"text": "Research about stable sorting."})
+
+
+@pytest.mark.parametrize("alias", ["binary search tree", "BST", "cây nhị phân tìm kiếm", "cây tìm kiếm nhị phân"])
+def test_binary_search_tree_aliases_are_distinct_from_binary_search_algorithm(alias):
+    from app.orchestration.study_evidence import quiz_topic_filter
+
+    _, tree = quiz_topic_filter(alias)
+    _, binary = quiz_topic_filter("binary search")
+    tree_passage = {"text": "Binary search trees store ordered keys at nodes. Cây tìm kiếm nhị phân có hai cây con."}
+    binary_passage = {"text": "Binary search halves the range. Tìm kiếm nhị phân yêu cầu mảng đã sắp xếp."}
+    assert tree(tree_passage) and not tree(binary_passage)
+    assert binary(binary_passage) and not binary(tree_passage)
+
+
 @pytest.mark.parametrize("topic", ["sort, graph", "sort; graph", "sort；graph", "  "])
 def test_quiz_request_requires_one_topic(topic):
     with pytest.raises(ValidationError):

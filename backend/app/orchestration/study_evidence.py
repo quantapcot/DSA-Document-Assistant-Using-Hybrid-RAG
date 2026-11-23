@@ -207,6 +207,20 @@ def mentions_topic(item, terms):
     return all(re.search(term, text, re.I) for term in terms)
 
 
+_BINARY_SEARCH = r"\b(?:binary search(?! trees?\b)|(?<!cay )tim kiem nhi phan)\b"
+_BINARY_SEARCH_TREE = r"\b(?:binary search trees?|bst|cay (?:nhi phan tim kiem|tim kiem nhi phan))\b"
+_SPECIALIZED_SEARCH = re.compile(
+    rf"{_BINARY_SEARCH_TREE}|{_BINARY_SEARCH}|\b(?:(?:breadth|depth) first search|bfs|dfs)\b"
+)
+_SEARCH = re.compile(r"\b(?:search(?:ing)?|tim kiem)\b")
+_SEARCH_OVERVIEW = re.compile(
+    r"\b(?:(?:linear|sequential) search|tim kiem (?:tuyen tinh|tuan tu)|"
+    r"search(?:ing)? (?:algorithms|methods|techniques|problem)|"
+    r"search(?:ing)? is (?:the|a) (?:process|task|operation) of|"
+    r"bai toan tim kiem|cac (?:thuat toan|phuong phap) tim kiem)\b"
+)
+
+
 # Exact topic aliases for Quiz. Match the passage body so a broad section
 # title or an English substring like "graph" in "paragraph" is insufficient.
 _QUIZ_ALIASES = (
@@ -216,8 +230,9 @@ _QUIZ_ALIASES = (
     (r"graphs?|graph theory|(?:ly thuyet )?do thi",
      "graph đồ thị", r"\b(?:graphs?|do thi)\b"),
     (r"binary search(?: algorithm)?|(?:thuat toan )?tim kiem nhi phan",
-     "binary search tìm kiếm nhị phân",
-     r"\b(?:binary search(?! trees?\b)|(?<!cay )tim kiem nhi phan)\b"),
+     "binary search tìm kiếm nhị phân", _BINARY_SEARCH),
+    (r"binary search trees?|bst|cay (?:nhi phan tim kiem|tim kiem nhi phan)",
+     "binary search tree BST cây nhị phân tìm kiếm", _BINARY_SEARCH_TREE),
     (r"avl(?: trees?)?|cay avl", "AVL cây AVL", r"\bavl\b"),
     (r"bfs(?: graph traversal)?|breadth first search|duyet theo chieu rong",
      "BFS breadth-first search duyệt theo chiều rộng",
@@ -233,9 +248,20 @@ def _quiz_alias_text(text):
     return "".join(char for char in text if not unicodedata.combining(char))
 
 
+def _matches_general_search(item):
+    text, specialized_mentions = _SPECIALIZED_SEARCH.subn(" ", _quiz_alias_text(item["text"]))
+    section = _quiz_alias_text(item.get("section") or "")
+    # A specialized passage needs evidence of a broader discussion, such as
+    # linear search or a comparison of search methods.
+    pattern = _SEARCH_OVERVIEW if specialized_mentions or _SPECIALIZED_SEARCH.search(section) else _SEARCH
+    return bool(pattern.search(text))
+
+
 def quiz_topic_filter(topic):
     """Return a bilingual search query and a Quiz-only evidence predicate."""
     alias_topic = _quiz_alias_text(topic)
+    if re.fullmatch(r"search(?:ing)?(?: algorithms?)?|(?:thuat toan )?tim kiem", alias_topic):
+        return "searching search algorithms tìm kiếm", _matches_general_search
     for aliases, search, pattern in _QUIZ_ALIASES:
         if re.fullmatch(aliases, alias_topic):
             return search, lambda item: bool(re.search(pattern, _quiz_alias_text(item["text"])))

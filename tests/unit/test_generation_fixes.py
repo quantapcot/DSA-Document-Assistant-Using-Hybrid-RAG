@@ -159,17 +159,33 @@ def test_empty_workspace_never_queries_benchmark(monkeypatch):
         client.close()
 
 
+@pytest.mark.parametrize(("title", "expected"), [
+    ("BFS · Graph.pdf · Trang 3", "BFS"),
+    ("Tr. 3 · Đoạn 1–6 · Graph.pdf", ""),
+    ("Tr. 1–4 · Graph.pdf", ""),
+])
+def test_revision_quiz_prefill_excludes_source_metadata(monkeypatch, title, expected):
+    monkeypatch.syspath_prepend(str(Path(__file__).resolve().parents[2] / "frontend"))
+    from screens import revision_ui
+
+    session = {}
+    monkeypatch.setattr(revision_ui, "st", SimpleNamespace(session_state=session))
+    revision_ui._open_quiz("student", "uploads", title)
+    assert session["quiz_topic:('student', 'uploads')"] == expected
+
+
 def test_streamlit_chat_quiz_and_revision_with_mock_api(monkeypatch):
     from streamlit.testing.v1 import AppTest
 
     monkeypatch.syspath_prepend(str(Path(__file__).resolve().parents[2] / "frontend"))
     import api_client
+    from screens import chat_ui, quiz_ui, revision_ui
 
     citation = {"label": 2, "filename": "graphs.pdf", "page": 9, "snippet": "Use a queue."}
     data = {"generation_mode": "extractive", "citations": [citation], "confidence_score": .56}
     monkeypatch.setattr(api_client, "check_health", lambda: (True, {}))
-    monkeypatch.setattr(api_client, "ask_question", lambda *args, **kwargs: (True, {**data, "answer": "Use a queue [2]."}))
-    monkeypatch.setattr(api_client, "create_quiz", lambda *args, **kwargs: (True, {**data, "questions": [QUIZ]}))
+    monkeypatch.setattr(chat_ui, "ask_question", lambda *args, **kwargs: (True, {**data, "answer": "Use a queue [2]."}))
+    monkeypatch.setattr(quiz_ui, "create_quiz", lambda *args, **kwargs: (True, {**data, "questions": [QUIZ]}))
     task = {
         "kind": "learn", "topic_id": "T1", "objective": "Understand BFS",
         "knowledge": ["Queue"], "activity": "Trace BFS", "practice": "Quiz",
@@ -178,7 +194,7 @@ def test_streamlit_chat_quiz_and_revision_with_mock_api(monkeypatch):
     plan = {"exam_date": "2026-12-15", "minutes_per_day": 30, "level": "Intermediate",
             "topics": [{"id": "T1", "title": "Graphs"}],
             "days": [{"date": "2026-12-12", "tasks": [task]}]}
-    monkeypatch.setattr(api_client, "create_revision",
+    monkeypatch.setattr(revision_ui, "create_revision",
                         lambda *args, **kwargs: (True, {**data, "answer": "Study plan", "plan": plan}))
     ui = AppTest.from_file(str(Path(api_client.__file__).with_name("app.py"))).run()
     ui.chat_input[0].set_value("What is a queue?").run()
