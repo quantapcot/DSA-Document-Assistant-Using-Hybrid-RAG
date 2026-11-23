@@ -106,10 +106,10 @@ python evaluation/scripts/export_annotation_candidates.py `
   --output evaluation/results/k15/annotation_candidates.xlsx
 ```
 
-Lệnh xuất Excel dùng Node và `@oai/artifact-tool` từ runtime Spreadsheets.
-Nếu runtime ở vị trí khác mặc định, dùng `--artifact-runtime` hoặc đặt
-`ANNOTATION_ARTIFACT_RUNTIME` tới thư mục Node chứa `bin` và `node_modules`.
-Với Qdrant local, đóng tiến trình khác đang giữ index trước khi chạy.
+Lệnh xuất Excel dùng `openpyxl` trong `evaluation/requirements.txt`. Script
+kiểm tra định dạng ZIP, CRC và mở lại workbook để đối chiếu các dòng trước
+khi đưa file vào đường dẫn đích. Với Qdrant local, đóng tiến trình khác
+đang giữ index trước khi chạy.
 
 Script lấy Top-15 từ cả bốn phương thức với pool 30, loại trùng theo cặp
 `query_id` và `chunk_id`, rồi đọc lại filename, trang và nội dung từ Qdrant

@@ -1,10 +1,10 @@
 """Annotation workbook handoff tests with a scoped Retrieval fixture."""
 from collections import Counter
 from unittest.mock import Mock
-from xml.etree import ElementTree as ET
-from zipfile import ZipFile
+from zipfile import ZIP_STORED, ZipFile, is_zipfile
 
 import pytest
+from openpyxl import Workbook, load_workbook
 from qdrant_client import QdrantClient
 
 from app.retrieval.config import RetrievalConfig
@@ -12,7 +12,7 @@ from app.retrieval.hybrid_search import RetrievalEngine
 from app.retrieval.indexing import build_index
 from evaluation.retrieval_results import METHODS
 from evaluation.scripts.export_annotation_candidates import (
-    HEADERS, artifact_runtime, collect_candidates, write_workbook,
+    HEADERS, collect_candidates, write_workbook,
 )
 from evaluation.scripts.run_benchmark import evaluation_config, load_queries
 
@@ -79,28 +79,51 @@ def test_query_loader_requires_unique_ids_without_requiring_labels(tmp_path):
 
 
 def test_workbook_has_only_requested_fields_and_blank_editable_cells(tmp_path):
-    try:
-        runtime, node = artifact_runtime(None)
-    except ValueError:
-        pytest.skip("annotation spreadsheet runtime unavailable")
     path = tmp_path / "candidates.xlsx"
-    write_workbook(path, [("001", "=A1", "000123", "tree.pdf", 4, "Cây nhị phân", None, None)],
-                   runtime, node)
-    ns = "{http://schemas.openxmlformats.org/spreadsheetml/2006/main}"
-    with ZipFile(path) as workbook:
-        sheet = ET.fromstring(workbook.read("xl/worksheets/sheet1.xml"))
-        strings = ET.fromstring(workbook.read("xl/sharedStrings.xml"))
-        shared = ["".join(node.itertext()) for node in strings.findall(f"{ns}si")]
-        cells = {cell.attrib["r"]: cell for cell in sheet.iter(f"{ns}c")}
+    row = ("001", "=A1", "000123", "tree.pdf", 4, "Cây nhị phân\nDòng thứ hai", None, None)
+    write_workbook(path, [row])
+    assert is_zipfile(path)
+    with ZipFile(path) as archive:
+        assert archive.testzip() is None
+    workbook = load_workbook(path)
+    try:
+        assert workbook.sheetnames == ["Annotation"]
+        sheet = workbook["Annotation"]
+        assert list(sheet.values) == [HEADERS, row]
+        assert sheet["B2"].data_type == "s" and sheet["E2"].data_type == "n"
+        assert sheet.freeze_panes == "A2" and sheet.auto_filter.ref == "A1:H2"
+        assert sheet["F2"].alignment.wrap_text and sheet.row_dimensions[2].height >= 24
+        [validation] = sheet.data_validations.dataValidation
+        assert validation.type == "list" and validation.formula1 == '"0,1,2"'
+        assert "G2" in validation and "H2" not in validation
+        assert validation.allow_blank and validation.showDropDown is False
+    finally:
+        workbook.close()
 
-        def value(address):
-            cell = cells.get(address)
-            item = cell.findtext(f"{ns}v") if cell is not None else None
-            return shared[int(item)] if item is not None and cell.attrib.get("t") == "s" else item
 
-        assert tuple(value(f"{col}1") for col in "ABCDEFGH") == HEADERS
-        assert value("A2") == "001" and value("C2") == "000123" and value("E2") == "4"
-        assert value("F2") == "Cây nhị phân"
-        assert value("B2") == "=A1" and not list(sheet.iter(f"{ns}f"))
-        assert value("G2") is None and value("H2") is None
-        assert len(ET.fromstring(workbook.read("xl/workbook.xml")).findall(f".//{ns}sheet")) == 1
+@pytest.mark.parametrize(("failure", "message"), [
+    ("not_zip", "not an XLSX ZIP"),
+    ("bad_crc", "corrupt ZIP entry"),
+    ("not_xlsx", "Cannot reopen"),
+])
+def test_export_does_not_replace_existing_workbook_with_invalid_file(tmp_path, monkeypatch, failure, message):
+    path = tmp_path / "candidates.xlsx"
+    row = ("q1", "tree", "a", "tree.pdf", 1, "Binary tree", None, None)
+    write_workbook(path, [row])
+    original = path.read_bytes()
+
+    def save_invalid(self, target):
+        if failure == "not_zip":
+            target.write_bytes(b"not a ZIP archive")
+            return
+        with ZipFile(target, "w", compression=ZIP_STORED) as archive:
+            archive.writestr("fixture.txt", b"fixture-marker")
+        if failure == "bad_crc":
+            target.write_bytes(target.read_bytes().replace(b"fixture-marker", b"fixture-damage", 1))
+        assert is_zipfile(target)
+
+    monkeypatch.setattr(Workbook, "save", save_invalid)
+    with pytest.raises(ValueError, match=message):
+        write_workbook(path, [row], overwrite=True)
+    assert path.read_bytes() == original
+    assert list(tmp_path.iterdir()) == [path]

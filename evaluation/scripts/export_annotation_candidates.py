@@ -1,17 +1,19 @@
 """Export blinded Retrieval candidates from an existing query list."""
 import argparse
 import hashlib
-import json
-import os
 from pathlib import Path
-import subprocess
 import sys
 from tempfile import TemporaryDirectory
+from textwrap import wrap
+from zipfile import BadZipFile, ZipFile, is_zipfile
 
 ROOT = Path(__file__).resolve().parents[2]
 if __package__ in (None, ""):
     sys.path[:0] = [str(ROOT), str(ROOT / "backend")]
 
+from openpyxl import Workbook, load_workbook
+from openpyxl.styles import Alignment, Font, PatternFill
+from openpyxl.worksheet.datavalidation import DataValidation
 from qdrant_client import models
 
 from app.retrieval.config import RetrievalConfig
@@ -110,24 +112,88 @@ def collect_candidates(engine, queries, corpus_id, workspace_id):
     return [(qid, query, chunk_id, *payloads[chunk_id], None, None) for qid, query, chunk_id in pairs]
 
 
-def artifact_runtime(path):
-    default = Path.home() / ".cache/codex-runtimes/codex-primary-runtime/dependencies/node"
-    runtime = Path(path or os.environ.get("ANNOTATION_ARTIFACT_RUNTIME") or default).resolve()
-    node = runtime / "bin" / ("node.exe" if sys.platform == "win32" else "node")
-    if not node.is_file() or not (runtime / "node_modules" / "@oai" / "artifact-tool").is_dir():
-        raise ValueError("The spreadsheet runtime is unavailable. Set --artifact-runtime to its Node directory.")
-    return runtime, node
+def verify_workbook(path, expected_rows):
+    """Check ZIP integrity and parse all worksheet rows before publishing the file."""
+    if not is_zipfile(path):
+        raise ValueError("Generated workbook is not an XLSX ZIP archive.")
+    try:
+        with ZipFile(path) as archive:
+            if member := archive.testzip():
+                raise ValueError(f"Generated XLSX has a corrupt ZIP entry: {member}.")
+    except BadZipFile as exc:
+        raise ValueError("Generated XLSX has a corrupt ZIP directory.") from exc
+    try:
+        # Own the file handle even if openpyxl cannot finish constructing a workbook.
+        with path.open("rb") as stream:
+            workbook = load_workbook(stream, read_only=True)
+            try:
+                if workbook.sheetnames != ["Annotation"]:
+                    raise ValueError("Generated XLSX is missing the expected Annotation sheet.")
+                header, *rows = workbook["Annotation"].values
+            finally:
+                workbook.close()
+    except Exception as exc:
+        raise ValueError(f"Cannot reopen the generated Annotation workbook ({type(exc).__name__}).") from exc
+    if header != HEADERS or rows != list(expected_rows):
+        raise ValueError("Generated XLSX did not preserve the expected annotation rows.")
 
 
-def write_workbook(output, rows, runtime, node, *, overwrite=False):
+def write_workbook(output, rows, *, overwrite=False):
+    if output.exists() and not overwrite:
+        raise FileExistsError(f"Workbook already exists: {output}. Use --overwrite only to replace it.")
+    if not rows:
+        raise ValueError("Cannot write an empty annotation workbook.")
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = "Annotation"
+    sheet.freeze_panes = "A2"
+    sheet.sheet_view.showGridLines = False
+    sheet.append(HEADERS)
+    for column, width in zip("ABCDEFGH", (14, 39, 38, 34, 8, 83, 19, 35)):
+        sheet.column_dimensions[column].width = width
+
+    header_font = Font(name="Arial", size=10, color="FFFFFF", bold=True)
+    header_fill = PatternFill("solid", fgColor="203653")
+    header_alignment = Alignment(horizontal="center", vertical="center")
+    for cell in sheet[1]:
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = header_alignment
+    sheet.row_dimensions[1].height = 24
+
+    text_font = Font(name="Arial", size=10, color="16263D")
+    wrapped = Alignment(vertical="top", wrap_text=True)
+    editable_fill = PatternFill("solid", fgColor="FFFBEB")
+    for row_number, values in enumerate(rows, start=2):
+        for column, value in enumerate(values, start=1):
+            if isinstance(value, str) and len(value) > 32767:
+                raise ValueError(f"Text exceeds Excel's cell limit at row {row_number}, column {column}.")
+            cell = sheet.cell(row_number, column, value)
+            if isinstance(value, str):
+                # Keep source strings literal, including strings that start with '='.
+                cell.data_type = "s"
+            cell.font = text_font
+            cell.alignment = wrapped
+            if column in (7, 8):
+                cell.fill = editable_fill
+        max_lines = max(
+            sum(max(1, len(wrap(line, width=width))) for line in value.split("\n"))
+            for value, width in ((values[1], 36), (values[2], 35), (values[3], 31), (values[5], 78))
+        )
+        sheet.row_dimensions[row_number].height = min(409, max(24, 13 * max_lines + 4))
+
+    sheet.auto_filter.ref = sheet.dimensions
+    grades = DataValidation(type="list", formula1='"0,1,2"', allow_blank=True,
+                            showDropDown=False, showErrorMessage=True, errorStyle="stop",
+                            errorTitle="Invalid relevance grade", error="Choose 0, 1, or 2.")
+    sheet.add_data_validation(grades)
+    grades.add(f"G2:G{sheet.max_row}")
+
     output.parent.mkdir(parents=True, exist_ok=True)
     with TemporaryDirectory(dir=output.parent, prefix=".annotation-") as temporary:
         staged = Path(temporary) / "candidates.xlsx"
-        data = json.dumps([HEADERS, *rows], ensure_ascii=False).encode("utf-8")
-        subprocess.run(
-            [str(node), str(Path(__file__).with_name("annotation_workbook.mjs")), str(runtime), str(staged)],
-            input=data, check=True,
-        )
+        workbook.save(staged)
+        verify_workbook(staged, rows)
         if output.exists() and not overwrite:
             raise FileExistsError(f"Workbook already exists: {output}. Use --overwrite only to replace it.")
         staged.replace(output)
@@ -140,7 +206,6 @@ def main(argv=None):
     parser.add_argument("--config", type=Path, default=ROOT / "configs" / "retrieval.mvp.yaml")
     parser.add_argument("--corpus-id", required=True)
     parser.add_argument("--workspace-id", required=True)
-    parser.add_argument("--artifact-runtime", help="Node runtime directory containing @oai/artifact-tool")
     parser.add_argument("--overwrite", action="store_true", help="Explicitly replace an existing workbook")
     args = parser.parse_args(argv)
     try:
@@ -149,7 +214,6 @@ def main(argv=None):
         if args.output.exists() and not args.overwrite:
             raise FileExistsError(f"Workbook already exists: {args.output}. Use --overwrite only to replace it.")
         queries = load_queries(args.queries, graded=False)
-        runtime, node = artifact_runtime(args.artifact_runtime)
         config = evaluation_config(RetrievalConfig.from_yaml(args.config))
         if not config.reranker_model:
             raise ValueError("Hybrid Rerank requires a configured reranker model.")
@@ -162,8 +226,8 @@ def main(argv=None):
             rows = collect_candidates(engine, queries, args.corpus_id, args.workspace_id)
         finally:
             engine.client.close()
-        write_workbook(args.output, rows, runtime, node, overwrite=args.overwrite)
-    except (OSError, ValueError, RuntimeError, subprocess.CalledProcessError) as exc:
+        write_workbook(args.output, rows, overwrite=args.overwrite)
+    except (OSError, ValueError, RuntimeError) as exc:
         parser.error(str(exc))
     print(f"Exported {len(rows)} candidates for {len({row[0] for row in rows})}/{len(queries)} queries to {args.output}")
 
