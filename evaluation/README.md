@@ -92,6 +92,35 @@ trực tiếp cả hai định dạng và ghi `metrics_summary.csv`,
 kết quả Evaluation. Dùng `--comparison-k` để chọn K khác đã chạy. Kết quả
 schema cũ được ghi chú là latency chưa warmup trên biểu đồ.
 
+### Xuất ứng viên để gán nhãn
+
+Chạy với file câu hỏi JSONL đã có, mỗi dòng gồm `query_id` và `query`.
+Lệnh dưới đây dùng scope từ lượt Evaluation local đã lưu. Khi dùng một
+index khác, truyền đúng `--config`, `--workspace-id` và `--corpus-id`.
+
+```powershell
+python evaluation/scripts/export_annotation_candidates.py `
+  --queries evaluation/results/k15/dsa_queries_candidate_20.jsonl `
+  --config configs/retrieval.mvp.yaml `
+  --workspace-id default-workspace --corpus-id user-uploads `
+  --output evaluation/results/k15/annotation_candidates.xlsx
+```
+
+Lệnh xuất Excel dùng Node và `@oai/artifact-tool` từ runtime Spreadsheets.
+Nếu runtime ở vị trí khác mặc định, dùng `--artifact-runtime` hoặc đặt
+`ANNOTATION_ARTIFACT_RUNTIME` tới thư mục Node chứa `bin` và `node_modules`.
+Với Qdrant local, đóng tiến trình khác đang giữ index trước khi chạy.
+
+Script lấy Top-15 từ cả bốn phương thức với pool 30, loại trùng theo cặp
+`query_id` và `chunk_id`, rồi đọc lại filename, trang và nội dung từ Qdrant
+trong đúng scope. Trong từng câu hỏi, thứ tự dòng độc lập với phương thức
+và thứ hạng. Workbook chỉ có sheet `Annotation`; hai cột
+`relevance_grade` và `notes` để trống cho người gán nhãn.
+Workbook ứng viên chưa phải ground truth và chỉ bao phủ các chunk đã
+được truy xuất. Giữ lại bản đang gán nhãn trước khi xuất lại. Mặc định
+script từ chối ghi đè file hiện có.
+
 ```powershell
 python -m pytest tests/unit/test_retrieval_metrics.py tests/unit/test_retrieval_benchmark.py tests/integration/test_retrieval_evaluation.py -q
+python -m pytest tests/integration/test_annotation_candidates.py -q
 ```
