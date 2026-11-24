@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     SESSION_TTL_SECONDS: int = Field(8 * 3600, gt=0)
     SESSION_CLEANUP_SECONDS: int = Field(300, gt=0)
     SESSION_RUNTIME_DIR: Path = _BACKEND_DIR.parent / "data" / "runtime"
+    EXPORT_DEBUG_CHUNKS: bool = False
 
     def request_timeout(self, task: str) -> float:
         return getattr(self, f"{task.upper()}_REQUEST_TIMEOUT")

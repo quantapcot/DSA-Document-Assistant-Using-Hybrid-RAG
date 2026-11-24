@@ -114,7 +114,7 @@ def test_token_isolates_pdf_docx_and_chat_and_limits_deletion(tmp_path, monkeypa
         stolen = {"workspace_id": first_id, "corpus_id": SESSION_CORPUS}
         assert api.get("/api/documents", params=stolen).status_code == 401
         assert api.get("/api/documents", params=stolen, headers=auth_b).status_code == 403
-        for path, body in (("chat", {"query": "BFS"}), ("quiz", {"topic": "BFS"}), ("roadmap", {})):
+        for path, body in (("chat", {"query": "BFS"}), ("quiz", {"topic": "BFS"}), ("roadmap", {"topic": "BFS"})):
             assert api.post(f"/api/{path}", headers=auth_b, json={**stolen, **body}).status_code == 403
         assert upload(api, auth_b, "bad.pdf", pdf(GRAPH), stolen).status_code == 403
         assert api.delete(f"/api/documents/{first.json()['document_id']}", headers=auth_b).status_code == 404

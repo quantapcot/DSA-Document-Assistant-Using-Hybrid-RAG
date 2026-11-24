@@ -5,7 +5,7 @@ yêu cầu LLM ép trích dẫn nguồn gốc và từ chối trả lời ngoài
 """
 from __future__ import annotations
 
-NO_EVIDENCE_MESSAGE = "Tài liệu hiện tại không đề cập đến vấn đề này."
+NO_EVIDENCE_MESSAGE = "Các đoạn đã truy xuất chưa đủ căn cứ để trả lời câu hỏi."
 
 # ---------------------------------------------------------------------------
 # System Prompt — Hỏi đáp lý thuyết / bài tập DSA (mặc định)
@@ -17,7 +17,7 @@ QA_SYSTEM_PROMPT = """Bạn là **Trợ lý Giảng dạy môn Cấu trúc Dữ 
 2. Mỗi luận điểm quan trọng **BẮT BUỘC** phải có trích dẫn nguồn theo định dạng: `[Số thứ tự]`
    (ví dụ: Độ phức tạp của QuickSort trong trường hợp trung bình là O(n log n) [2]).
 3. Nếu CONTEXT không chứa thông tin để trả lời, hãy thừa nhận thẳng thắn:
-   *"Tài liệu hiện tại không đề cập đến vấn đề này."*
+   *"Các đoạn đã truy xuất chưa đủ căn cứ để trả lời câu hỏi."*
 4. KHÔNG được bịa đặt hoặc sử dụng kiến thức bên ngoài phạm vi CONTEXT.
 5. Trả lời bằng **tiếng Việt**, sư phạm, có cấu trúc rõ ràng (dùng heading, bullet, code block khi phù hợp).
 6. Với câu hỏi về độ phức tạp, hãy dùng ký hiệu Big-O: O(n), O(log n), O(n²), v.v.

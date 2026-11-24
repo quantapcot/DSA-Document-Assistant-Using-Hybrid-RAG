@@ -32,11 +32,15 @@ Streamlit mở tại [localhost:8501](http://localhost:8501). Tài liệu API �
 
 1. Mở Streamlit. Backend tự tạo một phiên rỗng.
 2. Tải PDF hoặc DOCX, tối đa 10 file/lượt và 15 MB/file.
-3. Hỏi ở Chat và mở nguồn tham khảo. Trong Quiz, chọn một chủ đề và 1–5 câu. Trích đoạn và đáp án hiện sau khi chấm.
-4. Chọn **Kế hoạch học tập**, nhấn tạo roadmap. Đánh dấu mục đã học hoặc mở Quiz từ chủ đề đó.
+3. Hỏi ở Chat và mở nguồn tham khảo. Với câu hỏi nhiều chủ đề, Chat tìm bằng chứng cho từng chủ đề và báo phần chưa đủ căn cứ. Trong Quiz, chọn một chủ đề và 1–5 câu. Trích đoạn và đáp án hiện sau khi chấm.
+4. Mở **Kế hoạch học tập**, nhập chủ đề muốn ôn (ví dụ `Tree`) rồi chọn **Tạo lộ trình ôn tập**. Mỗi bước có mục tiêu và kiến thức trọng tâm dựa trên tài liệu trong phiên.
 5. Tạo phiên mới để bắt đầu với tài liệu và lịch sử trống. Dùng **Xóa phiên học hiện tại** để thu hồi token và xóa file, embeddings của phiên đó.
 
 Phiên mặc định hết hạn sau 8 giờ. Backend dọn dữ liệu hết hạn lúc khởi động và mỗi 5 phút. Trạng thái học của giao diện thuộc phiên Streamlit. Xem [hợp đồng API](docs/data_contracts.md) và [kiến trúc MVP V2](docs/MVP_V2_IMPLEMENTATION_PLAN.md).
+
+## Kiểm tra chất lượng chunking
+
+Để bật xuất debug, đặt `EXPORT_DEBUG_CHUNKS=true` trong `backend/.env` và khởi động lại backend. Sau khi upload và lập chỉ mục thành công, mở `data/runtime/debug_chunks/<workspace_id>/<document_id>_chunks.jsonl` trong VS Code. File UTF-8 chứa văn bản chunk và thông tin nguồn. Backend cập nhật file khi upload lại và dọn file khi xóa tài liệu, xóa phiên hoặc phiên hết hạn. Git bỏ qua các file xuất trong thư mục runtime.
 
 ## Kiểm thử
 

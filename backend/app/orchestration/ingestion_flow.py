@@ -7,12 +7,14 @@ from pathlib import Path
 from typing import Any
 from zipfile import BadZipFile, is_zipfile
 
+from app.core.config import settings
 from app.document_processing.chunker import chunk_text
 from app.document_processing.document_parser import parse_document
 from app.document_processing.metadata import build_chunk
 from app.document_processing.text_cleaner import clean_text, is_valid_chunk_text
 from app.retrieval.config import RetrievalConfig
 from app.retrieval.indexing import build_index
+from .debug_chunks import export_debug_chunks, remove_debug_document
 
 logger = logging.getLogger("app.orchestration.ingestion_flow")
 
@@ -35,6 +37,7 @@ def process_and_index_document(
     original_filename: str | None = None,
     upload_metadata: dict | None = None,
     legacy_document_ids: tuple[str, ...] = (),
+    runtime_root: Path | None = None,
 ) -> dict[str, Any]:
     """
     Chuỗi xử lý Ingestion:
@@ -105,6 +108,19 @@ def process_and_index_document(
         replace_document_id=document_id,
         legacy_document_ids=legacy_document_ids,
     )
+
+    runtime_root = runtime_root if runtime_root is not None else settings.SESSION_RUNTIME_DIR
+    if settings.EXPORT_DEBUG_CHUNKS:
+        try:
+            export_debug_chunks(runtime_root, workspace_id, document_id, all_chunks)
+        except Exception as exc:
+            # Qdrant has already committed this revision. A debug failure cannot roll it back.
+            logger.warning("Debug chunks export failed: %s", type(exc).__name__)
+    else:
+        remove_debug_document(runtime_root, workspace_id, document_id)
+    for old_id in legacy_document_ids:
+        if old_id != document_id:
+            remove_debug_document(runtime_root, workspace_id, old_id)
 
     logger.info("Hoàn tất nạp '%s': %d chunks đã được lưu.", filename, index_result["indexed"])
     return {

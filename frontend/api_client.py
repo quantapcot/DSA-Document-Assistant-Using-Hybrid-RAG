@@ -95,8 +95,8 @@ def create_quiz(topic, num_questions=5, workspace_id=None, corpus_id=None, *, to
     return _study_request("quiz", {"topic": topic, "num_questions": num_questions}, workspace_id, corpus_id, token)
 
 
-def create_roadmap(workspace_id=None, corpus_id=None, *, token=None):
-    return _study_request("roadmap", {}, workspace_id, corpus_id, token)
+def create_roadmap(topic, workspace_id=None, corpus_id=None, *, token=None):
+    return _study_request("roadmap", {"topic": topic}, workspace_id, corpus_id, token)
 
 
 def _study_request(endpoint, payload, workspace_id, corpus_id, token):

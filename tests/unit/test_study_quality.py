@@ -196,39 +196,52 @@ def _roadmap_drafts(instructions, sources):
     catalog, _ = json.JSONDecoder().raw_decode(instructions.split("Assigned topics: ", 1)[1])
     return [{
         "topic_id": topic["id"], "objective": f"Hiểu {topic['title']}",
-        "knowledge": [f"Nguyên lý của {topic['title']}"],
-        "activity": f"Thực hành {topic['title']}", "sources": [topic["sources"][0]],
+        "key_knowledge": [f"Nguyên lý của {topic['title']}"],
+        "sources": [topic["sources"][0]],
         "support_quote": sources[topic["sources"][0]]["text"],
     } for topic in catalog]
 
 
+def _roadmap_reviews(instructions):
+    steps, _ = json.JSONDecoder().raw_decode(instructions.split("Steps to audit: ", 1)[1])
+    return [{"topic_id": step["topic_id"], "on_topic": True, "supported": True} for step in steps]
+
+
 def test_roadmap_has_no_calendar_inputs_and_abstains_when_empty(monkeypatch):
     with pytest.raises(ValidationError):
-        RoadmapRequest(days_remaining=4)
+        RoadmapRequest(topic="Tree", days_remaining=4)
+    for topic in ("", "   "):
+        with pytest.raises(ValidationError):
+            RoadmapRequest(topic=topic)
+    assert RoadmapRequest(topic="  Tree  ").topic == "Tree"
     monkeypatch.setattr(revision_generator, "generate_study_json", lambda *args, **kwargs: pytest.fail("LLM called"))
-    result = revision_generator.generate_roadmap([])
-    assert not result.items and result.generation_mode == "abstained"
+    empty = revision_generator.generate_roadmap("Tree", [])
+    irrelevant = revision_generator.generate_roadmap("Tree", [], has_documents=True)
+    assert not empty.items and empty.generation_mode == "abstained" and "chưa có tài liệu" in empty.answer
+    assert irrelevant.generation_mode == "abstained" and "Tree" in irrelevant.answer
 
 
-def test_roadmap_deduplicates_and_orders_prerequisites_in_one_groq_call(monkeypatch):
+def test_roadmap_deduplicates_and_orders_prerequisites(monkeypatch):
     bfs, graph, duplicate, alias = evidence(4)
     bfs = {**bfs, "section": "BFS", "text": QUOTE + " BFS requires an understanding of a graph."}
     graph = {**graph, "section": "Graph", "text": "A graph represents vertices and edges between them in a structure."}
     alias = {**alias, "section": "Đồ thị", "text": "A graph is represented with an adjacency list or matrix."}
     duplicate = {**duplicate, "section": "BFS", "text": bfs["text"]}
     documents = [bfs, graph, duplicate, alias]
-    catalog, passages = build_curriculum(documents)
+    catalog, passages = build_curriculum(documents, "Graph")
     assert len(catalog) == 2 and len(passages) == 3
     assert [topic.title for topic in order_topics(catalog, curriculum_dependencies(catalog, passages))] == ["Đồ thị", "BFS"]
 
     calls = []
     def mock(query, sources, instructions, **kwargs):
         calls.append(kwargs)
+        if kwargs["stage"] == "roadmap.review":
+            return {"items": _roadmap_reviews(instructions)}
         return {"items": _roadmap_drafts(instructions, sources)}
 
     monkeypatch.setattr(revision_generator, "generate_study_json", mock)
-    result = revision_generator.generate_roadmap(documents)
-    assert len(calls) == 1 and calls[0]["row_model"] is revision_generator.RoadmapDraft
+    result = revision_generator.generate_roadmap("Graph", documents)
+    assert [call["row_model"] for call in calls] == [revision_generator.RoadmapDraft, revision_generator.RoadmapReview]
     assert len(result.items) == 2 and result.items[1].prerequisites == [result.items[0].id]
     assert {source.filename for source in result.citations} == {bfs["filename"], graph["filename"]}
 
@@ -251,7 +264,7 @@ def test_roadmap_rejects_unfounded_learning_content(monkeypatch, problem):
         return {"items": drafts}
 
     monkeypatch.setattr(revision_generator, "generate_study_json", mock)
-    result = revision_generator.generate_roadmap(documents)
+    result = revision_generator.generate_roadmap("BFS", documents)
     assert not result.items and result.generation_error == "invalid_output"
     assert result.uncovered_topics == ["BFS"]
 
@@ -261,14 +274,110 @@ def test_roadmap_retries_truncated_json_once(monkeypatch):
     calls = []
 
     def mock(query, sources, instructions, **kwargs):
+        if kwargs["stage"] == "roadmap.review":
+            return {"items": _roadmap_reviews(instructions)}
         calls.append(kwargs["temperature"])
         if len(calls) == 1:
             raise LLMError("truncated_json")
         return {"items": _roadmap_drafts(instructions, sources)}
 
     monkeypatch.setattr(revision_generator, "generate_study_json", mock)
-    result = revision_generator.generate_roadmap(documents)
+    result = revision_generator.generate_roadmap("BFS", documents)
     assert len(result.items) == 1 and calls == [0.0, 0.2]
+
+
+def test_roadmap_tree_normalizes_headings_and_orders_from_source_relationships():
+    descriptions = [
+        ("AVL", "AVL is a binary search tree that keeps the height of its subtrees balanced."),
+        ("BST (Binary Search Tree)", "A binary search tree is a binary tree with a key ordering rule."),
+        ("2.0 The binary tree is an example covered in this material",
+         "A binary tree is a tree where each node has at most two children."),
+        ("Tree Fundamentals", "A tree organizes nodes in a hierarchy with a root and parent-child relationships."),
+        ("Tree traversal visits nodes in order",
+         "Tree traversal requires a binary tree in these examples and visits its nodes in order."),
+        ("Sorting", "Insertion sort places every key in the correct position in a sorted prefix."),
+    ]
+    documents = [{**item, "section": section, "text": text}
+                 for item, (section, text) in zip(evidence(len(descriptions)), descriptions)]
+    catalog, passages = build_curriculum(documents, "Tree")
+    graph = curriculum_dependencies(catalog, passages)
+    titles = [entry.title for entry in order_topics(catalog, graph)]
+    assert set(titles) == {"Tree Fundamentals", "Binary Tree", "Binary Search Tree", "AVL Tree", "Tree Traversal"}
+    assert titles.index("Tree Fundamentals") < titles.index("Binary Tree") < titles.index("Binary Search Tree")
+    assert titles.index("AVL Tree") > titles.index("Binary Search Tree")
+    assert titles.index("Tree Traversal") > titles.index("Binary Tree")
+
+
+def test_roadmap_can_discover_free_form_headings_without_accepting_sentences():
+    a, b, c = evidence()
+    documents = [
+        {**a, "section": "Path Compression", "text": "Disjoint sets shorten paths by pointing nodes to the root."},
+        {**b, "section": "This section explains why disjoint set operations are useful.",
+         "text": "A disjoint set maintains nonoverlapping groups of elements."},
+        {**c, "section": "Tree", "text": "Trees organize data hierarchically using a root and children."},
+    ]
+    catalog, _ = build_curriculum(documents, "Disjoint Set")
+    assert [entry.title for entry in catalog] == ["Path Compression", "Disjoint Set"]
+
+
+def test_roadmap_can_discover_multiple_concepts_from_one_passage():
+    [base] = evidence(1)
+    item = {**base, "section": None, "text": (
+        "A tree organizes nodes around a root and assigns each non-root node a parent. "
+        "A binary tree is a tree with at most two children per node."
+    )}
+    catalog, passages = build_curriculum([item], "Tree")
+    assert [entry.title for entry in catalog] == ["Tree Fundamentals", "Binary Tree"]
+    assert len(passages) == 1 and all(entry.sources == (1,) for entry in catalog)
+
+
+@pytest.mark.parametrize(("topic", "text", "title"), [
+    ("Sorting", "Insertion sort inserts each item into the proper position in the sorted prefix.", "Insertion Sort"),
+    ("Dijkstra", "Dijkstra computes shortest paths in a graph with nonnegative edge weights.", "Dijkstra"),
+    ("Graph", "Breadth-first search visits vertices in ascending order of distance from the start.", "BFS"),
+])
+def test_roadmap_discovers_named_subtopics_from_unstructured_text(topic, text, title):
+    passage = {**evidence(1)[0], "section": None, "text": text}
+    catalog, _ = build_curriculum([passage], topic)
+    assert [entry.title for entry in catalog] == [title]
+
+
+@pytest.mark.parametrize("broken", ["schema", "unsupported", "off_topic", "invalid_json", "wrong_json_shape", "recovered_row"])
+def test_roadmap_retains_valid_steps_when_a_neighbor_fails(monkeypatch, broken):
+    a, b = evidence(2)
+    passages = [
+        {**a, "section": "Tree Fundamentals", "text": "A tree has a root node and edges that organize its children."},
+        {**b, "section": "Binary Tree", "text": "A binary tree is a tree where each node has at most two children."},
+    ]
+
+    def mock(query, sources, instructions, *, stage, **kwargs):
+        if stage == "roadmap.review":
+            reports = _roadmap_reviews(instructions)
+            for report in reports:
+                if report["topic_id"] == "T1":
+                    report.update(supported=broken != "unsupported", on_topic=broken != "off_topic")
+            return {"items": reports}
+        drafts = _roadmap_drafts(instructions, sources)
+        if broken in {"invalid_json", "wrong_json_shape", "recovered_row"} and any(row["topic_id"] == "T1" for row in drafts):
+            if broken == "wrong_json_shape":
+                return {"items": "invalid"}
+            if broken == "recovered_row" and len(drafts) == 2:
+                return drafts[1]
+            raise LLMError("invalid_json")
+        for draft in drafts:
+            if draft["topic_id"] == "T1":
+                if broken == "schema":
+                    draft["key_knowledge"] = []
+                elif broken in {"unsupported", "off_topic"}:
+                    draft["key_knowledge"] = ["Bubble Sort luôn chạy trong O(1)."]
+        return {"items": drafts}
+
+    monkeypatch.setattr(revision_generator, "generate_study_json", mock)
+    result = revision_generator.generate_roadmap("Tree", passages)
+    assert [item.title for item in result.items] == ["Binary Tree"]
+    assert result.items[0].prerequisites == []
+    assert result.uncovered_topics == ["Tree Fundamentals"]
+    assert result.items[0].key_knowledge
 
 
 def test_quiz_one_accepts_unambiguous_json_representations(monkeypatch):

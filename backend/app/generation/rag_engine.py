@@ -1,4 +1,6 @@
 """Grounded chat generation and common study-response helpers."""
+import json
+from itertools import product
 from statistics import mean
 
 from app.schemas.contracts import RAGResponse
@@ -54,33 +56,89 @@ def grounded_fields(query, answer, evidences, method, mode, labels):
     )
 
 
+_CHAT_GUIDANCE = {
+    "comparison": "Chỉ so sánh theo các tiêu chí có nguồn cho từng đối tượng. "
+                  "Dùng nhãn nguồn của từng đối tượng ngay cạnh nhận định tương ứng. "
+                  "Khi có nguồn riêng cho từng đối tượng, hãy trích dẫn các nguồn riêng đó.",
+    "overview": "Tổng hợp các định nghĩa, loại hoặc phương pháp có trong ngữ cảnh theo câu hỏi. "
+                "Giữ cách phân biệt thuật ngữ và phân loại của tài liệu. Không chuyển thuộc tính từ "
+                "loại này sang loại khác. Gắn trích dẫn ngay sau từng định nghĩa hoặc đặc điểm. "
+                "Mục lục chỉ chứng minh một tên mục xuất hiện, không chứng minh cách thuật toán hoạt động.",
+    "explanation": "Tập trung vào nguyên lý, ví dụ hoặc độ phức tạp theo đúng câu hỏi và bằng chứng.",
+}
+_CHAT_REFUSALS = {
+    "no_results": "Chưa tìm thấy đoạn tài liệu phù hợp trong lượt truy xuất này.",
+    "off_topic": "Các đoạn truy xuất được chưa đề cập trực tiếp đến chủ đề cần trả lời.",
+    "weak_evidence": "Tìm được đoạn có nhắc đến chủ đề, nhưng bằng chứng chưa đủ để trả lời chắc chắn.",
+}
+
+
+def _coverage_note(coverage):
+    notes = []
+    if coverage.missing:
+        notes.append("Chưa tìm được đủ bằng chứng trong lượt truy xuất này cho " + ", ".join(coverage.missing) + ".")
+    if coverage.unsearched:
+        notes.append("Đã đạt giới hạn truy xuất của lượt này. Các mục chưa được tìm gồm "
+                     + ", ".join(coverage.unsearched) + ".")
+    return "\n\n".join(notes)
+
+
+def _comparison_labels(groups):
+    # At most four subjects and five evidence labels. Prefer a distinct source
+    # per subject, still allowing a shared source when that's all we found.
+    assignment = max(product(*groups), key=lambda labels: len(set(labels)), default=())
+    return list(dict.fromkeys(assignment))
+
+
 def build_chat_response(query, evidences, intent="qa", *, method_used="hybrid_rerank",
-                        workspace_empty=False):
-    refusal = abstention_fields(query, evidences, method_used, workspace_empty=workspace_empty)
-    if refusal:
-        return RAGResponse(**refusal)
+                        workspace_empty=False, coverage=None):
+    if coverage is None:
+        refusal = abstention_fields(query, evidences, method_used, workspace_empty=workspace_empty)
+        if refusal:
+            return RAGResponse(**refusal)
+    elif not evidences:
+        reason = EMPTY_WORKSPACE_RESPONSE if coverage.workspace_empty else _CHAT_REFUSALS[coverage.reason]
+        note = _coverage_note(coverage) if intent == "comparison" and not coverage.workspace_empty else ""
+        return RAGResponse(query=query, answer="\n\n".join(filter(None, (reason, note))),
+                           confidence_score=0.0, generation_mode="abstained")
     evidence = evidences[:MAX_EVIDENCES]
     context = format_evidence_for_prompt(evidence)
+    instructions = get_system_prompt(intent) + f" Nếu ngữ cảnh hoàn toàn thiếu, chỉ trả lời: {NO_EVIDENCE_MESSAGE}"
+    instructions += " " + _CHAT_GUIDANCE.get(intent, "")
+    if coverage:
+        context += "\n\nNhãn nguồn theo đối tượng đã xác định: " + json.dumps(coverage.covered, ensure_ascii=False)
+        instructions += (
+            " Chỉ nêu điều được đoạn trích trực tiếp hỗ trợ. Nếu chỉ có bằng chứng cho một phần câu hỏi, "
+            "hãy trả lời phần đó. Không suy ra nội dung của toàn bộ tài liệu từ các đoạn truy xuất."
+        )
     error_code = None
     try:
         answer = generate_answer(
-            get_system_prompt(intent)
-            + f" Cite factual claims with exact source labels. If context is insufficient, reply only: {NO_EVIDENCE_MESSAGE}",
+            instructions,
             build_user_prompt(query, context), task="chat", raise_errors=True,
         )
     except LLMError as error:
         answer, error_code = "", error.code
-    if answer.strip("* _\n").casefold() == NO_EVIDENCE_MESSAGE.casefold():
+    model_abstained = answer.strip("* _\n").casefold() == NO_EVIDENCE_MESSAGE.casefold()
+    partial = coverage and bool(coverage.missing or coverage.unsearched)
+    if model_abstained and not partial:
         return RAGResponse(query=query, answer=ABSTENTION_RESPONSE,
                            confidence_score=0.0, generation_mode="abstained")
     labels = cited_labels(answer, len(evidence))
+    comparison_groups = tuple(coverage.covered.values()) if coverage and intent == "comparison" else ()
+    extractive_labels = _comparison_labels(comparison_groups)
+    cited = set(labels)
+    cited_groups = tuple(tuple(label for label in group if label in cited) for group in comparison_groups)
+    citations_cover_targets = len(_comparison_labels(cited_groups)) == len(extractive_labels)
     mode = "llm"
-    if not answer or not labels:
+    if not answer or not labels or model_abstained or not citations_cover_targets:
         mode = "extractive"
-        labels = list(range(1, min(3, len(evidence)) + 1))
+        labels = extractive_labels or list(range(1, min(3, len(evidence)) + 1))
         answer = "\n\n".join(
             f"**[{label}]** {evidence[label - 1]['text'].strip()}" for label in labels
         )
+    if partial:
+        answer += "\n\n" + _coverage_note(coverage)
     return RAGResponse(**grounded_fields(query, answer, evidence, method_used, mode, labels),
                        generation_error=error_code)
 

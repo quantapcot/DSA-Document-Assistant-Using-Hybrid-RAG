@@ -22,6 +22,8 @@ Các endpoint dùng bearer token của phiên. Request trong phiên chỉ cần 
 | --- | --- | --- |
 | `POST /api/chat` | `{"query":"..."}` | `answer`, `citations`, `generation_mode`, `generation_error`. |
 | `POST /api/quiz` | `{"topic":"BFS","num_questions":3}` | `requested_count`, `generated_count`, `questions`. Mỗi câu giữ đáp án, giải thích, nhãn nguồn và `evidence` với tên file, trang, trích đoạn. |
-| `POST /api/roadmap` | `{}` hoặc body rỗng | `items` có `id`, `title`, `objective`, `knowledge`, `activity`, `prerequisites`, `sources`, `support_quote`. Kèm `citations`, `uncovered_topics`, `warnings`. |
+| `POST /api/roadmap` | `{"topic":"Tree"}` | `items` có `id`, `title`, `objective`, `key_knowledge`, `prerequisites`, `sources`, `support_quote`. Kèm `citations`, `uncovered_topics`, `warnings`. |
+
+`topic` phải có từ 1 đến 150 ký tự sau khi bỏ khoảng trắng ở hai đầu. Roadmap tìm nội dung phù hợp trong phiên hiện tại và trả về các bước ôn từ cơ bản đến nâng cao. Giao diện hiển thị mục tiêu và kiến thức trọng tâm. API giữ các trường nguồn để kiểm tra căn cứ.
 
 `/api/revision` là alias có đánh dấu deprecated của Roadmap. Các trường lịch ngày, thời lượng, trình độ của Revision cũ đã được gỡ. `label` trong bằng chứng là nhãn 1-based. `correct_index` của Quiz là 0-based. `X-Process-Time-MS` ghi thời gian xử lý request.

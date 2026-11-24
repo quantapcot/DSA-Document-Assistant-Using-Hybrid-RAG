@@ -89,7 +89,8 @@ class QuizResponse(RAGResponse):
 
 
 class RoadmapRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+    topic: str = Field(min_length=1, max_length=150)
     workspace_id: str | None = None
     corpus_id: str | None = None
 
@@ -101,17 +102,19 @@ class SessionResponse(BaseModel):
     expires_at: float
 
 
-class RoadmapItem(BaseModel):
+class RoadmapContent(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True)
 
-    id: str = Field(min_length=1)
-    title: str = Field(min_length=1, max_length=150)
     objective: str = Field(min_length=1, max_length=300)
-    knowledge: list[str] = Field(min_length=1, max_length=5)
-    activity: str = Field(min_length=1, max_length=400)
-    prerequisites: list[str] = Field(default_factory=list)
+    key_knowledge: list[Annotated[str, Field(min_length=1, max_length=300)]] = Field(min_length=1, max_length=5)
     sources: list[SourceLabel] = Field(min_length=1, max_length=2)
     support_quote: str = Field(min_length=20, max_length=500)
+
+
+class RoadmapItem(RoadmapContent):
+    id: str = Field(min_length=1)
+    title: str = Field(min_length=1, max_length=150)
+    prerequisites: list[str] = Field(default_factory=list)
 
 
 class RoadmapResponse(RAGResponse):

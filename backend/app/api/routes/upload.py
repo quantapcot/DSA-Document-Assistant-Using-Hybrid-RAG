@@ -107,6 +107,7 @@ def _save_and_index(content, filename, suffix, client, config, corpus_id, worksp
             result = process_and_index_document(
                 path, original_filename=filename, workspace_id=workspace_id,
                 corpus_id=corpus_id, config=config, client=client,
+                runtime_root=registry.root if registry is not None else None,
                 legacy_document_ids=tuple(old_id for old_id in previous if old_id != document_id),
                 upload_metadata={
                     "upload_revision": revision,

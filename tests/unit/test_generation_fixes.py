@@ -143,7 +143,7 @@ def test_empty_workspace_never_queries_benchmark(monkeypatch):
     try:
         api = TestClient(app)
         for path in ("chat", "quiz", "roadmap"):
-            body = {} if path == "roadmap" else {"query": "tree"}
+            body = {"topic": "tree"} if path == "roadmap" else {"query": "tree"}
             response = api.post(f"/api/{path}", json=body)
             assert response.status_code == 200
             data = response.json()
@@ -154,21 +154,6 @@ def test_empty_workspace_never_queries_benchmark(monkeypatch):
                    and call.kwargs["corpus_id"] == "user-uploads" for call in retrieve.call_args_list)
     finally:
         client.close()
-
-
-@pytest.mark.parametrize(("title", "expected"), [
-    ("BFS · Graph.pdf · Trang 3", "BFS"),
-    ("Tr. 3 · Đoạn 1–6 · Graph.pdf", ""),
-    ("Tr. 1–4 · Graph.pdf", ""),
-])
-def test_revision_quiz_prefill_excludes_source_metadata(monkeypatch, title, expected):
-    monkeypatch.syspath_prepend(str(Path(__file__).resolve().parents[2] / "frontend"))
-    from screens import revision_ui
-
-    session = {}
-    monkeypatch.setattr(revision_ui, "st", SimpleNamespace(session_state=session))
-    revision_ui._open_quiz("student", "uploads", title)
-    assert session["quiz_topic:('student', 'uploads')"] == expected
 
 
 def test_streamlit_chat_quiz_and_revision_with_mock_api(monkeypatch):
@@ -187,9 +172,8 @@ def test_streamlit_chat_quiz_and_revision_with_mock_api(monkeypatch):
     monkeypatch.setattr(chat_ui, "ask_question", lambda *args, **kwargs: (True, {**data, "answer": "Use a queue [2]."}))
     monkeypatch.setattr(quiz_ui, "create_quiz", lambda *args, **kwargs: (True, {**data, "questions": [QUIZ]}))
     item = {
-        "id": "T1", "title": "Graphs", "objective": "Understand BFS",
-        "knowledge": ["Queue"], "activity": "Trace BFS",
-        "prerequisites": [], "sources": [2],
+        "id": "T1", "title": "Graphs", "objective": "Hiểu BFS", "key_knowledge": ["Queue"],
+        "prerequisites": [], "sources": [2], "support_quote": "Use a queue.",
     }
     monkeypatch.setattr(revision_ui, "create_roadmap",
                         lambda *args, **kwargs: (True, {**data, "answer": "Roadmap", "items": [item]}))
@@ -211,9 +195,11 @@ def test_streamlit_chat_quiz_and_revision_with_mock_api(monkeypatch):
     assert not ui.exception and any("1/1" in item.value for item in ui.success)
     navigation = ui.sidebar.radio[0]
     navigation.set_value(navigation.options[3]).run()
-    next(button for button in ui.button if button.label == "Tạo kế hoạch học tập").click().run()
+    button = next(button for button in ui.button if button.label == "Tạo lộ trình ôn tập")
+    button.click().run()
+    assert any("Nhập chủ đề" in message.value for message in ui.warning)
+    next(field for field in ui.text_input if field.label == "Chủ đề muốn ôn tập").set_value("Graph")
+    next(button for button in ui.button if button.label == "Tạo lộ trình ôn tập").click().run()
     assert not ui.exception and not ui.number_input and not ui.date_input
-    next(widget for widget in ui.checkbox if "Graphs" in widget.label).check().run()
-    assert any("1/1" in caption.value for caption in ui.caption)
-    next(button for button in ui.button if button.label == "Luyện quiz cho mục này").click().run()
-    assert not ui.exception and next(widget for widget in ui.text_input if widget.label == "Chủ đề").value == "Graphs"
+    assert ui.subheader[0].value == "Bước 1 — Graphs"
+    assert not ui.checkbox and not any("graphs.pdf" in widget.value for widget in ui.markdown)

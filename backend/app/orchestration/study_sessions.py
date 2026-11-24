@@ -16,6 +16,7 @@ from qdrant_client import models
 from app.retrieval.hybrid_search import invalidate_all_bm25_caches
 from app.retrieval.indexing import scope_mutation_lock
 from app.retrieval.vector_store import scope_filter
+from .debug_chunks import remove_debug_workspace
 
 SESSION_CORPUS = "study-sessions"
 _WORKSPACE = re.compile(r"session-[0-9a-f]{32}\Z")
@@ -110,6 +111,7 @@ class SessionRegistry:
                     wait=True,
                 )
             invalidate_all_bm25_caches(collection, SESSION_CORPUS, workspace)
+            remove_debug_workspace(self.root, workspace)
             if directory.exists():
                 shutil.rmtree(directory)
             with self.database() as db:

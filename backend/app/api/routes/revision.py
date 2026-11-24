@@ -10,7 +10,7 @@ router = APIRouter()
 
 @router.post("/api/roadmap", response_model=RoadmapResponse)
 @router.post("/api/revision", response_model=RoadmapResponse, deprecated=True)
-async def roadmap_endpoint(request: Request, body: RoadmapRequest | None = None):
+async def roadmap_endpoint(request: Request, body: RoadmapRequest):
     async with study_request_budget("revision"):
-        evidence = await inventory_for_roadmap(body or RoadmapRequest(), request)
-        return await run_in_threadpool(generate_roadmap, evidence)
+        evidence, has_documents = await inventory_for_roadmap(body, request)
+        return await run_in_threadpool(generate_roadmap, body.topic, evidence, has_documents=has_documents)

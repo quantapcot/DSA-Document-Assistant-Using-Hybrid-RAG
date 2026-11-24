@@ -95,15 +95,17 @@ def diverse_evidence(result_sets, *, workspace, corpus, limit=QUIZ_EVIDENCE_LIMI
     return selected
 
 
-def curriculum_inventory(engine, workspace, corpus):
-    """Enumerate the scoped index before deduplicating topics in the roadmap."""
+def curriculum_inventory(engine, workspace, corpus, topic):
+    """Scan the current scope, retaining only passages related to the roadmap topic."""
     client, config = getattr(engine, "client", None), getattr(engine, "config", None)
     if client is None or config is None:
-        return []
+        return [], False
     if not client.collection_exists(config.collection):
-        return []
+        return [], False
     scope = scope_filter(corpus, workspace)
+    matches = roadmap_topic_filter(topic)
     candidates = []
+    has_documents = False
     offset = None
     while True:
         points, offset = client.scroll(
@@ -114,10 +116,11 @@ def curriculum_inventory(engine, workspace, corpus):
         )
         for point in points:
             item = point.payload or {}
-            if (item.get("workspace_id") != workspace or item.get("corpus_id") != corpus
-                    or not item.get("filename") or not item.get("text", "").strip()):
+            if item.get("workspace_id") != workspace or item.get("corpus_id") != corpus or not item.get("filename"):
                 continue
-            candidates.append(item)
+            has_documents = True
+            if item.get("text", "").strip() and matches(item["text"]):
+                candidates.append(item)
         if offset is None:
             break
     def chapter_order(item):
@@ -125,7 +128,7 @@ def curriculum_inventory(engine, workspace, corpus):
         return (tuple(int(value) if index % 2 else value for index, value in enumerate(filename)),
                 item["page"], item["chunk_id"])
 
-    return sorted(candidates, key=chapter_order)
+    return sorted(candidates, key=chapter_order), has_documents
 
 
 _STOPWORDS = {
@@ -254,3 +257,35 @@ def quiz_topic_filter(topic):
     words = normalized.split()
     terms = set(words) - _STOPWORDS or set(words)
     return topic, lambda item: bool(terms) and terms.issubset(normalized_text(item["text"]).split())
+
+
+_ROADMAP_FAMILIES = (
+    (r"(?:tree|trees|cay|trees? fundamentals|cau truc cay)",
+     r"\b(?:trees?|bst|avl|cay|(?:pre|in|post)\s?order traversals?)\b"),
+    (r"(?:graphs?|graph theory|(?:ly thuyet )?do thi)",
+     r"\b(?:graphs?|do thi|dijkstra|bfs|dfs|breadth first search|depth first search|"
+     r"topological sort(?:ing)?|kruskal|bellman ford|floyd warshall)\b"),
+    (r"(?:(?:sort|sorting)(?: algorithms?)?|(?:thuat toan )?sap xep)",
+     r"\b(?:sort|sorting|(?:bubble|insertion|selection|merge|quick|heap|counting|radix|shell)\s?sort|sap xep)\b"),
+)
+
+
+def roadmap_topic_filter(topic):
+    """Match broad families and arbitrary topics using terms from the request."""
+    folded = _quiz_alias_text(topic)
+    for aliases, related in _ROADMAP_FAMILIES:
+        if re.fullmatch(aliases, folded):
+            return lambda text: bool(re.search(related, _quiz_alias_text(text)))
+
+    search_topic, known_topic = quiz_topic_filter(topic)
+    if search_topic != topic:
+        return lambda text: known_topic({"text": text})
+    stopwords = {_quiz_alias_text(word) for word in _STOPWORDS} | {"how", "what", "about", "cach", "hoat", "dong"}
+    terms = set(folded.split()) - stopwords or set(folded.split())
+    inflected_terms = [re.compile(rf"\b{re.escape(word)}(?:s|es)?\b") for word in sorted(terms)]
+
+    def matches(text):
+        body = _quiz_alias_text(text)
+        return bool(inflected_terms) and all(pattern.search(body) for pattern in inflected_terms)
+
+    return matches

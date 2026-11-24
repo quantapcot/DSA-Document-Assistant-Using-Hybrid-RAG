@@ -24,7 +24,7 @@ def main():
     }]
     chat = build_chat_response("BFS dùng cấu trúc dữ liệu nào?", evidence)
     quiz = generate_quiz("BFS", evidence, num_questions=1)
-    roadmap = generate_roadmap(evidence)
+    roadmap = generate_roadmap("BFS", evidence)
     outcomes = [
         ("Chat", chat.generation_mode == "llm" and bool(chat.citations), chat),
         ("Quiz", quiz.generated_count == 1 and bool(quiz.citations), quiz),

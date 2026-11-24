@@ -4,6 +4,7 @@ from __future__ import annotations
 import logging
 import asyncio
 from contextlib import asynccontextmanager
+from dataclasses import replace
 from functools import partial
 from time import monotonic
 from typing import Any
@@ -17,6 +18,8 @@ from app.generation.llm_client import ERROR_MESSAGES, request_deadline
 from app.retrieval.hybrid_search import RetrievalEngine
 from app.retrieval.vector_store import scope_filter
 from app.schemas.contracts import Citation
+from .chat_retrieval import retrieve_chat_evidence
+from .intent_router import plan_chat_query
 from .study_evidence import curriculum_inventory, diverse_evidence, quiz_topic_filter
 from .study_sessions import resolve_scope
 
@@ -69,15 +72,19 @@ async def retrieve_for_study(body, request):
     if not query:
         raise HTTPException(400, "Câu hỏi hoặc chủ đề không được để trống.")
     engine, workspace, corpus = _study_scope(body, request)
+    plan = plan_chat_query(query)
+
+    async def retrieve(search):
+        return await execute_retrieval(engine, search, workspace_id=workspace, corpus_id=corpus)
+
     try:
-        evidence, method = await execute_retrieval(
-            engine, query, workspace_id=workspace, corpus_id=corpus,
-        )
-        empty = not evidence and await run_in_threadpool(_scope_is_empty, engine, corpus, workspace)
+        coverage = await retrieve_chat_evidence(plan, retrieve, workspace, corpus)
+        if coverage.reason == "no_results" and await run_in_threadpool(_scope_is_empty, engine, corpus, workspace):
+            coverage = replace(coverage, workspace_empty=True)
     except Exception:
         logger.error("Study retrieval failed")
         raise HTTPException(500, "Lỗi truy xuất tài liệu.") from None
-    return query, evidence, method, empty
+    return plan, coverage
 
 
 async def retrieve_for_quiz(body, request):
@@ -111,7 +118,7 @@ async def inventory_for_roadmap(body, request):
     engine, workspace, corpus = _study_scope(body, request)
     started = monotonic()
     try:
-        return await run_in_threadpool(curriculum_inventory, engine, workspace, corpus)
+        return await run_in_threadpool(curriculum_inventory, engine, workspace, corpus, body.topic)
     except Exception:
         logger.error("Roadmap inventory failed")
         raise HTTPException(500, "Lỗi đọc tài liệu trong phiên.") from None

@@ -14,6 +14,8 @@ from pathlib import Path
 from fastapi import APIRouter, HTTPException, Query, Request
 
 from app.api.routes.upload import get_upload_backend, physical_upload, validate_mutable_scope
+from app.core.config import settings
+from app.orchestration.debug_chunks import remove_debug_document
 from app.orchestration.study_sessions import SESSION_CORPUS, resolve_scope
 from app.retrieval.indexing import document_filter, delete_document_from_index, scope_mutation_lock
 
@@ -129,10 +131,12 @@ def delete_document(
     selector = document_filter(document_id, corpus_id, workspace_id)
     with scope_mutation_lock(config.collection, corpus_id, workspace_id):
         root = UPLOAD_DIR
+        runtime_root = settings.SESSION_RUNTIME_DIR
         if corpus_id == SESSION_CORPUS:
             registry = request.app.state.study_sessions
             registry.ensure_active(workspace_id)
             root = registry.directory(workspace_id) / "uploads"
+            runtime_root = registry.root
         points = []
         if client.collection_exists(config.collection):
             points, _ = client.scroll(
@@ -147,6 +151,7 @@ def delete_document(
             document_id, corpus_id=corpus_id, workspace_id=workspace_id,
             client=client, config=config,
         )
+        remove_debug_document(runtime_root, workspace_id, document_id)
         deleted_files = []
         if path is not None:
             try:
