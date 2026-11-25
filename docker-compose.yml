@@ -23,14 +23,23 @@ services:
     container_name: dsa_qdrant
     restart: unless-stopped
     ports:
-      - "6333:6333"   # REST API
-      - "6334:6334"   # gRPC
+      - "127.0.0.1:6333:6333"  # Host-only debug; Backend uses Docker network
+      - "127.0.0.1:6334:6334"
     volumes:
       - qdrant_data:/qdrant/storage
     environment:
       QDRANT__SERVICE__HTTP_PORT: 6333
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
+      # Qdrant image does not necessarily bundle curl or wget.
+      test:
+        - CMD
+        - bash
+        - -ec
+        - >-
+          exec 3<>/dev/tcp/127.0.0.1/6333;
+          printf 'GET /readyz HTTP/1.0\r\nHost: localhost\r\n\r\n' >&3;
+          read -r status <&3;
+          [[ "$$status" == *" 200 "* ]]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -46,7 +55,7 @@ services:
     container_name: dsa_backend
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"  # Streamlit calls Backend inside Docker network
     depends_on:
       qdrant:
         condition: service_healthy
@@ -54,6 +63,7 @@ services:
       # Trỏ tới Qdrant container trong Docker network
       QDRANT_MODE: server
       QDRANT_URL: http://qdrant:6333
+      RETRIEVAL_CONFIG_PATH: /app/configs/retrieval.mvp.yaml
       SESSION_RUNTIME_DIR: /app/data/runtime
       ENV: production
     env_file:
@@ -63,11 +73,11 @@ services:
       - ./data/runtime:/app/data/runtime
       - ./configs:/app/configs:ro
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/ready', timeout=4).read()"]
       interval: 20s
       timeout: 10s
       retries: 5
-      start_period: 30s
+      start_period: 180s
 
   # ──────────────────────────────────────────────────────────
   # 3. Frontend — Streamlit UI

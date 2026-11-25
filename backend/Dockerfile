@@ -17,8 +17,12 @@ WORKDIR /app
 
 # ── Cài dependencies trước (tận dụng Docker layer cache) ──────────────────
 COPY requirements.txt .
+
+# Install PyTorch CPU-only to avoid downloading CUDA libraries
 RUN pip install --upgrade pip && \
-    pip install -r requirements.txt
+    pip install torch==2.12.1 --index-url https://download.pytorch.org/whl/cpu && \
+    pip install -r requirements.txt && \
+    python -c "import torch; print('Torch:', torch.__version__); print('CUDA:', torch.version.cuda); assert torch.version.cuda is None"
 
 # ── Copy source code ────────────────────────────────────────────────────────
 COPY . .

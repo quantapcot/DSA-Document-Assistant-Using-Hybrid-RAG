@@ -11,6 +11,8 @@ import time
 from uuid import uuid4
 
 from fastapi import HTTPException
+
+from app.core.config import settings
 from qdrant_client import models
 
 from app.retrieval.hybrid_search import invalidate_all_bm25_caches
@@ -139,6 +141,10 @@ def resolve_scope(request, workspace=None, corpus=None, *, require_session=False
         if any(value != actual for value in workspaces) or any(value != SESSION_CORPUS for value in corpora):
             raise HTTPException(403, "Yêu cầu không thuộc phiên học hiện tại.")
         return actual, SESSION_CORPUS
+    # Legacy workspaces have no ownership token. They are for local development
+    # and historical evaluation only, never for public deployments.
+    if settings.ENV.strip().casefold() not in {"development", "test"}:
+        raise _denied()
     if require_session or any(value.casefold().startswith("session-") for value in workspaces) or any(
         value.casefold() == SESSION_CORPUS for value in corpora
     ):

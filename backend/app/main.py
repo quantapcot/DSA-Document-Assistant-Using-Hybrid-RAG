@@ -1,6 +1,8 @@
 # dsa_ai_agent/backend/app/main.py
 from contextlib import asynccontextmanager
+from dataclasses import replace
 import asyncio
+import os
 import logging
 from pathlib import Path
 from fastapi import FastAPI
@@ -27,21 +29,41 @@ async def _sweep_sessions(app, stopping):
             continue
 
 
+def load_retrieval_config() -> RetrievalConfig:
+    """Honor a mounted config file and Docker Qdrant environment overrides."""
+    explicit = os.getenv("RETRIEVAL_CONFIG_PATH", "").strip()
+    if explicit:
+        path = Path(explicit).expanduser()
+        if not path.is_file():
+            raise FileNotFoundError(f"RETRIEVAL_CONFIG_PATH does not exist: {path}")
+    else:
+        config_dir = Path(__file__).resolve().parents[2] / "configs"
+        path = next((candidate for candidate in
+                     (config_dir / "retrieval.mvp.yaml", config_dir / "retrieval.example.yaml")
+                     if candidate.is_file()), None)
+    if path is None:
+        logger.warning("Retrieval YAML not found; using environment/defaults")
+        config = RetrievalConfig.from_env()
+    else:
+        logger.info("Loading retrieval config from: %s", path)
+        config = RetrievalConfig.from_yaml(path)
+    overrides = {}
+    if os.getenv("QDRANT_MODE"):
+        overrides["qdrant_mode"] = os.environ["QDRANT_MODE"]
+    if os.getenv("QDRANT_URL"):
+        overrides["qdrant_url"] = os.environ["QDRANT_URL"]
+    if overrides:
+        config = replace(config, **overrides)
+    if config.qdrant_mode == "server" and not config.qdrant_url:
+        raise ValueError("QDRANT_URL must be set when QDRANT_MODE=server")
+    return config
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logging.basicConfig(level=logging.INFO)
     # Khởi tạo RetrievalEngine Singleton một lần duy nhất khi ứng dụng khởi động
     logger.info("Initializing Retrieval Engine Singleton...")
-    config_path = Path(__file__).resolve().parents[2] / "configs" / "retrieval.mvp.yaml"
-    if not config_path.exists():
-        config_path = Path(__file__).resolve().parents[2] / "configs" / "retrieval.example.yaml"
-
-    if config_path.exists():
-        logger.info(f"Loading retrieval config from: {config_path}")
-        retrieval_config = RetrievalConfig.from_yaml(config_path)
-    else:
-        logger.warning("Config YAML not found; loading retrieval config from env/defaults")
-        retrieval_config = RetrievalConfig.from_env()
+    retrieval_config = load_retrieval_config()
 
     app.state.retrieval_config = retrieval_config
     try:
