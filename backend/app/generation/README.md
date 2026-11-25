@@ -1,57 +1,17 @@
-# Sinh nội dung C2
+# Sinh nội dung bằng Groq
 
-Ba endpoint POST `/api/chat`, `/api/quiz`, `/api/revision` nhận
-`workspace_id`, `corpus_id` tùy chọn. Mặc định là `default-workspace` và
-`user-uploads`. Khi reranker lỗi, RRF được gọi trong cùng scope.
+Chat, Quiz và Roadmap dùng cùng một client OpenAI-compatible. Điền `GROQ_API_KEY` trong `backend/.env`. Giá trị mặc định của `GROQ_BASE_URL` và `GROQ_MODEL` là `https://api.groq.com/openai/v1` và `openai/gpt-oss-120b`.
 
-Quiz và Revision gọi FIT-AI qua giao diện tương thích OpenAI. Đặt
-`LLM_BASE_URL` bằng URL được cấp, `LLM_MODEL` bằng ID Qwen-27B trên gateway
-và `OPENAI_API_KEY` bằng key tương ứng trong `backend/.env`. Chat tiếp tục
-dùng `LLM_PROVIDER` và có chế độ trích xuất nếu model không khả dụng.
+Groq GPT OSS dùng `max_completion_tokens` và reasoning effort `low`. Quiz và Roadmap gửi JSON Schema strict cho GPT OSS 120B/20B, rồi kiểm tra Pydantic và nội dung. Nếu đặt model khác, client dùng JSON Object Mode và giữ validation phía Python. [Groq Structured Outputs](https://console.groq.com/docs/structured-outputs), [Groq Reasoning](https://console.groq.com/docs/reasoning).
 
-- Quiz nhận một `topic` và `num_questions` (1–5). API chấp nhận `query`
-  của client cũ và bỏ qua `difficulty`. Từ khóa như `sort`, `graph`,
-  `binary search` và `AVL` sử dụng alias Việt/Anh để lọc nguồn trong scope.
-  Checker giải độc lập từ câu hỏi, lựa chọn và nguồn. Đoạn trích được đối
-  chiếu bằng code. Lượt kiểm tra tiếp theo kiểm tra giải thích và câu hỏi
-  trùng ý. Có tối đa hai lượt sinh bù cho các vị trí thiếu. API báo
-  `generated_count` trên `requested_count` và lý do khi thiếu câu.
-  Streamlit hiển thị giải thích và đáp án sau khi nộp, sử dụng đáp án
-  từ API để chấm.
-- Revision nhận `exam_date` hoặc `days_remaining` (1–90), `minutes_per_day`
-  (15–240), `level` và `query` hoặc `all_topics=true`. Bộ lập lịch Python
-  ưu tiên theo quan hệ tiên quyết suy ra từ tài liệu và chọn thời lượng theo
-  độ phức tạp, trình độ. FIT-AI sinh nội dung theo batch tối đa ba nhiệm vụ.
-  Batch lỗi JSON hoặc bị cắt được thử lại theo từng nhiệm vụ với cùng ID
-  và nguồn. Các mục chưa xếp lịch được báo riêng. Checklist chỉ lưu trong
-  phiên Streamlit.
-- Nếu thiếu FIT-AI hoặc không có đầu ra đạt kiểm tra, Quiz/Revision trả
-  `generation_mode=unavailable` cùng thông báo. Workspace rỗng trả
-  `generation_mode=abstained`.
+- Chat gọi một lần với ngữ cảnh. Khi provider lỗi hoặc đáp án thiếu nguồn, Chat hiển thị đoạn trích kèm nguyên nhân nếu có.
+- Quiz lấy nguồn liên quan theo alias Việt–Anh. Draft, giải độc lập, và kiểm tra giải thích/trùng ý vẫn dùng ba prompt riêng để checker không xem đáp án hay giải thích từ draft. Code kiểm tra ngữ cảnh ẩn, nhãn nguồn và trích đoạn. Tối đa hai lượt sinh bù cho vị trí thiếu.
+- Roadmap đọc toàn bộ inventory trong scope, gộp chủ đề trùng và sắp tiên quyết bằng Python. Groq nhận các mục đã xác định, thường một batch cho tài liệu nhỏ. Một batch lỗi JSON hoặc bị cắt được thử lại một lần. Mục sai nguồn hoặc chưa có mục tiên quyết hợp lệ được bỏ và báo trong `uncovered_topics`.
 
-Các thiết lập vận hành trong `backend/.env`:
+| Cấu hình | Mặc định |
+| --- | --- |
+| `LLM_CHAT_TIMEOUT`, `LLM_QUIZ_GENERATION_TIMEOUT`, `LLM_QUIZ_VERIFICATION_TIMEOUT`, `LLM_REVISION_TIMEOUT` | 30, 90, 40, 45 giây/lần |
+| `CHAT_REQUEST_TIMEOUT`, `QUIZ_REQUEST_TIMEOUT`, `REVISION_REQUEST_TIMEOUT` | 90, 240, 240 giây/request |
+| `ROADMAP_MAX_TOPICS`, `ROADMAP_SOURCE_BUDGET` | 20 mục, 14.000 byte nguồn ước lượng mỗi batch |
 
-| Nhóm | Biến | Mặc định |
-| --- | --- | --- |
-| Timeout mỗi lần gọi model (giây) | `LLM_CHAT_TIMEOUT`, `LLM_QUIZ_GENERATION_TIMEOUT`, `LLM_QUIZ_VERIFICATION_TIMEOUT`, `LLM_REVISION_TIMEOUT` | 30, 90, 40, 45 |
-| Ngân sách mỗi HTTP request (giây) | `CHAT_REQUEST_TIMEOUT`, `QUIZ_REQUEST_TIMEOUT`, `REVISION_REQUEST_TIMEOUT` | 90, 240, 240 |
-| Giới hạn phạm vi lập lịch | `REVISION_MAX_TOPICS`, `REVISION_SOURCE_TOKEN_BUDGET` | 20, 12000 |
-
-Streamlit đọc ngân sách HTTP từ `/health`. Output FIT-AI cho Quiz và Revision
-được chặn ở 4.000 token mỗi lần gọi. Ngân sách nguồn của Revision dùng ước
-lượng bảo thủ theo kích thước UTF-8. Hết hạn mức không được retry. Chat giữ
-fallback trích xuất và gửi lý do cho giao diện qua `generation_error`.
-
-Log `study_json` và `study_output` ghi giai đoạn xử lý, slot, nhãn nguồn
-và mã từ chối. Log Quiz ghi thêm thời gian mỗi bước và số lần gọi FIT-AI
-thực tế, bao gồm retry của client. Log không ghi prompt, phản hồi thô hoặc
-nội dung tài liệu.
-Bộ đọc chấp nhận biểu diễn tương đương như `"1"` hoặc `"[1]"` cho nhãn nguồn
-và vẫn kiểm tra nhãn trong phạm vi bằng chứng. Quote được đối chiếu theo
-chuỗi token liền nhau sau chuẩn hóa Unicode và định dạng PDF. Thay từ,
-đổi số hoặc đổi toán tử vẫn làm đoạn trích bị loại.
-
-`confidence_score` là điểm hỗ trợ từ nguồn tính theo độ phủ trích dẫn và
-relevance trên thang của phương thức retrieval, có phạt câu trả lời mơ hồ.
-Điểm này chưa được hiệu chuẩn thành xác suất đúng. Trích dẫn giữ nguyên nhãn
-nguồn để giao diện có thể hiển thị [2] dù [1] không được viện dẫn.
+Timeout, lỗi tạm thời và rate limit có tối đa hai retry cấp HTTP, trong ngân sách request. Auth và quota cứng trả lỗi ngay. Khi có `Retry-After` lớn hơn 5 giây, client trả lỗi để giao diện phản hồi sớm. Log hiển thị thời gian, số lần gọi, retry và lý do loại nội dung. Token, API key, prompt và phản hồi thô không được ghi trong các log này.

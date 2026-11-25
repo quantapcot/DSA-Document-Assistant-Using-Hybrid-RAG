@@ -1,82 +1,143 @@
-"""Derive a grounded curriculum and keep schedule fields under Python control."""
+"""Construct a deduplicated, prerequisite-ordered roadmap from scoped chunks."""
 from collections import defaultdict
 from dataclasses import dataclass
-from datetime import date, timedelta
-import json
-import logging
 import re
 
-from pydantic import BaseModel, ConfigDict, Field
-
 from app.core.config import settings
-from app.orchestration.study_evidence import TOPIC_PATTERNS, normalized_text, topic_key
-from app.schemas.contracts import SourceLabel, StudyDay, StudyPlan, StudyTask, StudyTopic
-from .study_output import normalize_row, reject, rows, supports_quote, validate_row
+from app.orchestration.study_evidence import TOPIC_PATTERNS, normalized_text, roadmap_topic_filter
 
-logger = logging.getLogger(__name__)
+_CONCEPTS = {
+    "Binary Search Tree": r"binary search trees?|bst|cây (?:nhị phân tìm kiếm|tìm kiếm nhị phân)",
+    "AVL Tree": r"avl(?: trees?)?|cây avl",
+    "Binary Tree": r"binary trees?|cây nhị phân",
+    "Tree Traversal": r"tree traversals?|(?:pre|in|post)\s?order traversals?|duyệt cây",
+    "Tree Fundamentals": r"trees? fundamentals|(?:tree|trees|cây|cấu trúc cây)",
+    "BFS": r"bfs|breadth first search|duyệt theo chiều rộng",
+    "DFS": r"dfs|depth first search|duyệt theo chiều sâu",
+    "Insertion Sort": r"insertion sort|sắp xếp chèn",
+    "Selection Sort": r"selection sort|sắp xếp chọn",
+    "Bubble Sort": r"bubble sort|sắp xếp nổi bọt",
+    "Heap Sort": r"heap\s?sort|sắp xếp vun đống",
+    "Counting Sort": r"counting sort|sắp xếp đếm",
+    "Radix Sort": r"radix sort|sắp xếp cơ số",
+    **{name: pattern for name, pattern in TOPIC_PATTERNS.items()
+       if name not in {"Cây AVL", "Cây nhị phân tìm kiếm", "BFS", "DFS"}},
+}
 
-LEVEL_MINUTES = {"Beginner": 25, "Intermediate": 20, "Advanced": 15}
 FOUNDATIONS = {
     "BFS": ("Đồ thị", "Hàng đợi"), "DFS": ("Đồ thị", "Ngăn xếp", "Đệ quy"),
-    "Dijkstra": ("Đồ thị",), "Cây AVL": ("Cây nhị phân tìm kiếm",),
+    "Dijkstra": ("Đồ thị",), "AVL Tree": ("Binary Search Tree",),
     "Merge sort": ("Mảng", "Đệ quy"), "Quick sort": ("Mảng", "Đệ quy"),
     "Tìm kiếm nhị phân": ("Mảng",), "Quy hoạch động": ("Đệ quy",),
 }
-_DEPENDENCY = re.compile(r"(?:prerequisites?|requires?|builds on|tiên quyết|dựa trên|cần nắm)[:\s]+([^.!?\n]{1,180})", re.I)
-_COMPLEX = re.compile(r"\b(?:invariant|recurrence|amortized|recursion|proof|backtracking|complexity)\b|bất biến|chứng minh|đệ quy|độ phức tạp", re.I)
+_DEPENDENCY = re.compile(
+    r"\b(?:prerequisites?|requires?|builds on|extends|(?:is|are) (?:a|an|the)|"
+    r"tiên quyết|dựa trên|cần nắm|là một)[:\s]+([^.!?\n]{1,180})", re.I
+)
+_HEADING_PREFIX = re.compile(r"^(?:(?:chapter|section|chương|mục)\s+)?\d+(?:\.\d+)*[.)\s:–-]+", re.I)
+_PLACEHOLDERS = {"overview", "summary", "introduction", "tổng quan", "giới thiệu", "tóm tắt",
+                 "nội dung", "references", "tài liệu tham khảo", "data structures and algorithms"}
+_SENTENCE = re.compile(
+    r"[.!?;]|\b(?:this|we|you|is|are|was|were|can|will|has|have|uses?|represents?|"
+    r"works?|requires?|allows?|stores?|finds?|returns?|includes?|supports?|visits?|"
+    r"organizes?|contains?|describes?|explains?|là|có thể|được)\b", re.I
+)
+_BASIC = re.compile(r"\b(?:fundamentals|basics|introduction|cơ bản|nhập môn)\b", re.I)
+_ADVANCED = re.compile(r"\b(?:advanced|optimization|nâng cao|tối ưu)\b", re.I)
+_SENTENCE_BREAK = re.compile(r"(?<=[.!?])\s+|\n+")
+_PASSAGE_CHARS = 700
 
 
 @dataclass(frozen=True)
-class Slot:
-    id: int
-    date: date
-    kind: str
-    topic_ids: tuple[str, ...]
-    minutes: int
-    prerequisites: tuple[str, ...] = ()
+class Topic:
+    id: str
+    title: str
+    sources: tuple[int, ...]
 
 
-class TaskContent(BaseModel):
-    model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
-    slot: int = Field(strict=True, ge=1)
-    objective: str = Field(min_length=1, max_length=300)
-    knowledge: list[str] = Field(min_length=1, max_length=5)
-    activity: str = Field(min_length=1, max_length=400)
-    practice: str = Field(min_length=1, max_length=300)
-    sources: list[SourceLabel] = Field(min_length=1, max_length=4)
-    support_quote: str = Field(min_length=20, max_length=500)
+def _heading(raw):
+    title = _HEADING_PREFIX.sub("", raw.strip().lstrip("#").strip()).rstrip(":").strip()
+    words = normalized_text(title)
+    if (not words or words in _PLACEHOLDERS or len(title) > 90 or len(words.split()) > 10
+            or _SENTENCE.search(title) or re.fullmatch(r"(?:chapter|section|chương|mục)\s+\d+", title, re.I)):
+        return None
+    for name, pattern in _CONCEPTS.items():
+        if words == normalized_text(name) or not re.sub(rf"\b(?:{pattern})\b", "", words).strip():
+            return name
+    return title
 
 
-def build_curriculum(evidence):
+def _concept_mentions(text):
+    text = normalized_text(text)
+    matches = sorted((found.start(), -len(found[0]), name)
+                     for name, pattern in _CONCEPTS.items()
+                     for found in re.finditer(rf"\b(?:{pattern})\b", text))
+    # A generic term inside a more specific alias is not a second concept.
+    end = -1
+    for start, length, name in matches:
+        if start >= end:
+            yield name
+            end = start - length
+
+
+def _titles(item, topic, matches):
+    titles = []
+    first_line, boundary, _ = item["text"].strip().partition("\n")
+    for raw in (item.get("section") or "", first_line if boundary else ""):
+        title = _heading(raw)
+        if title and (title not in _CONCEPTS or matches(title)):
+            titles.append(title)
+            break
+    for sentence in _SENTENCE_BREAK.split(item["text"]):
+        concept = next(_concept_mentions(sentence), None)
+        if concept and matches(concept):
+            titles.append(concept)
+    if not titles and (fallback := _heading(topic)):
+        titles.append(fallback)
+    return list(dict.fromkeys(titles))
+
+
+def build_curriculum(evidence, topic):
+    matches = roadmap_topic_filter(topic)
     grouped = defaultdict(list)
+    titles, seen = {}, set()
     for item in evidence:
-        grouped[topic_key(item)].append(item)
-    catalog, passages = [], []
-    for index, ((_, title), items) in enumerate(grouped.items(), 1):
-        labels = list(range(len(passages) + 1, len(passages) + min(2, len(items)) + 1))
-        # Limit prompt excerpts while keeping their real source coordinates.
-        passages.extend({**item, "text": item["text"][:1800]} for item in items[:2])
-        catalog.append(StudyTopic(id=f"T{index}", title=f"{title} · {items[0]['filename']}", sources=labels))
+        if not matches(item["text"]):
+            continue
+        fingerprint = normalized_text(item["text"])
+        if not fingerprint or fingerprint in seen:
+            continue
+        seen.add(fingerprint)
+        for title in _titles(item, topic, matches):
+            key = normalized_text(title)
+            titles.setdefault(key, title)
+            if len(grouped[key]) < 2:
+                grouped[key].append((fingerprint, item))
+    catalog, passages, labels = [], [], {}
+    for key, items in grouped.items():
+        sources = []
+        for fingerprint, item in items:
+            if fingerprint not in labels:
+                passages.append({**item, "text": item["text"][:_PASSAGE_CHARS]})
+                labels[fingerprint] = len(passages)
+            sources.append(labels[fingerprint])
+        catalog.append(Topic(f"T{len(catalog) + 1}", titles[key], tuple(sources)))
     return catalog, passages
 
 
 def _matching_topics(text):
-    return {name for name, pattern in TOPIC_PATTERNS.items() if re.search(pattern, text, re.I)}
+    return set(_concept_mentions(text))
 
 
 def curriculum_dependencies(catalog, passages):
-    """Infer edges only when a related foundation is present in the material."""
-    tags, evidence = {}, {}
-    for topic in catalog:
-        name = topic.title.split(" · ", 1)[0]
-        matched = _matching_topics(name)
-        tags[topic.id] = {name} if name in TOPIC_PATTERNS else matched
-        evidence[topic.id] = " ".join(passages[label - 1]["text"] for label in topic.sources)
-    graph = {topic.id: [] for topic in catalog}
+    """Infer edges only when a related foundation is present in this material."""
+    tags = {topic.id: ({topic.title} if topic.title in _CONCEPTS else _matching_topics(topic.title))
+            for topic in catalog}
     by_tag = defaultdict(list)
-    for identifier, names in tags.items():
-        for name in names:
-            by_tag[name].append(identifier)
+    graph = {topic.id: [] for topic in catalog}
+    for topic_id, names in tags.items():
+        for name in sorted(names):
+            by_tag[name].append(topic_id)
 
     def reaches(start, target):
         pending, seen = [start], set()
@@ -90,188 +151,50 @@ def curriculum_dependencies(catalog, passages):
         return False
 
     for topic in catalog:
-        text = evidence[topic.id]
-        cited = _matching_topics(text)
-        explicit = set().union(*(_matching_topics(part) for part in _DEPENDENCY.findall(text)))
+        text = " ".join(passages[label - 1]["text"] for label in topic.sources)
+        relevant_sentences = []
+        for sentence in _SENTENCE_BREAK.split(text):
+            subject = next(_concept_mentions(sentence), None)
+            if subject == topic.title or subject not in by_tag:
+                relevant_sentences.append(sentence)
+        cited = _matching_topics(" ".join(relevant_sentences))
+        references = [part for sentence in relevant_sentences for part in _DEPENDENCY.findall(sentence)]
+        explicit = set().union(*(_matching_topics(part) for part in references))
+        # Free-form chapter titles can be prerequisites too.
+        direct = {other.id for other in catalog if other.id != topic.id and any(
+            f" {normalized_text(other.title)} " in f" {normalized_text(part)} " for part in references
+        )}
         related = {parent for tag in tags[topic.id] for parent in FOUNDATIONS.get(tag, ()) if parent in cited}
         for name in sorted(explicit | related):
             parent = next((candidate for candidate in by_tag[name] if not reaches(candidate, topic.id)), None)
             if parent and parent not in graph[topic.id]:
                 graph[topic.id].append(parent)
+        for parent in sorted(direct):
+            if parent not in graph[topic.id] and not reaches(parent, topic.id):
+                graph[topic.id].append(parent)
     return graph
 
 
-def schedule_topics(catalog, passages, *, today, exam_date, budget, level):
-    graph = curriculum_dependencies(catalog, passages)
-    remaining = list(catalog)
-    ordered, ordered_ids = [], set()
-    while remaining:
-        available = [topic for topic in remaining if set(graph[topic.id]) <= ordered_ids]
-        if not available:
-            break
-        topic = available[0]
-        ordered.append(topic)
-        ordered_ids.add(topic.id)
-        remaining.remove(topic)
-
-    days = (exam_date - today).days
-    review_days = min(2, days - 1)
-    learning_days = days - review_days
-    chosen, drafts, completed = [], [], set()
-    current_day = spent = source_tokens = 0
-    for topic in ordered:
-        if len(chosen) >= settings.REVISION_MAX_TOPICS:
-            break
-        if not set(graph[topic.id]) <= completed:
-            continue
-        topic_passages = [passages[label - 1] for label in topic.sources]
-        # UTF-8 bytes plus overhead is a conservative planning estimate for
-        # byte-based tokenizers. Batch prompts send only labels they need.
-        cost = sum(len(item["text"].encode("utf-8")) + 120 for item in topic_passages)
-        if source_tokens + cost > settings.REVISION_SOURCE_TOKEN_BUDGET:
-            continue
-        signal = sum(min(3, len(_COMPLEX.findall(item["text"]))) for item in topic_passages)
-        minutes = min(budget, LEVEL_MINUTES[level] + min(15, 5 * signal))
-        if spent + minutes > budget:
-            current_day += 1
-            spent = 0
-        if current_day >= learning_days:
-            break
-        chosen.append(topic)
+def order_topics(catalog, graph):
+    pending = sorted(catalog, key=lambda topic: bool(_ADVANCED.search(topic.title)) - bool(_BASIC.search(topic.title)))
+    completed, order = set(), []
+    while pending:
+        topic = next(candidate for candidate in pending if set(graph[candidate.id]) <= completed)
+        pending.remove(topic)
         completed.add(topic.id)
-        source_tokens += cost
-        spent += minutes
-        drafts.append((current_day, topic, minutes))
-
-    if not drafts:
-        return [], []
-    last_training_day = drafts[-1][0]
-    slots = []
-    for offset, topic, minutes in drafts:
-        when = today + timedelta(days=offset * (learning_days - 1) // max(1, last_training_day))
-        slots.append(Slot(len(slots) + 1, when, "learn", (topic.id,), minutes, tuple(graph[topic.id])))
-
-    topic_ids = [topic.id for topic in chosen]
-    if review_days:
-        for kind, day in (("review", exam_date - timedelta(days=review_days)),
-                          ("mock_test", exam_date - timedelta(days=1))):
-            available_minutes = budget if review_days == 2 else budget // 2
-            # Split a day into sessions of at most four topics, spread the
-            # selection across the curriculum when the short budget is full.
-            capacity = min(len(topic_ids), 4 * max(1, available_minutes // 10))
-            if capacity == 1:
-                selected = topic_ids[:1]
-            else:
-                selected = [topic_ids[i * (len(topic_ids) - 1) // (capacity - 1)] for i in range(capacity)]
-            groups = [selected[i:i + 4] for i in range(0, len(selected), 4)]
-            duration = min(20, available_minutes // len(groups))
-            for group in groups:
-                slots.append(Slot(len(slots) + 1, day, kind, tuple(group), duration))
-    elif budget - spent >= 10:
-        duration = min(15, (budget - spent) // 2)
-        group = tuple(topic_ids[:4])
-        slots += [
-            Slot(len(slots) + 1, today, "review", group, duration),
-            Slot(len(slots) + 2, today, "mock_test", group, duration),
-        ]
-    return chosen, slots
+        order.append(topic)
+    return order
 
 
-def batch_request(slots, topics, passages, level):
-    selected = {topic for slot in slots for topic in (*slot.topic_ids, *slot.prerequisites)}
-    catalog = [topic.model_dump() for topic in topics if topic.id in selected]
-    identifiers = {
-        label: passages[label - 1]
-        for topic in topics if topic.id in selected for label in topic.sources
-    }
-    assignments = [{"slot": s.id, "kind": s.kind, "topic_ids": s.topic_ids,
-                    "minutes": s.minutes, "prerequisites": s.prerequisites} for s in slots]
-    instructions = (
-        f"Write Vietnamese DSA study activities for level {level}. Return only a JSON array with one "
-        "object per requested slot. Include slot, objective, knowledge (1-5 points), activity, practice, "
-        "sources (JSON numbers, at least one provided label per covered topic) and support_quote "
-        "(copy a contiguous excerpt from one cited passage in its original language, at least 20 characters). "
-        "Use JSON numbers for slot and sources even though passages are labelled [1], [2]. Example shape only: "
-        '[{"slot":1,"objective":"Goal","knowledge":["Concept"],"activity":"Task","practice":"Exercise",'
-        '"sources":[1],"support_quote":"Excerpt from that passage"}]. Keep the objective, activity and practice distinct. '
-        "Use the assigned prerequisites for context. Do not add dates, minutes, topics or prerequisites "
-        "to your response; they are set by the scheduler. "
-        f"Topics: {json.dumps(catalog, ensure_ascii=False)}. Assignments: {json.dumps(assignments)}."
-    )
-    return identifiers, instructions
-
-
-def validate_batch(payload, slots, topics, passages):
-    stage = "revision.task_content"
-    payload = rows(payload, stage, "tasks")
-    responses = [validate_row(TaskContent, normalize_row(raw, integers=("slot",)), stage) for raw in payload]
-    expected = {slot.id for slot in slots}
-    if any(item is None for item in responses):
-        return None
-    by_slot = {item.slot: item for item in responses}
-    if len(by_slot) != len(responses) or set(by_slot) != expected:
-        for slot in sorted(expected - by_slot.keys()):
-            reject(stage, "missing_slot", slot=slot)
-        for slot in sorted(by_slot.keys() - expected):
-            reject(stage, "unassigned_slot", slot=slot)
-        if len(by_slot) != len(responses):
-            reject(stage, "duplicate_slot")
-        return None
-    allowed = {topic.id: set(topic.sources) for topic in topics}
-    for slot in slots:
-        data = by_slot[slot.id]
-        sources = set(data.sources)
-        groups = [allowed[topic] for topic in slot.topic_ids]
-        if len(sources) != len(data.sources) or not sources <= set().union(*groups):
-            reject("revision.citation", "invalid_or_duplicate_labels", slot=slot.id)
-            return None
-        if any(not sources & group for group in groups):
-            reject("revision.citation", "missing_topic_source", slot=slot.id)
-            return None
-        if not any(supports_quote(data.support_quote, passages[label - 1]["text"]) for label in sources):
-            reject("revision.quote", "unsupported_excerpt", slot=slot.id)
-            return None
-        if not all(map(normalized_text, (data.objective, data.activity, data.practice, *data.knowledge))):
-            reject(stage, "empty_learning_content", slot=slot.id)
-            return None
-    logger.info("study_output stage=revision.citation_quote accepted=%d", len(by_slot))
-    return by_slot
-
-
-def assemble_plan(contents, chosen, slots, passages, *, today, exam_date, budget, level):
-    if validate_batch([item.model_dump() for item in contents.values()], slots, chosen, passages) is None:
-        reject("revision.assembly", "batch_revalidation_failed")
-        return None
-    days, completed = defaultdict(list), set()
-    objectives, activities = set(), set()
-    for slot in slots:
-        item = contents[slot.id]
-        obj, activity = normalized_text(item.objective), normalized_text(item.activity)
-        if obj in objectives or activity in activities:
-            reject("revision.assembly", "duplicate_objective_or_activity", slot=slot.id)
-            return None
-        if not today <= slot.date < exam_date:
-            reject("revision.assembly", "outside_study_period", slot=slot.id)
-            return None
-        if not set(slot.prerequisites) <= completed or (slot.kind != "learn" and not set(slot.topic_ids) <= completed):
-            reject("revision.assembly", "prerequisites_not_complete", slot=slot.id)
-            return None
-        objectives.add(obj)
-        activities.add(activity)
-        days[slot.date].append(StudyTask(
-            **item.model_dump(exclude={"slot"}), kind=slot.kind, topic_id=slot.topic_ids[0],
-            covered_topic_ids=list(slot.topic_ids), minutes=slot.minutes, prerequisites=list(slot.prerequisites),
-        ))
-        if slot.kind == "learn":
-            completed.update(slot.topic_ids)
-    if list(days) != sorted(days) or any(sum(task.minutes for task in tasks) > budget for tasks in days.values()):
-        reject("revision.assembly", "invalid_day_order_or_budget")
-        return None
-    if completed != {topic.id for topic in chosen}:
-        reject("revision.assembly", "incomplete_topic_coverage")
-        return None
-    logger.info("study_output stage=revision.assembly accepted=%d days=%d", len(slots), len(days))
-    return StudyPlan(
-        exam_date=exam_date, minutes_per_day=budget, level=level, topics=chosen,
-        days=[StudyDay(date=day, tasks=tasks) for day, tasks in days.items()],
-    )
+def roadmap_batches(ordered, passages):
+    """Use one structured call when the selected sources fit the input budget."""
+    batch, cost = [], 0
+    for topic in ordered[:settings.ROADMAP_MAX_TOPICS]:
+        size = sum(len(passages[label - 1]["text"].encode("utf-8")) + 200 for label in topic.sources)
+        if batch and cost + size > settings.ROADMAP_SOURCE_BUDGET:
+            yield batch
+            batch, cost = [], 0
+        batch.append(topic)
+        cost += size
+    if batch:
+        yield batch

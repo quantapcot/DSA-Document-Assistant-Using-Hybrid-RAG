@@ -32,6 +32,34 @@ def _error_detail(response: requests.Response) -> str:
         return f"HTTP {response.status_code}: {response.text[:200]}"
 
 
+def _auth(token):
+    return {"headers": {"Authorization": f"Bearer {token}"}} if token else {}
+
+
+def _scope(workspace_id, corpus_id, token):
+    if token:
+        return {}
+    return {key: value for key, value in (("workspace_id", workspace_id), ("corpus_id", corpus_id)) if value}
+
+
+def create_session():
+    try:
+        response = requests.post(f"{BACKEND_URL}/api/sessions", timeout=10)
+        return (True, response.json()) if response.ok else (False, {"error": _error_detail(response)})
+    except requests.RequestException:
+        return False, {"error": "Không thể kết nối để tạo phiên học."}
+
+
+def delete_session(token):
+    try:
+        response = requests.delete(f"{BACKEND_URL}/api/sessions/current", timeout=30, **_auth(token))
+        if response.ok:
+            return True, {"pending": response.status_code == 202}
+        return False, {"error": _error_detail(response)}
+    except requests.RequestException:
+        return False, {"error": "Không thể xác nhận đã xóa phiên học."}
+
+
 # ---------------------------------------------------------------------------
 # Health
 # ---------------------------------------------------------------------------
@@ -58,34 +86,26 @@ def ask_question(
     query: str,
     workspace_id: str | None = None,
     corpus_id: str | None = None,
+    *, token=None,
 ) -> tuple[bool, dict[str, Any]]:
-    return _study_request("chat", query, workspace_id, corpus_id)
+    return _study_request("chat", {"query": query}, workspace_id, corpus_id, token)
 
 
-def create_quiz(topic, num_questions=5, workspace_id=None, corpus_id=None):
-    return _study_request("quiz", topic, workspace_id, corpus_id, num_questions=num_questions)
+def create_quiz(topic, num_questions=5, workspace_id=None, corpus_id=None, *, token=None):
+    return _study_request("quiz", {"topic": topic, "num_questions": num_questions}, workspace_id, corpus_id, token)
 
 
-def create_revision(query, workspace_id=None, corpus_id=None, *, exam_date=None,
-                    days_remaining=None, minutes_per_day=45, level="Intermediate", all_topics=False):
-    return _study_request(
-        "revision", query, workspace_id, corpus_id,
-        exam_date=exam_date, days_remaining=days_remaining, minutes_per_day=minutes_per_day,
-        level=level, all_topics=all_topics,
-    )
+def create_roadmap(topic, workspace_id=None, corpus_id=None, *, token=None):
+    return _study_request("roadmap", {"topic": topic}, workspace_id, corpus_id, token)
 
 
-def _study_request(endpoint, query, workspace_id, corpus_id, **fields):
+def _study_request(endpoint, payload, workspace_id, corpus_id, token):
     try:
-        payload: dict[str, Any] = {"topic" if endpoint == "quiz" else "query": query, **fields}
-        if workspace_id:
-            payload["workspace_id"] = workspace_id
-        if corpus_id:
-            payload["corpus_id"] = corpus_id
+        task = "revision" if endpoint == "roadmap" else endpoint
         response = requests.post(
             f"{BACKEND_URL}/api/{endpoint}",
-            json=payload,
-            timeout=(10, _STUDY_TIMEOUTS[endpoint] + _HTTP_TIMEOUT_MARGIN),
+            json={**payload, **_scope(workspace_id, corpus_id, token)},
+            timeout=(10, _STUDY_TIMEOUTS[task] + _HTTP_TIMEOUT_MARGIN), **_auth(token),
         )
         if response.ok:
             data = response.json()
@@ -107,13 +127,15 @@ def upload_pdf(
     file_bytes: bytes,
     workspace_id: str = "default-workspace",
     corpus_id: str = "user-uploads",
+    *, token=None,
 ) -> tuple[bool, dict[str, Any]]:
     try:
         response = requests.post(
             f"{BACKEND_URL}/api/upload",
             files={"file": (filename, file_bytes, "application/octet-stream")},
-            data={"workspace_id": workspace_id, "corpus_id": corpus_id},
+            data=_scope(workspace_id, corpus_id, token),
             timeout=300,  # 5 phút — file lớn cần thời gian embedding
+            **_auth(token),
         )
         if response.ok:
             data = response.json()
@@ -131,13 +153,14 @@ def upload_pdf(
 def list_documents(
     workspace_id: str = "default-workspace",
     corpus_id: str = "user-uploads",
+    *, token=None,
 ) -> tuple[bool, dict[str, Any]]:
     """Lấy danh sách tài liệu đã nạp trong workspace/corpus chỉ định."""
     try:
         response = requests.get(
             f"{BACKEND_URL}/api/documents",
-            params={"workspace_id": workspace_id, "corpus_id": corpus_id},
-            timeout=30,
+            params=_scope(workspace_id, corpus_id, token),
+            timeout=30, **_auth(token),
         )
         if response.ok:
             return True, response.json()
@@ -150,13 +173,14 @@ def delete_document(
     document_id: str,
     workspace_id: str = "default-workspace",
     corpus_id: str = "user-uploads",
+    *, token=None,
 ) -> tuple[bool, dict[str, Any]]:
     """Xóa tài liệu theo document_id khỏi Qdrant và ổ đĩa."""
     try:
         response = requests.delete(
             f"{BACKEND_URL}/api/documents/{document_id}",
-            params={"workspace_id": workspace_id, "corpus_id": corpus_id},
-            timeout=30,
+            params=_scope(workspace_id, corpus_id, token),
+            timeout=30, **_auth(token),
         )
         if response.ok:
             return True, response.json()

@@ -1,32 +1,29 @@
-# Hợp đồng dữ liệu
+# Hợp đồng dữ liệu MVP V2
 
-## Nguồn hiện hành
+`backend/app/schemas/contracts.py` định nghĩa DocumentChunk, Citation, ChatRequest, QuizRequest, RoadmapRequest và các phản hồi. OpenAPI được tạo ở FastAPI `/docs`.
 
-`backend/app/schemas/contracts.py` được giữ nguyên. Các module mới
-phải dùng các class hiện có tại đây, không sao chép sang file schema khác.
+## Phiên tạm
 
-| Class đang có | Mục đích | Trường hiện có |
+| Endpoint | Input | Kết quả |
 | --- | --- | --- |
-| DocumentChunk | B1 bàn giao chunk cho C1 | chunk_id, document_id, filename, page, section, text, metadata |
-| Citation | Bằng chứng gửi về UI | filename, page, section, snippet |
-| ChatRequest | Câu hỏi gửi vào API | query |
-| RAGResponse | Phản hồi hỏi đáp | query, answer, citations, confidence_score, is_safe |
-| GuardrailResult | Kết quả kiểm tra an toàn | is_safe, risk_category, refusal_message |
+| `POST /api/sessions` | Không cần body | 201 với `token`, `workspace_id`, `corpus_id`, `expires_at` (Unix UTC). |
+| `DELETE /api/sessions/current` | `Authorization: Bearer <token>` | 200 khi đã xóa, 202 khi đã thu hồi token và đang chờ dọn. |
+| `POST /api/upload` | Bearer token và multipart `file` | Kết quả lập chỉ mục PDF/DOCX trong phiên. |
+| `GET /api/documents` | Bearer token | Danh sách tài liệu của phiên. |
+| `DELETE /api/documents/{document_id}` | Bearer token | Xóa tài liệu và chunks của tài liệu trong phiên. |
 
-Các mô tả này phản ánh schema hiện có, không cam kết toàn bộ ràng buộc dữ liệu
-đã được kiểm tra bằng validator. Chat vẫn trả giá trị giả lập.
+Token nằm trong HTTP Authorization. Backend tự xác định workspace/corpus, từ chối token sai, hết hạn hoặc bị thu hồi với 401. Nếu yêu cầu kèm ID không khớp, backend trả 403. API scope legacy vẫn dùng `workspace_id` và `corpus_id` cho dữ liệu cũ. Scope phiên tạm luôn yêu cầu bearer token.
 
-## Cần thống nhất trước khi tích hợp
+## Tính năng học
 
-- C1 → C2: cách trả chunk sau retrieval/rerank, điểm số và thứ hạng; phân biệt
-  điểm BM25, vector, fusion và reranker nếu cần phân tích.
-- Upload: mã tài liệu, trạng thái xử lý/lập chỉ mục, thông tin lỗi.
-- Quiz: câu hỏi, phương án, đáp án, giải thích và bằng chứng.
-- Revision: cấu trúc chủ đề/kiến thức, thứ tự và nguồn tham chiếu.
-- Từ chối: phân biệt thiếu bằng chứng, yêu cầu ngoài phạm vi và vi phạm chính sách.
-- Citation: liên kết ổn định tới tài liệu/chunk, quy ước đánh số trang.
-- Đánh giá: câu hỏi, đáp án chuẩn, các nguồn/chunk liên quan dùng tính Recall/MRR.
+Các endpoint dùng bearer token của phiên. Request trong phiên chỉ cần các trường sau:
 
-Đây là các quyết định còn mở, chưa phải schema đã được thêm vào code. A1 điều phối
-thống nhất cùng B1/C1/C2/D2. Chỉ tách `contracts.py` khi được phép cập nhật cả import
-và bên sử dụng; lần sắp xếp này không tách hoặc sửa file đó.
+| Endpoint | Body | Trường chính của phản hồi |
+| --- | --- | --- |
+| `POST /api/chat` | `{"query":"..."}` | `answer`, `citations`, `generation_mode`, `generation_error`. |
+| `POST /api/quiz` | `{"topic":"BFS","num_questions":3}` | `requested_count`, `generated_count`, `questions`. Mỗi câu giữ đáp án, giải thích, nhãn nguồn và `evidence` với tên file, trang, trích đoạn. |
+| `POST /api/roadmap` | `{"topic":"Tree"}` | `items` có `id`, `title`, `objective`, `key_knowledge`, `prerequisites`, `sources`, `support_quote`. Kèm `citations`, `uncovered_topics`, `warnings`. |
+
+`topic` phải có từ 1 đến 150 ký tự sau khi bỏ khoảng trắng ở hai đầu. Roadmap tìm nội dung phù hợp trong phiên hiện tại và trả về các bước ôn từ cơ bản đến nâng cao. Giao diện hiển thị mục tiêu và kiến thức trọng tâm. API giữ các trường nguồn để kiểm tra căn cứ.
+
+`/api/revision` là alias có đánh dấu deprecated của Roadmap. Các trường lịch ngày, thời lượng, trình độ của Revision cũ đã được gỡ. `label` trong bằng chứng là nhãn 1-based. `correct_index` của Quiz là 0-based. `X-Process-Time-MS` ghi thời gian xử lý request.

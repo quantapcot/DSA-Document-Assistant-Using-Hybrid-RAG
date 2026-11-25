@@ -44,7 +44,7 @@ def _show_message(item: dict) -> None:
             )
 
 
-def render_chat_ui(workspace_id="default-workspace", corpus_id="user-uploads") -> None:
+def render_chat_ui(workspace_id="default-workspace", corpus_id="user-uploads", *, token=None) -> None:
     st.header("💬 Trò chuyện & Hỏi đáp môn DSA")
     st.caption("Trợ lý hỏi đáp tài liệu môn Cấu trúc Dữ liệu & Giải thuật dựa trên Hybrid RAG (Track C).")
 
@@ -95,7 +95,7 @@ def render_chat_ui(workspace_id="default-workspace", corpus_id="user-uploads") -
     _show_message(user_item)
 
     with st.spinner("🔍 Đang tìm kiếm bằng chứng qua Hybrid Search & Reranking..."):
-        ok, data = ask_question(prompt_to_send, workspace_id, corpus_id)
+        ok, data = ask_question(prompt_to_send, workspace_id, corpus_id, token=token)
 
     if ok:
         assistant_item = {

@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 from pydantic import SecretStr
 
 from app.core.config import Settings
-from app.generation import llm_client, rag_engine
+from app.generation import llm_client, quiz_generator, rag_engine, revision_generator
 from app.main import app
 from app.orchestration import request_flow
 
@@ -22,12 +22,10 @@ class ProviderError(Exception):
 
 @pytest.fixture
 def configure(monkeypatch):
-    settings = Settings(_env_file=None, LLM_PROVIDER="openai", OPENAI_API_KEY=SecretStr("test-key"),
-                        LLM_BASE_URL="https://fit.invalid/v1", LLM_MODEL="mock-qwen-27b",
+    settings = Settings(_env_file=None, GROQ_API_KEY=SecretStr("test-key"),
                         LLM_CHAT_TIMEOUT=2, LLM_QUIZ_GENERATION_TIMEOUT=3,
                         LLM_QUIZ_VERIFICATION_TIMEOUT=4, LLM_REVISION_TIMEOUT=5)
     monkeypatch.setattr(llm_client, "settings", settings)
-    monkeypatch.setattr(rag_engine, "settings", settings)
     return settings
 
 
@@ -36,7 +34,7 @@ def configure(monkeypatch):
 ])
 def test_timeout_per_task_and_remaining_budget(configure, task, timeout, monkeypatch):
     call = MagicMock(return_value="ok")
-    monkeypatch.setattr(llm_client, "_call_openai", call)
+    monkeypatch.setattr(llm_client, "_call_groq", call)
     assert llm_client.generate_answer("system", "prompt", task=task) == "ok"
     assert call.call_args.kwargs["timeout"] == timeout
     token = llm_client.request_deadline.set(time.monotonic() + 0.8)
@@ -53,13 +51,13 @@ def test_timeout_per_task_and_remaining_budget(configure, task, timeout, monkeyp
     (429, {"error": {"code": "insufficient_quota"}}, "quota_exceeded", 1),
     (429, "daily budget exhausted", "quota_exceeded", 1),
     (401, "invalid API key", "authentication", 1),
-    (503, "upstream error", "provider", 1),
+    (503, "upstream error", "provider", 3),
     (504, "gateway timeout", "timeout", 3),
 ])
 def test_error_classification_and_backoff(configure, status, body, expected, attempts, monkeypatch, caplog):
     call = MagicMock(side_effect=ProviderError(status, body))
     wait = MagicMock()
-    monkeypatch.setattr(llm_client, "_call_openai", call)
+    monkeypatch.setattr(llm_client, "_call_groq", call)
     monkeypatch.setattr(llm_client.time, "sleep", wait)
     with pytest.raises(llm_client.LLMError) as failure:
         llm_client.generate_answer("system", "prompt", raise_errors=True)
@@ -70,7 +68,7 @@ def test_error_classification_and_backoff(configure, status, body, expected, att
 
 def test_expired_deadline_prevents_retry(configure, monkeypatch):
     call = MagicMock(side_effect=ProviderError(429, "rate limit"))
-    monkeypatch.setattr(llm_client, "_call_openai", call)
+    monkeypatch.setattr(llm_client, "_call_groq", call)
     token = llm_client.request_deadline.set(time.monotonic() + 0.5)
     try:
         with pytest.raises(llm_client.LLMError) as failure:
@@ -88,13 +86,51 @@ def test_provider_truncation_and_json_errors(configure, monkeypatch):
     ])
     monkeypatch.setitem(__import__("sys").modules, "openai", SimpleNamespace(OpenAI=sdk))
     with pytest.raises(llm_client.LLMError) as error:
-        rag_engine.generate_study_json("topic", [], "output", task="revision", max_tokens=6000)
+        rag_engine.generate_study_json("topic", [], "output", task="revision", max_tokens=9000)
     assert error.value.code == "truncated_json"
-    assert client.chat.completions.create.call_args.kwargs["max_tokens"] == 4000
+    assert client.chat.completions.create.call_args.kwargs["max_completion_tokens"] == llm_client.STUDY_OUTPUT_LIMIT
     with pytest.raises(llm_client.LLMError) as error:
         monkeypatch.setattr(rag_engine, "generate_answer", lambda *args, **kwargs: "{")
         rag_engine.generate_study_json("topic", [], "output", task="revision")
     assert error.value.code == "invalid_json"
+
+
+@pytest.mark.parametrize("model,key", [
+    (quiz_generator.Candidate, "questions"),
+    (quiz_generator.Verification, "checks"),
+    (quiz_generator.ExplanationCheck, "checks"),
+    (revision_generator.RoadmapDraft, "items"),
+])
+def test_groq_strict_request_schema_has_required_fields(configure, monkeypatch, model, key):
+    sdk = MagicMock()
+    client = sdk.return_value.__enter__.return_value
+    client.chat.completions.create.return_value = SimpleNamespace(choices=[
+        SimpleNamespace(finish_reason="stop", message=SimpleNamespace(content=f'{{"{key}":[]}}')),
+    ])
+    monkeypatch.setitem(__import__("sys").modules, "openai", SimpleNamespace(OpenAI=sdk))
+    assert rag_engine.generate_study_json("topic", [], "output", row_model=model, array_key=key) == {key: []}
+    call = client.chat.completions.create.call_args.kwargs
+    response = call["response_format"]
+    root = response["json_schema"]["schema"]
+    row = root["properties"][key]["items"]
+    assert response["type"] == "json_schema" and response["json_schema"]["strict"] is True
+    assert root["required"] == [key] and root["additionalProperties"] is False
+    assert set(row["required"]) == set(row["properties"]) and row["additionalProperties"] is False
+    assert call["model"] == "openai/gpt-oss-120b" and call["extra_body"] == {"reasoning_effort": "low"}
+    assert sdk.call_args.kwargs["base_url"] == "https://api.groq.com/openai/v1"
+
+
+def test_rate_limit_respects_retry_after_without_long_wait(configure, monkeypatch):
+    error = ProviderError(429, "rate limit")
+    error.response = SimpleNamespace(headers={"retry-after": "25"})
+    mock = MagicMock(side_effect=error)
+    wait = MagicMock()
+    monkeypatch.setattr(llm_client, "_call_groq", mock)
+    monkeypatch.setattr(llm_client.time, "sleep", wait)
+    with pytest.raises(llm_client.LLMError) as failure:
+        llm_client.generate_answer("system", "prompt", raise_errors=True)
+    assert failure.value.code == "rate_limit" and mock.call_count == 1
+    wait.assert_not_called()
 
 
 def test_http_deadline_covers_retrieval_and_matches_health(monkeypatch):

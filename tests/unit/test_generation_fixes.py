@@ -60,7 +60,7 @@ def test_chat_preserves_provider_abstention(monkeypatch, evidence):
 
 def test_extraction_when_key_missing(monkeypatch, evidence):
     monkeypatch.setattr(llm_client, "settings", Settings(
-        _env_file=None, OPENAI_API_KEY=None, GEMINI_API_KEY=None, LLM_PROVIDER="openai",
+        _env_file=None, GROQ_API_KEY=None,
     ))
     chat = rag_engine.build_chat_response("search", evidence, method_used="hybrid_rrf")
     assert chat.generation_mode == "extractive" and len(chat.citations) == 2
@@ -70,11 +70,11 @@ def test_extraction_when_key_missing(monkeypatch, evidence):
 
 def test_gateway_loaded_from_dotenv_and_secret_masked(monkeypatch, tmp_path):
     env = tmp_path / ".env"
-    env.write_text("LLM_PROVIDER=openai\nLLM_BASE_URL=https://school.invalid/v1\nOPENAI_API_KEY=mock-secret\n")
-    for name in ("LLM_PROVIDER", "LLM_BASE_URL", "OPENAI_API_KEY"):
+    env.write_text("GROQ_BASE_URL=https://school.invalid/v1\nGROQ_API_KEY=mock-secret\n")
+    for name in ("GROQ_BASE_URL", "GROQ_API_KEY", "GROQ_MODEL"):
         monkeypatch.delenv(name, raising=False)
     settings = Settings(_env_file=env)
-    assert isinstance(settings.OPENAI_API_KEY, SecretStr)
+    assert isinstance(settings.GROQ_API_KEY, SecretStr)
     assert "mock-secret" not in repr(settings)
     constructor = MagicMock()
     client = constructor.return_value.__enter__.return_value
@@ -90,11 +90,11 @@ def test_gateway_loaded_from_dotenv_and_secret_masked(monkeypatch, tmp_path):
 @pytest.mark.parametrize("failure", [TimeoutError("test-key"), type("RateLimit", (Exception,), {"status_code": 429})("test-key")])
 def test_llm_retries_without_logging_key(monkeypatch, caplog, failure):
     monkeypatch.setattr(llm_client, "settings", Settings(
-        _env_file=None, OPENAI_API_KEY="test-key", LLM_PROVIDER="openai",
+        _env_file=None, GROQ_API_KEY="test-key",
     ))
     call = MagicMock(side_effect=failure)
     sleep = MagicMock()
-    monkeypatch.setattr(llm_client, "_call_openai", call)
+    monkeypatch.setattr(llm_client, "_call_groq", call)
     monkeypatch.setattr(llm_client.time, "sleep", sleep)
     assert llm_client.generate_answer("system", "question") == ""
     assert call.call_count == 3
@@ -113,11 +113,8 @@ def test_quiz_api_uses_mock_llm_and_keeps_scope(monkeypatch, evidence):
     reranked = [{**item, "score": .8} for item in evidence]
     retrieve = MagicMock(side_effect=[RuntimeError("CUDA OOM"), evidence, *([reranked] * 3)])
     monkeypatch.setattr(app.state, "retrieval_engine", SimpleNamespace(retrieve=retrieve), raising=False)
-    monkeypatch.setattr(rag_engine, "settings", SimpleNamespace(
-        LLM_BASE_URL="https://fit.invalid/v1", LLM_MODEL="test-fit-model", OPENAI_API_KEY=SecretStr("test"),
-    ))
     verified = [{"slot": 1, "correct_index": 0, "unique_answer": True, "on_topic": True,
-                 "source": 1, "quote": evidence[0]["text"]}]
+                 "self_contained": True, "vietnamese": True, "source": 1, "quote": evidence[0]["text"]}]
     from app.generation import quiz_generator
     monkeypatch.setattr(quiz_generator, "MAX_PASSES", 2)
     llm = MagicMock(side_effect=[
@@ -128,10 +125,10 @@ def test_quiz_api_uses_mock_llm_and_keeps_scope(monkeypatch, evidence):
     api = TestClient(app)
     quiz = api.post("/api/quiz", json={"topic": "Binary search", "workspace_id": "student"})
     assert quiz.status_code == 200
-    assert quiz.json()["questions"] == [QUIZ]
+    assert quiz.json()["questions"][0] == {**QUIZ, "evidence": quiz.json()["citations"]}
     assert quiz.json()["generation_mode"] == "llm"
     assert [call.kwargs["method"] for call in retrieve.call_args_list] == [
-        "hybrid_rerank", "hybrid_rrf", "hybrid_rerank", "hybrid_rerank", "hybrid_rerank",
+        "hybrid_rerank", "hybrid_rrf", "hybrid_rerank",
     ]
     assert all(call.kwargs["workspace_id"] == "student"
                and call.kwargs["corpus_id"] == "user-uploads" for call in retrieve.call_args_list)
@@ -145,8 +142,8 @@ def test_empty_workspace_never_queries_benchmark(monkeypatch):
     monkeypatch.setattr(rag_engine, "generate_answer", lambda *args, **kwargs: pytest.fail("called model"))
     try:
         api = TestClient(app)
-        for path in ("chat", "quiz", "revision"):
-            body = {"query": "tree", "days_remaining": 5} if path == "revision" else {"query": "tree"}
+        for path in ("chat", "quiz", "roadmap"):
+            body = {"topic": "tree"} if path == "roadmap" else {"query": "tree"}
             response = api.post(f"/api/{path}", json=body)
             assert response.status_code == 200
             data = response.json()
@@ -159,21 +156,6 @@ def test_empty_workspace_never_queries_benchmark(monkeypatch):
         client.close()
 
 
-@pytest.mark.parametrize(("title", "expected"), [
-    ("BFS · Graph.pdf · Trang 3", "BFS"),
-    ("Tr. 3 · Đoạn 1–6 · Graph.pdf", ""),
-    ("Tr. 1–4 · Graph.pdf", ""),
-])
-def test_revision_quiz_prefill_excludes_source_metadata(monkeypatch, title, expected):
-    monkeypatch.syspath_prepend(str(Path(__file__).resolve().parents[2] / "frontend"))
-    from screens import revision_ui
-
-    session = {}
-    monkeypatch.setattr(revision_ui, "st", SimpleNamespace(session_state=session))
-    revision_ui._open_quiz("student", "uploads", title)
-    assert session["quiz_topic:('student', 'uploads')"] == expected
-
-
 def test_streamlit_chat_quiz_and_revision_with_mock_api(monkeypatch):
     from streamlit.testing.v1 import AppTest
 
@@ -184,18 +166,17 @@ def test_streamlit_chat_quiz_and_revision_with_mock_api(monkeypatch):
     citation = {"label": 2, "filename": "graphs.pdf", "page": 9, "snippet": "Use a queue."}
     data = {"generation_mode": "extractive", "citations": [citation], "confidence_score": .56}
     monkeypatch.setattr(api_client, "check_health", lambda: (True, {}))
+    monkeypatch.setattr(api_client, "create_session", lambda: (True, {
+        "workspace_id": "w", "corpus_id": "c", "token": "fixture", "expires_at": float("inf"),
+    }))
     monkeypatch.setattr(chat_ui, "ask_question", lambda *args, **kwargs: (True, {**data, "answer": "Use a queue [2]."}))
     monkeypatch.setattr(quiz_ui, "create_quiz", lambda *args, **kwargs: (True, {**data, "questions": [QUIZ]}))
-    task = {
-        "kind": "learn", "topic_id": "T1", "objective": "Understand BFS",
-        "knowledge": ["Queue"], "activity": "Trace BFS", "practice": "Quiz",
-        "prerequisites": [], "sources": [2], "minutes": 25,
+    item = {
+        "id": "T1", "title": "Graphs", "objective": "Hiểu BFS", "key_knowledge": ["Queue"],
+        "prerequisites": [], "sources": [2], "support_quote": "Use a queue.",
     }
-    plan = {"exam_date": "2026-12-15", "minutes_per_day": 30, "level": "Intermediate",
-            "topics": [{"id": "T1", "title": "Graphs"}],
-            "days": [{"date": "2026-12-12", "tasks": [task]}]}
-    monkeypatch.setattr(revision_ui, "create_revision",
-                        lambda *args, **kwargs: (True, {**data, "answer": "Study plan", "plan": plan}))
+    monkeypatch.setattr(revision_ui, "create_roadmap",
+                        lambda *args, **kwargs: (True, {**data, "answer": "Roadmap", "items": [item]}))
     ui = AppTest.from_file(str(Path(api_client.__file__).with_name("app.py"))).run()
     ui.chat_input[0].set_value("What is a queue?").run()
     assert not ui.exception and any("trích xuất" in item.value for item in ui.warning)
@@ -214,10 +195,11 @@ def test_streamlit_chat_quiz_and_revision_with_mock_api(monkeypatch):
     assert not ui.exception and any("1/1" in item.value for item in ui.success)
     navigation = ui.sidebar.radio[0]
     navigation.set_value(navigation.options[3]).run()
-    ui.text_input[0].set_value("graphs")
-    next(button for button in ui.button if button.label == "Tạo kế hoạch học").click().run()
-    assert not ui.exception and any("2026-12-12" in item.label for item in ui.expander)
-    next(widget for widget in ui.checkbox if "Graphs" in widget.label).check().run()
-    assert any("1/1" in caption.value for caption in ui.caption)
-    next(button for button in ui.button if button.label == "Luyện quiz cho mục này").click().run()
-    assert not ui.exception and next(widget for widget in ui.text_input if widget.label == "Chủ đề").value == "Graphs"
+    button = next(button for button in ui.button if button.label == "Tạo lộ trình ôn tập")
+    button.click().run()
+    assert any("Nhập chủ đề" in message.value for message in ui.warning)
+    next(field for field in ui.text_input if field.label == "Chủ đề muốn ôn tập").set_value("Graph")
+    next(button for button in ui.button if button.label == "Tạo lộ trình ôn tập").click().run()
+    assert not ui.exception and not ui.number_input and not ui.date_input
+    assert ui.subheader[0].value == "Bước 1 — Graphs"
+    assert not ui.checkbox and not any("graphs.pdf" in widget.value for widget in ui.markdown)

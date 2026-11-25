@@ -29,7 +29,7 @@ def decode_json(raw, stage):
     try:
         result = json.loads(candidate)
     except json.JSONDecodeError as exc:
-        # FIT-AI sometimes adds prose or a second fence around the JSON value;
+        # Some model responses wrap the JSON value in prose or a second fence;
         # decode the first complete array/object instead of rejecting the batch.
         result = _first_json_value(candidate)
         if result is not None:
@@ -66,7 +66,7 @@ def rows(payload, stage, *wrappers):
         elif "slot" in payload and not keys:
             payload = [payload]
         elif len(lists) == 1:
-            # FIT-AI sometimes wraps the array under another key, e.g. {"answers": [...]}.
+            # JSON Object Mode can wrap the array under another key, e.g. {"answers": [...]}.
             payload = payload[lists[0]]
         elif payload and all(isinstance(value, dict) for value in payload.values()):
             # ...or keys rows by slot, e.g. {"1": {...}, "2": {...}}.

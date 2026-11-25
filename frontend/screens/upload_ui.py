@@ -18,7 +18,7 @@ MAX_UPLOAD_BYTES = 15 * 1024 * 1024
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _render_upload_tab(workspace_id, corpus_id, cache_key) -> None:
+def _render_upload_tab(workspace_id, corpus_id, cache_key, token) -> None:
     st.subheader("📤 Tải lên tài liệu mới")
     st.caption("Chọn tối đa 10 file PDF hoặc DOCX mỗi lượt, tối đa 15 MB mỗi file.")
 
@@ -35,7 +35,7 @@ def _render_upload_tab(workspace_id, corpus_id, cache_key) -> None:
             st.text(f"{file.name} · {file.size / (1024 * 1024):.2f} MB")
         if any(file.size > MAX_UPLOAD_BYTES for file in files):
             st.warning("File vượt 15 MB sẽ được bỏ qua.")
-        ok, listing = _load_documents(workspace_id, corpus_id, cache_key)
+        ok, listing = _load_documents(workspace_id, corpus_id, cache_key, token)
         names = {file.name for file in files}
         existing = {doc["filename"] for doc in listing.get("documents", [])} if ok else set()
         if duplicates := sorted(names & existing):
@@ -61,7 +61,7 @@ def _render_upload_tab(workspace_id, corpus_id, cache_key) -> None:
                 status, data = "skipped", {"error": "Vượt giới hạn 15 MB."}
             else:
                 try:
-                    ok, data = upload_pdf(file.name, file.getvalue(), workspace_id, corpus_id)
+                    ok, data = upload_pdf(file.name, file.getvalue(), workspace_id, corpus_id, token=token)
                     status = "success" if ok else "failed"
                 except OSError:
                     status, data = "failed", {"error": "Không đọc được file hoặc kết nối bị gián đoạn."}
@@ -95,17 +95,17 @@ def _show_upload_results(results):
             st.warning(f"{name} · Bỏ qua · {data['error']}")
 
 
-def _load_documents(workspace_id, corpus_id, cache_key):
+def _load_documents(workspace_id, corpus_id, cache_key, token):
     if cache_key not in st.session_state:
         with st.spinner("Đang tải danh sách tài liệu…"):
-            result = list_documents(workspace_id=workspace_id, corpus_id=corpus_id)
+            result = list_documents(workspace_id=workspace_id, corpus_id=corpus_id, token=token)
         if result[0]:
             st.session_state[cache_key] = result
         return result
     return st.session_state[cache_key]
 
 
-def _render_management_tab(workspace_id, corpus_id, cache_key) -> None:
+def _render_management_tab(workspace_id, corpus_id, cache_key, token) -> None:
     st.subheader("🗂️ Kho tài liệu đã nạp")
     st.caption("Danh sách tài liệu đang được lập chỉ mục trong hệ thống RAG.")
 
@@ -115,7 +115,7 @@ def _render_management_tab(workspace_id, corpus_id, cache_key) -> None:
     if notice:
         ok, message = notice
         (st.success if ok else st.error)(message)
-    ok, data = _load_documents(workspace_id, corpus_id, cache_key)
+    ok, data = _load_documents(workspace_id, corpus_id, cache_key, token)
 
     if not ok:
         st.error(f"❌ Không thể tải danh sách: {data.get('error', 'Lỗi không xác định')}")
@@ -131,7 +131,7 @@ def _render_management_tab(workspace_id, corpus_id, cache_key) -> None:
         )
         return
 
-    st.success(f"📚 Tổng cộng **{total} tài liệu** trong kho `{workspace_id}/{corpus_id}`.")
+    st.success(f"📚 **{total} tài liệu** trong phiên học hiện tại.")
     st.divider()
 
     # Thanh tìm kiếm nhanh
@@ -178,6 +178,7 @@ def _render_management_tab(workspace_id, corpus_id, cache_key) -> None:
                                 doc["document_id"],
                                 workspace_id=workspace_id,
                                 corpus_id=corpus_id,
+                                token=token,
                             )
                         st.session_state.pop(confirm_key, None)
                         st.session_state.pop(cache_key, None)  # làm mới cache
@@ -205,21 +206,15 @@ def _render_management_tab(workspace_id, corpus_id, cache_key) -> None:
 # Public entry point
 # ---------------------------------------------------------------------------
 
-def render_upload_ui() -> None:
+def render_upload_ui(workspace_id="default-workspace", corpus_id="user-uploads", *, token=None) -> None:
     st.header("📤 Tải lên & Quản lý Tài liệu DSA")
     st.caption("Nạp slide, giáo trình môn Cấu trúc Dữ liệu & Giải thuật vào hệ thống RAG.")
 
-    col_ws, col_corpus = st.columns(2)
-    workspace_id = col_ws.text_input("Workspace ID", value="default-workspace", key="mgmt_ws").strip()
-    corpus_id = col_corpus.text_input("Corpus ID", value="user-uploads", key="mgmt_corpus").strip()
-    if not workspace_id or not corpus_id:
-        st.warning("Nhập Workspace ID và Corpus ID để tiếp tục.")
-        return
     cache_key = f"doc_list_{(workspace_id, corpus_id)!r}"
     tab_upload, tab_manage = st.tabs(["📤 Nạp tài liệu", "🗂️ Quản lý kho"])
 
     with tab_upload:
-        _render_upload_tab(workspace_id, corpus_id, cache_key)
+        _render_upload_tab(workspace_id, corpus_id, cache_key, token)
 
     with tab_manage:
-        _render_management_tab(workspace_id, corpus_id, cache_key)
+        _render_management_tab(workspace_id, corpus_id, cache_key, token)

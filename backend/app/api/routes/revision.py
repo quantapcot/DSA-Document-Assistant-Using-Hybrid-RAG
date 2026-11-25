@@ -1,22 +1,16 @@
-"""Scoped revision API."""
-from fastapi import APIRouter, HTTPException, Request
+"""Study roadmap API for the current scope."""
+from fastapi import APIRouter, Request
 
-from app.generation.revision_generator import generate_revision, resolve_exam_date
-from app.orchestration.request_flow import retrieve_for_exercise, run_in_threadpool, study_request_budget
-from app.schemas.contracts import RevisionRequest, RevisionResponse
+from app.generation.revision_generator import generate_roadmap
+from app.orchestration.request_flow import inventory_for_roadmap, run_in_threadpool, study_request_budget
+from app.schemas.contracts import RoadmapRequest, RoadmapResponse
 
 router = APIRouter()
 
 
-@router.post("/api/revision", response_model=RevisionResponse)
-async def revision_endpoint(body: RevisionRequest, request: Request):
+@router.post("/api/roadmap", response_model=RoadmapResponse)
+@router.post("/api/revision", response_model=RoadmapResponse, deprecated=True)
+async def roadmap_endpoint(request: Request, body: RoadmapRequest):
     async with study_request_budget("revision"):
-        try:
-            today, exam_date = resolve_exam_date(body)
-        except ValueError as exc:
-            raise HTTPException(422, str(exc)) from None
-        query, evidence, empty = await retrieve_for_exercise(body, request, revision=True)
-        return await run_in_threadpool(
-            generate_revision, query, evidence, today=today, exam_date=exam_date,
-            budget=body.minutes_per_day, level=body.level, workspace_empty=empty,
-        )
+        evidence, has_documents = await inventory_for_roadmap(body, request)
+        return await run_in_threadpool(generate_roadmap, body.topic, evidence, has_documents=has_documents)

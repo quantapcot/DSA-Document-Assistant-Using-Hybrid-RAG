@@ -1,32 +1,69 @@
 # dsa_ai_agent/backend/app/main.py
 from contextlib import asynccontextmanager
+from dataclasses import replace
+import asyncio
+import os
 import logging
 from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.api.routes import health, chat, quiz, revision, upload, documents
+from app.api.routes import health, chat, quiz, revision, upload, documents, sessions
 from app.api.middleware.observability import ObservabilityMiddleware
 from app.retrieval.config import RetrievalConfig
 from app.retrieval.hybrid_search import RetrievalEngine
+from app.orchestration.study_sessions import SessionRegistry
 
 logger = logging.getLogger("app.main")
 
 
+async def _sweep_sessions(app, stopping):
+    while not stopping.is_set():
+        try:
+            await asyncio.to_thread(app.state.study_sessions.cleanup, app.state.retrieval_engine)
+        except Exception as exc:
+            logger.warning("Session sweep failed error=%s", type(exc).__name__)
+        try:
+            await asyncio.wait_for(stopping.wait(), timeout=settings.SESSION_CLEANUP_SECONDS)
+        except TimeoutError:
+            continue
+
+
+def load_retrieval_config() -> RetrievalConfig:
+    """Honor a mounted config file and Docker Qdrant environment overrides."""
+    explicit = os.getenv("RETRIEVAL_CONFIG_PATH", "").strip()
+    if explicit:
+        path = Path(explicit).expanduser()
+        if not path.is_file():
+            raise FileNotFoundError(f"RETRIEVAL_CONFIG_PATH does not exist: {path}")
+    else:
+        config_dir = Path(__file__).resolve().parents[2] / "configs"
+        path = next((candidate for candidate in
+                     (config_dir / "retrieval.mvp.yaml", config_dir / "retrieval.example.yaml")
+                     if candidate.is_file()), None)
+    if path is None:
+        logger.warning("Retrieval YAML not found; using environment/defaults")
+        config = RetrievalConfig.from_env()
+    else:
+        logger.info("Loading retrieval config from: %s", path)
+        config = RetrievalConfig.from_yaml(path)
+    overrides = {}
+    if os.getenv("QDRANT_MODE"):
+        overrides["qdrant_mode"] = os.environ["QDRANT_MODE"]
+    if os.getenv("QDRANT_URL"):
+        overrides["qdrant_url"] = os.environ["QDRANT_URL"]
+    if overrides:
+        config = replace(config, **overrides)
+    if config.qdrant_mode == "server" and not config.qdrant_url:
+        raise ValueError("QDRANT_URL must be set when QDRANT_MODE=server")
+    return config
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    logging.basicConfig(level=logging.INFO)
     # Khởi tạo RetrievalEngine Singleton một lần duy nhất khi ứng dụng khởi động
     logger.info("Initializing Retrieval Engine Singleton...")
-    config_path = Path(__file__).resolve().parents[2] / "configs" / "retrieval.mvp.yaml"
-    if not config_path.exists():
-        config_path = Path(__file__).resolve().parents[2] / "configs" / "retrieval.example.yaml"
-
-    if config_path.exists():
-        logger.info(f"Loading retrieval config from: {config_path}")
-        retrieval_config = RetrievalConfig.from_yaml(config_path)
-    else:
-        logger.warning("Config YAML not found; loading retrieval config from env/defaults")
-        retrieval_config = RetrievalConfig.from_env()
+    retrieval_config = load_retrieval_config()
 
     app.state.retrieval_config = retrieval_config
     try:
@@ -54,9 +91,17 @@ async def lifespan(app: FastAPI):
         logger.error(f"Failed to initialize RetrievalEngine at startup: {exc}")
         app.state.retrieval_engine = None
 
-    yield
-
-    logger.info("Application shutdown: cleaning up resources...")
+    stopping = asyncio.Event()
+    sweeper = (asyncio.create_task(_sweep_sessions(app, stopping))
+               if app.state.retrieval_engine is not None else None)
+    try:
+        yield
+    finally:
+        stopping.set()
+        if sweeper is not None:
+            await sweeper
+        if app.state.retrieval_engine is not None:
+            app.state.retrieval_engine.client.close()
 
 
 app = FastAPI(
@@ -65,6 +110,7 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+app.state.study_sessions = SessionRegistry(settings.SESSION_RUNTIME_DIR, settings.SESSION_TTL_SECONDS)
 
 # Cấu hình CORS cho phép Streamlit Frontend (Port 8501) kết nối sang
 app.add_middleware(
@@ -85,6 +131,7 @@ app.include_router(quiz.router)
 app.include_router(revision.router)
 app.include_router(upload.router)
 app.include_router(documents.router)
+app.include_router(sessions.router)
 
 @app.get("/", tags=["Root"])
 async def root():
