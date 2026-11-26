@@ -13,7 +13,7 @@ from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Query, Request
 
-from app.api.routes.upload import get_upload_backend, physical_upload, validate_mutable_scope
+from app.api.routes.upload import get_upload_backend, physical_upload, resolve_upload_dir, validate_mutable_scope
 from app.core.config import settings
 from app.orchestration.debug_chunks import remove_debug_document
 from app.orchestration.study_sessions import SESSION_CORPUS, resolve_scope
@@ -22,7 +22,7 @@ from app.retrieval.indexing import document_filter, delete_document_from_index, 
 logger = logging.getLogger("app.api.routes.documents")
 
 router = APIRouter()
-UPLOAD_DIR = Path(__file__).resolve().parents[4] / "data" / "runtime" / "uploads"
+UPLOAD_DIR = settings.upload_dir
 
 
 # ---------------------------------------------------------------------------
@@ -130,8 +130,8 @@ def delete_document(
     client, config = get_upload_backend(request)
     selector = document_filter(document_id, corpus_id, workspace_id)
     with scope_mutation_lock(config.collection, corpus_id, workspace_id):
-        root = UPLOAD_DIR
-        runtime_root = settings.SESSION_RUNTIME_DIR
+        root = resolve_upload_dir(UPLOAD_DIR)
+        runtime_root = Path(settings.SESSION_RUNTIME_DIR)
         if corpus_id == SESSION_CORPUS:
             registry = request.app.state.study_sessions
             registry.ensure_active(workspace_id)

@@ -23,7 +23,8 @@ Chạy hai terminal riêng:
 ```
 
 ```powershell
-.\.venv\Scripts\python.exe -m streamlit run frontend/app.py
+Set-Location frontend
+..\.venv\Scripts\python.exe -m streamlit run app.py
 ```
 
 Streamlit mở tại [localhost:8501](http://localhost:8501). Tài liệu API ở [localhost:8000/docs](http://localhost:8000/docs). Dùng chung `backend/.env` nếu chạy `docker compose up --build`. Volume `data/runtime` giữ registry phiên và file tạm qua restart backend.

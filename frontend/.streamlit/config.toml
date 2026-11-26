@@ -6,4 +6,8 @@ secondaryBackgroundColor = "#1b1e25"
 textColor = "#f3f4f6"
 
 [server]
-maxUploadSize = 10
+# 16 MiB transport ceiling provides 1 MiB multipart/form-data framing headroom
+# for Streamlit 1.67.0's Starlette Content-Length check; the exact 15 MiB
+# (15,728,640 bytes) limit is enforced by st.file_uploader(max_upload_size=15),
+# upload_ui.MAX_UPLOAD_BYTES, and backend upload.MAX_FILE_SIZE.
+maxUploadSize = 16

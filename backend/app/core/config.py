@@ -34,6 +34,10 @@ class Settings(BaseSettings):
     SESSION_RUNTIME_DIR: Path = _BACKEND_DIR.parent / "data" / "runtime"
     EXPORT_DEBUG_CHUNKS: bool = False
 
+    @property
+    def upload_dir(self) -> Path:
+        return Path(self.SESSION_RUNTIME_DIR) / "uploads"
+
     def request_timeout(self, task: str) -> float:
         return getattr(self, f"{task.upper()}_REQUEST_TIMEOUT")
 
