@@ -20,13 +20,13 @@ MAX_UPLOAD_BYTES = 15 * 1024 * 1024
 
 def _render_upload_tab(workspace_id, corpus_id, cache_key, token) -> None:
     st.subheader("📤 Tải lên tài liệu mới")
-    st.caption("Chọn tối đa 10 file PDF hoặc DOCX mỗi lượt, tối đa 15 MB mỗi file.")
+    st.caption("Chọn tối đa 10 file PDF, DOCX hoặc ảnh (PNG/JPG) mỗi lượt, tối đa 15 MB mỗi file.")
 
     files = st.file_uploader(
-        "Chọn file PDF hoặc DOCX tài liệu DSA",
-        type=["pdf", "docx"],
+        "Chọn file PDF, DOCX hoặc ảnh tài liệu DSA",
+        type=["pdf", "docx", "png", "jpg", "jpeg", "webp", "bmp", "tif", "tiff"],
         accept_multiple_files=True,
-        help="Slide bài giảng, giáo trình, đề cương môn Cấu trúc Dữ liệu & Giải thuật.",
+        help="Slide bài giảng, giáo trình (kể cả PDF scan/ảnh), đề cương môn Cấu trúc Dữ liệu & Giải thuật.",
         key="uploader_file",
     )
     if files:
@@ -149,7 +149,8 @@ def _render_management_tab(workspace_id, corpus_id, cache_key, token) -> None:
         with st.container(border=True):
             col_info, col_meta, col_del = st.columns([4, 3, 1])
             with col_info:
-                file_icon = "📄" if doc.get("file_type") == "pdf" else "📝"
+                ftype = doc.get("file_type")
+                file_icon = "📄" if ftype == "pdf" else ("🖼️" if ftype == "image" else "📝")
                 st.markdown(f"**{file_icon} {doc['filename']}**")
                 st.caption(f"Document ID: `{doc['document_id']}`")
             with col_meta:

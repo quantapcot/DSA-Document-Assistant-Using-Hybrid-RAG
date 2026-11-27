@@ -34,6 +34,17 @@ class Settings(BaseSettings):
     SESSION_RUNTIME_DIR: Path = _BACKEND_DIR.parent / "data" / "runtime"
     EXPORT_DEBUG_CHUNKS: bool = False
 
+    # ── OCR (Scanned PDF & Embedded Images) ──────────────────────────────────
+    OCR_ENABLED: bool = True
+    OCR_LANGUAGES: str = "vi,en"
+    OCR_DPI: int = Field(150, ge=72, le=400)
+    OCR_MIN_PAGE_TEXT_CHARS: int = Field(30, ge=0, le=500)
+    OCR_EXTRACT_EMBEDDED_IMAGES: bool = True
+    OCR_MIN_IMAGE_WIDTH: int = Field(120, ge=16)
+    OCR_MIN_IMAGE_HEIGHT: int = Field(50, ge=16)
+    OCR_MAX_IMAGE_SIDE: int = Field(1400, ge=400, le=4000)
+    OCR_MODEL_DIR: Path | None = None
+
     def request_timeout(self, task: str) -> float:
         return getattr(self, f"{task.upper()}_REQUEST_TIMEOUT")
 

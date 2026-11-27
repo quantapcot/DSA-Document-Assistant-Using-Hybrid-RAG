@@ -1,7 +1,13 @@
 """
-Pipeline: Raw Dataset → Clean → Chunk → DocumentChunk (JSON)
+Pipeline: Raw Dataset → Clean → Adaptive Chunk → DocumentChunk (JSON)
 Chạy từ thư mục gốc dự án:
   python data/corpus/run_pipeline.py
+
+Chiến lược chunking: Structure-aware Adaptive Chunking
+  - ContentType tự động phát hiện (CODE/TABLE/DEFINITION/ALGORITHM/EXPLANATION/DEFAULT)
+  - Chunk size biến thiên theo loại nội dung (400–800 chars)
+  - Overlap cố định 80 chars
+  - Token upper bound: 128 tokens (phù hợp paraphrase-multilingual-MiniLM-L12-v2)
 
 Output: data/corpus/dataset_clean/chunks_all.jsonl
         data/corpus/dataset_clean/pipeline_report.json
@@ -9,6 +15,7 @@ Output: data/corpus/dataset_clean/chunks_all.jsonl
 
 from __future__ import annotations
 
+import argparse
 import json
 import logging
 import sys
@@ -31,8 +38,9 @@ RAW_DIR = ROOT / "data" / "corpus" / "dataset_raw"
 OUT_DIR = ROOT / "data" / "corpus" / "dataset_clean"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-CHUNK_SIZE = 512          # characters
-CHUNK_OVERLAP = 100       # characters
+# Adaptive chunking — kích thước được quyết định tự động trong chunker.py
+# CHUNK_SIZE không còn cứng định ở đây; dùng CHUNK_OVERLAP làm tham số overlap
+CHUNK_OVERLAP = 80        # characters overlap (adaptive strategy)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -70,12 +78,21 @@ def _lang_hint_from_path(path: Path) -> str:
 # ---------------------------------------------------------------------------
 # Pipeline cho 1 file
 # ---------------------------------------------------------------------------
-def process_file(file_path: Path) -> list[dict]:
+def process_file(
+    file_path: Path,
+    *,
+    use_ocr: bool = True,
+    extract_embedded_images: bool = True,
+) -> list[dict]:
     lang_hint = _lang_hint_from_path(file_path)
     filename = file_path.name
 
     log.info(f"  → Parsing   : {filename}")
-    pages = parse_document(file_path)
+    pages = parse_document(
+        file_path,
+        use_ocr=use_ocr,
+        extract_embedded_images=extract_embedded_images,
+    )
 
     if not pages:
         log.warning(f"  ✗ Không lấy được text: {filename}")
@@ -93,12 +110,13 @@ def process_file(file_path: Path) -> list[dict]:
         if not clean:
             continue
 
-        # 3. Chunk
-        chunks = chunk_text(clean, chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP)
+        # 3. Adaptive Chunk (chunk_size ignored — adaptive by content type)
+        chunks = chunk_text(clean, chunk_overlap=CHUNK_OVERLAP)
 
         for ch in chunks:
             text = ch["text"]
             section = ch["section"]
+            content_type = ch.get("content_type", "default")
 
             # 4. QA filter
             if not is_valid_chunk_text(text, min_words=15):
@@ -113,8 +131,9 @@ def process_file(file_path: Path) -> list[dict]:
                 section=section,
                 language=lang,
                 extra_metadata={
-                    "file_type": page.file_type,
-                    "char_count": len(text),
+                    "file_type":    page.file_type,
+                    "char_count":   len(text),
+                    "content_type": content_type,
                 },
             )
             all_chunks.append(doc_chunk.model_dump())
@@ -127,13 +146,28 @@ def process_file(file_path: Path) -> list[dict]:
 # Main
 # ---------------------------------------------------------------------------
 def main() -> None:
+    parser = argparse.ArgumentParser(description="Clean & Adaptive Chunk pipeline cho corpus DSA.")
+    parser.add_argument("--no-ocr", action="store_true", help="Tắt hoàn toàn OCR.")
+    parser.add_argument(
+        "--no-embedded-ocr",
+        action="store_true",
+        help="Chỉ chạy OCR cho trang scan ít text, bỏ qua OCR ảnh nhúng trên trang đã có text.",
+    )
+    args = parser.parse_args()
+
+    use_ocr = not args.no_ocr
+    extract_embedded = use_ocr and (not args.no_embedded_ocr)
+
     t0 = time.time()
 
     # Collect tất cả file PDF + DOCX
     all_files = sorted(
         list(RAW_DIR.rglob("*.pdf")) + list(RAW_DIR.rglob("*.docx"))
     )
-    log.info(f"Tìm thấy {len(all_files)} file trong {RAW_DIR}")
+    log.info(
+        f"Tìm thấy {len(all_files)} file trong {RAW_DIR} "
+        f"(ocr={use_ocr}, embedded_images_ocr={extract_embedded})"
+    )
 
     out_jsonl = OUT_DIR / "chunks_all.jsonl"
     report: dict = {
@@ -141,6 +175,8 @@ def main() -> None:
         "processed": 0,
         "failed": 0,
         "total_chunks": 0,
+        "ocr_enabled": use_ocr,
+        "embedded_images_ocr": extract_embedded,
         "files": [],
     }
 
@@ -148,7 +184,11 @@ def main() -> None:
         for file_path in all_files:
             log.info(f"[{file_path.parent.name}] {file_path.name}")
             try:
-                chunks = process_file(file_path)
+                chunks = process_file(
+                    file_path,
+                    use_ocr=use_ocr,
+                    extract_embedded_images=extract_embedded,
+                )
                 for c in chunks:
                     fout.write(json.dumps(c, ensure_ascii=False) + "\n")
 

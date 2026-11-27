@@ -9,7 +9,7 @@ from zipfile import BadZipFile, is_zipfile
 
 from app.core.config import settings
 from app.document_processing.chunker import chunk_text
-from app.document_processing.document_parser import parse_document
+from app.document_processing.document_parser import IMAGE_EXTENSIONS, parse_document
 from app.document_processing.metadata import build_chunk
 from app.document_processing.text_cleaner import clean_text, is_valid_chunk_text
 from app.retrieval.config import RetrievalConfig
@@ -55,7 +55,7 @@ def process_and_index_document(
     try:
         pages = parse_document(path)
     except (RuntimeError, ValueError, BadZipFile, KeyError) as exc:
-        raise InvalidDocumentError(f"Cannot read '{filename}' as PDF or DOCX.") from exc
+        raise InvalidDocumentError(f"Cannot read '{filename}' as PDF, DOCX, or image.") from exc
     if not pages:
         raise InvalidDocumentError(f"No readable text in '{filename}'.")
 
