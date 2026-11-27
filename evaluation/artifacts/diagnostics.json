@@ -1,0 +1,137 @@
+{
+  "raw_file_count": 54,
+  "raw_aggregate_sha256": "cc44dfdf537710e23e4426dc71d0d28fab8fd09ca8ca7ef180a090979f8903f6",
+  "canonical_fingerprint_sha256": "712f3847a6370156258f18297eabb41a657b4ac109dbe6290b9b50d9a0c6bd1d",
+  "determinism_verified_two_runs": true,
+  "profiles": {
+    "recursive_512_100": {
+      "chunks_jsonl": "D:\\DSA-Document-Assistant-Using-Hybrid-RAG\\evaluation\\artifacts\\recursive_512_100\\chunks.jsonl",
+      "manifest_json": "D:\\DSA-Document-Assistant-Using-Hybrid-RAG\\evaluation\\artifacts\\recursive_512_100\\manifest.json",
+      "corpus_sha256": "e39811da17d99201e4ad26f54c4a53614a087e76e3e0cb6d031a733862af0649",
+      "diagnostics": {
+        "profile_id": "recursive_512_100",
+        "document_count": 54,
+        "document_id_collisions": 0,
+        "chunk_count": 6366,
+        "duplicate_chunk_ids": 0,
+        "missing_provenance_count": 0,
+        "char_length": {
+          "min": 100,
+          "mean": 361.18,
+          "median": 421.0,
+          "p95": 509.0,
+          "max": 512
+        },
+        "embedding_token_length": {
+          "min": 19,
+          "mean": 119.35,
+          "median": 120.0,
+          "p95": 226.0,
+          "max": 398
+        },
+        "embedding_truncation_count": 2750,
+        "embedding_truncation_rate_pct": 43.2,
+        "canonical_total_chars": 1916622,
+        "canonical_retained_chars_union": 1751048,
+        "canonical_source_coverage_pct": 91.36,
+        "repeated_context_source_chars_total": 0,
+        "repeated_context_only_chars_union": 0,
+        "canonical_effective_coverage_pct": 91.36,
+        "dropped_spans_count": 599,
+        "dropped_chars_union": 65564,
+        "dropped_and_uncovered_chars": 65564,
+        "dropped_but_covered_chars": 0,
+        "uncovered_whitespace_chars": 100010,
+        "uncovered_other_meaningful_chars": 0,
+        "coverage_partition_exact_match": true,
+        "dropped_reasons": {
+          "MIN_CHUNK_SIZE_lt_100": 115,
+          "recursive_separator_consumed": 67,
+          "min_words_lt_15": 374,
+          "non_alpha_gt_80pct": 43
+        },
+        "dropped_duplicate_records_in_preprocessing": 0,
+        "overlap_chars_total": 467358,
+        "overlap_redundancy_pct": 20.33,
+        "synthetic_prefix_chars_total": 0,
+        "synthetic_prefix_pct": 0.0,
+        "content_type_distribution": {
+          "recursive_segment": 6366
+        },
+        "forced_split_count": 0,
+        "fallback_reason_counts": {},
+        "repeated_content_groups_same_doc": 24,
+        "repeated_content_groups_cross_doc": 193
+      }
+    },
+    "structure_adaptive": {
+      "chunks_jsonl": "D:\\DSA-Document-Assistant-Using-Hybrid-RAG\\evaluation\\artifacts\\structure_adaptive\\chunks.jsonl",
+      "manifest_json": "D:\\DSA-Document-Assistant-Using-Hybrid-RAG\\evaluation\\artifacts\\structure_adaptive\\manifest.json",
+      "corpus_sha256": "81c568275754e35d7323b1e51fc247b885abc873eef4c5caa5c1ec4daa0b5d63",
+      "diagnostics": {
+        "profile_id": "structure_adaptive",
+        "document_count": 54,
+        "document_id_collisions": 0,
+        "chunk_count": 13390,
+        "duplicate_chunk_ids": 0,
+        "missing_provenance_count": 0,
+        "char_length": {
+          "min": 1,
+          "mean": 141.5,
+          "median": 112.0,
+          "p95": 323.0,
+          "max": 1871
+        },
+        "embedding_token_length": {
+          "min": 3,
+          "mean": 47.87,
+          "median": 39.0,
+          "p95": 111.0,
+          "max": 128
+        },
+        "embedding_truncation_count": 0,
+        "embedding_truncation_rate_pct": 0.0,
+        "canonical_total_chars": 1916622,
+        "canonical_retained_chars_union": 1701085,
+        "canonical_source_coverage_pct": 88.75,
+        "repeated_context_source_chars_total": 13034,
+        "repeated_context_only_chars_union": 3392,
+        "canonical_effective_coverage_pct": 88.93,
+        "dropped_spans_count": 1457,
+        "dropped_chars_union": 37026,
+        "dropped_and_uncovered_chars": 37026,
+        "dropped_but_covered_chars": 0,
+        "uncovered_whitespace_chars": 175119,
+        "uncovered_other_meaningful_chars": 0,
+        "coverage_partition_exact_match": true,
+        "dropped_reasons": {
+          "noise_lt_3_tokens": 1412,
+          "no_bm25_indexable_terms": 45
+        },
+        "dropped_duplicate_records_in_preprocessing": 0,
+        "overlap_chars_total": 20095,
+        "overlap_redundancy_pct": 1.06,
+        "synthetic_prefix_chars_total": 25684,
+        "synthetic_prefix_pct": 1.36,
+        "content_type_distribution": {
+          "algorithm_explanation": 26,
+          "algorithm_steps": 1337,
+          "code_block": 3416,
+          "complexity_analysis": 879,
+          "definition": 171,
+          "formula": 1110,
+          "heading": 310,
+          "narrative": 6034,
+          "pseudocode": 18,
+          "table": 89
+        },
+        "forced_split_count": 2,
+        "fallback_reason_counts": {
+          "oversized_unit_token_span": 2
+        },
+        "repeated_content_groups_same_doc": 173,
+        "repeated_content_groups_cross_doc": 592
+      }
+    }
+  }
+}
