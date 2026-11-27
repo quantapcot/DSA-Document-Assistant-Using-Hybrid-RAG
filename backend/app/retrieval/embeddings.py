@@ -31,24 +31,33 @@ def resolve_device(device: str) -> str:
 
 
 @lru_cache(maxsize=4)
-def _get_model(model_name: str, device: str = "cpu"):
-    """Load and cache a SentenceTransformer, keyed by (model_name, device)."""
-    resolved = resolve_device(device)
+def _load_cached_model(model_name: str, resolved_device: str):
+    """Load and cache a SentenceTransformer keyed by effective (model_name, resolved_device)."""
     try:
         from sentence_transformers import SentenceTransformer
     except ImportError as exc:
         raise RuntimeError("Install sentence-transformers to use dense retrieval") from exc
-    logger.info("Loading embedding model %s on %s", model_name, resolved)
-    model = SentenceTransformer(model_name, device=resolved)
+    logger.info("Loading embedding model %s on %s", model_name, resolved_device)
+    model = SentenceTransformer(model_name, device=resolved_device)
     try:
         actual_device = str(model.device)
     except Exception:
-        actual_device = resolved
+        actual_device = resolved_device
     logger.info(
         "Embedding model %s initialized successfully on actual device: %s",
         model_name, actual_device,
     )
     return model
+
+
+def _get_model(model_name: str, device: str = "cpu"):
+    """Resolve effective device before looking up the LRU cache."""
+    resolved = resolve_device(device)
+    return _load_cached_model(model_name, resolved)
+
+
+_get_model.cache_clear = _load_cached_model.cache_clear
+_get_model.cache_info = _load_cached_model.cache_info
 
 
 def embedding_dimension(model_name=DEFAULT_MODEL, *, device: str = "cpu"):

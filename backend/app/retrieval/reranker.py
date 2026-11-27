@@ -34,17 +34,28 @@ def _resolve_device(device: str) -> str:
     raise ValueError(f"Unknown reranker device '{device}'; choose cpu, cuda, or auto")
 
 
-@lru_cache(maxsize=4)
-def _get_model(name: str, device: str = "cpu", max_length: int = 0):
-    """Load and cache a CrossEncoder, keyed by (name, resolved_device, max_length).
+def _normalize_max_length(max_length):
+    """Normalize max_length to the effective constructor value without new validation.
 
-    ``max_length`` is set at construction time per the ST v5.7 API.
-    A value of 0 or None uses the model's built-in default.
-
-    Raises a clear error on CUDA OOM or model load failure — never
-    silently falls back to CPU.
+    Preserves legacy ``if max_length and max_length > 0:`` semantics:
+    - Values that omit ``max_length`` in ``CrossEncoder`` (``None``, ``0``,
+      negative numbers, ``False``, ``0.0``, ``""``, etc.) normalize to ``None``
+      so semantically equivalent model-default calls share one cache entry.
+    - Values forwarded to ``CrossEncoder`` (positive integers or other truthy
+      values where ``max_length > 0``) are preserved as-is without ``int()``
+      coercion.
+    - Unhashable values raise ``TypeError`` (matching legacy ``@lru_cache``).
+    - Non-comparable truthy values (e.g. ``"512"``) naturally raise ``TypeError``.
     """
-    resolved = _resolve_device(device)
+    hash(max_length)
+    if max_length and max_length > 0:
+        return max_length
+    return None
+
+
+@lru_cache(maxsize=4, typed=True)
+def _load_cached_model(name: str, resolved_device: str, max_length):
+    """Load and cache a CrossEncoder keyed by effective (name, resolved_device, max_length)."""
     try:
         from sentence_transformers import CrossEncoder
     except ImportError as exc:
@@ -52,20 +63,20 @@ def _get_model(name: str, device: str = "cpu", max_length: int = 0):
             "Install sentence-transformers to use reranking"
         ) from exc
 
-    init_kwargs: dict = {"device": resolved}
-    if max_length and max_length > 0:
+    init_kwargs: dict = {"device": resolved_device}
+    if max_length is not None:
         init_kwargs["max_length"] = max_length
 
     try:
         logger.info(
             "Loading reranker model %s on %s (max_length=%s)",
-            name, resolved, max_length or "default",
+            name, resolved_device, max_length or "default",
         )
         model = CrossEncoder(name, **init_kwargs)
         try:
             actual_device = str(next(model.model.parameters()).device)
         except Exception:
-            actual_device = resolved
+            actual_device = resolved_device
         logger.info(
             "Reranker model %s initialized successfully on actual device: %s",
             name, actual_device,
@@ -75,10 +86,28 @@ def _get_model(name: str, device: str = "cpu", max_length: int = 0):
         msg = str(exc)
         if "CUDA" in msg or "out of memory" in msg.lower():
             raise RuntimeError(
-                f"Failed to load reranker '{name}' on {resolved}: {msg}. "
+                f"Failed to load reranker '{name}' on {resolved_device}: {msg}. "
                 f"Try setting reranker_device to 'cpu' or freeing GPU memory."
             ) from exc
         raise
+
+
+def _get_model(name: str, device: str = "cpu", max_length: int | None = 0):
+    """Resolve effective device and max_length before looking up the LRU cache.
+
+    ``max_length`` is set at construction time per the ST v5.7 API.
+    A value of 0 or None uses the model's built-in default.
+
+    Raises a clear error on CUDA OOM or model load failure — never
+    silently falls back to CPU.
+    """
+    resolved = _resolve_device(device)
+    effective_max_length = _normalize_max_length(max_length)
+    return _load_cached_model(name, resolved, effective_max_length)
+
+
+_get_model.cache_clear = _load_cached_model.cache_clear
+_get_model.cache_info = _load_cached_model.cache_info
 
 
 def rerank(query, candidates, *, model_name=None, scorer=None, top_k=5,
