@@ -10,6 +10,7 @@ from uuid import uuid4
 from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
 from fastapi.concurrency import run_in_threadpool
 
+from app.document_processing.document_parser import IMAGE_EXTENSIONS
 from app.orchestration.ingestion_flow import InvalidDocumentError, process_and_index_document, upload_document_id
 from app.orchestration.study_sessions import SESSION_CORPUS, resolve_scope
 from app.retrieval.indexing import scope_mutation_lock
@@ -20,6 +21,7 @@ logger = logging.getLogger("app.api.routes.upload")
 router = APIRouter()
 UPLOAD_DIR = Path(__file__).resolve().parents[4] / "data" / "runtime" / "uploads"
 MAX_FILE_SIZE = 15 * 1024 * 1024  # 15 MB
+SUPPORTED_UPLOAD_EXTENSIONS = {".pdf", ".docx", *IMAGE_EXTENSIONS}
 
 
 
@@ -60,7 +62,7 @@ def physical_upload(root, corpus_id, workspace_id, payload):
     revision = metadata.get("upload_revision")
     suffix = Path(filename).suffix.lower()
     if (isinstance(revision, str) and re.fullmatch(r"[0-9a-f]{32}", revision)
-            and suffix in {".pdf", ".docx"}):
+            and suffix in SUPPORTED_UPLOAD_EXTENSIONS):
         path = _upload_path(root, corpus_id, workspace_id, payload["document_id"], revision, suffix)
     elif _legacy_uuid(payload):
         path = root / filename
@@ -140,8 +142,8 @@ async def upload_document(
     validate_mutable_scope(corpus_id, workspace_id)
     filename = Path((file.filename or "").replace("\\", "/")).name
     suffix = Path(filename).suffix.lower()
-    if suffix not in (".pdf", ".docx"):
-        raise HTTPException(status_code=400, detail="Only PDF and DOCX files are supported.")
+    if suffix not in SUPPORTED_UPLOAD_EXTENSIONS:
+        raise HTTPException(status_code=400, detail="Only PDF, DOCX, and image files are supported.")
     content = await file.read(MAX_FILE_SIZE + 1)
     if not content:
         raise HTTPException(status_code=400, detail="The file is empty.")
