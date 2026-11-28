@@ -1,0 +1,585 @@
+{
+  "review_model": "antigravity_agent_pro",
+  "human_validated": false,
+  "reviewed_count": 40,
+  "reviews": [
+    {
+      "evidence_verified": true,
+      "factual_correct": true,
+      "issues": [
+        "question_type mismatch: labeled 'definition', but the query asks how a Dynamic Array stores data in memory and how capacity expansion works, which fits 'concept_explanation'.",
+        "KU1 is marked 'alternative', yet Q001_E02 does not mention O(1) access time (only Q001_E01 does, and Q001_E01 refers to static arrays rather than dynamic arrays).",
+        "Minor completeness gap: neither the evidence nor the reference answer describes the underlying reallocation steps (allocating a larger block, copying elements, freeing old memory) implied by asking how the mechanism works."
+      ],
+      "ku_complete": true,
+      "query_id": "Q001",
+      "recommended_question_type": "concept_explanation",
+      "reference_answer_supported": true,
+      "review_summary": "Factually accurate and largely grounded in Q001_E01 and Q001_E03, though 'concept_explanation' fits better than 'definition' and KU1's 'alternative' tag is imprecise because Q001_E02 omits O(1) access."
+    },
+    {
+      "evidence_verified": false,
+      "factual_correct": true,
+      "issues": [
+        "Unsupported claim in RefAnswer and KU1: both state that arrays store elements contiguously ('Mảng lưu trữ liền kề'), which is absent from Q002_E01.",
+        "KU1 is marked 'single' using only Q002_E01, missing the contiguous-memory evidence snippet for arrays (should be 'composite' with that evidence included).",
+        "Minor factual nuance: O(1) deletion at an arbitrary position given a pointer to that node directly applies to doubly linked lists; singly linked lists require a pointer to the predecessor node (or swapping with the next node, which fails at the tail)."
+      ],
+      "ku_complete": true,
+      "query_id": "Q002",
+      "recommended_question_type": "comparison",
+      "reference_answer_supported": false,
+      "review_summary": "Comparison framing and KUs cover all asked dimensions, but Q002_E01 omits the array contiguous-memory fact asserted in both KU1 and RefAnswer."
+    },
+    {
+      "evidence_verified": true,
+      "factual_correct": true,
+      "issues": [
+        "Unsupported additions in RefAnswer: 'trên Heap' (on the Heap) and 'để tránh rò rỉ bộ nhớ' (to avoid memory leaks) are not stated in Q003_E01 or Q003_E02 (and 'trỏ tới nút kế tiếp' / singly linked list context are only implicit in E01).",
+        "Minor omission: RefAnswer and KU1 omit the constructor parameter 'int val' and 'data = val' assignment shown in Q003_E01."
+      ],
+      "ku_complete": true,
+      "query_id": "Q003",
+      "recommended_question_type": "code_interpretation",
+      "reference_answer_supported": false,
+      "review_summary": "Factually correct C++ Node explanation matching the code-grounded 'code_interpretation' type, but RefAnswer injects Heap and memory-leak details not present in the provided evidence."
+    },
+    {
+      "evidence_verified": true,
+      "factual_correct": true,
+      "issues": [],
+      "ku_complete": true,
+      "query_id": "Q004",
+      "recommended_question_type": "concept_explanation",
+      "reference_answer_supported": true,
+      "review_summary": "Clean item: factually accurate, fully supported by Q004_E01 and Q004_E02, with complete KUs and an appropriate 'concept_explanation' type."
+    },
+    {
+      "evidence_verified": false,
+      "factual_correct": true,
+      "issues": [
+        "Query-evidence mismatch: the query asks why shrinking immediately when fill ratio drops to r = 1/2 hurts alternating insertions and deletions, but Q005_E01 only mentions resizing to r = 1 ('if very empty, resize to r = 1'), and RefAnswer/KU1 do not address the r = 1/2 trigger.",
+        "Unsupported claims in RefAnswer: Theta(n) reallocation cost, maintaining Theta(n) space, and amortized Theta(1)/O(1) time per dynamic end operation are not stated in Q005_E01-E03 (E02 only notes Theta(n) cheap operations before the next expensive resize).",
+        "Evidence-KU mismatch: Q005_E03 ('Want size of data structure to stay Θ(n)') is a pre-solution motivation bullet, not evidence that the r_d/r_i policy achieves Theta(n) space and amortized O(1) append/pop (KU3).",
+        "KU/RefAnswer incompleteness: KU1 does not explain the causal thrashing mechanism or r = 1/2 boundary, and KU2/RefAnswer omit the upper bound r_i < 1 needed alongside r_d < r_i so the resized array is not immediately full."
+      ],
+      "ku_complete": false,
+      "query_id": "Q005",
+      "recommended_question_type": "time_complexity",
+      "reference_answer_supported": false,
+      "review_summary": "Question type 'time_complexity' is appropriate for the amortized shrinking-policy analysis, but the evidence snippets are incomplete lecture bullets that lack the query's r = 1/2 trigger, the amortized O(1) derivation, and proof of Theta(n) space (E03 is misattributed)."
+    },
+    {
+      "evidence_verified": true,
+      "factual_correct": true,
+      "issues": [
+        "Unsupported claim in RefAnswer: '(cùng các hàm phụ trợ first(), last(), size(), isEmpty(), create())' is absent from Q006_E01, Q006_E02, and the KUs.",
+        "Evidence OCR/formatting defects: Q006_E01 contains missing spaces ('dữliệu', 'hỗtrợphép bổsung và loại bỏởcảđầu') and Q006_E02 has irregular indentation and a trailing colon.",
+        "Minor query gap: the query asks how a Deque differs from an ordinary queue, which RefAnswer and KU1 only imply via contrast ('nhưng') without stating an ordinary queue's one-ended restriction."
+      ],
+      "ku_complete": true,
+      "query_id": "Q006",
+      "recommended_question_type": "definition",
+      "reference_answer_supported": false,
+      "review_summary": "Definition and basic operations match the 'definition' type and KUs, but RefAnswer adds five auxiliary methods not supported by the evidence and Q006_E01 has PDF spacing artifacts."
+    },
+    {
+      "evidence_verified": false,
+      "factual_correct": false,
+      "issues": [
+        "Pseudocode interpretation error (factual & evidence mismatch): in Q007_E02, step '3. Call Dispose(p) ;' is at the outer level after 'if ... else ...', so it frees the dequeued node in both the 1-element and >1-element cases; KU2 and RefAnswer incorrectly attach Dispose(p) only to the 'else' branch, leaking memory when dequeuing the single remaining element.",
+        "Unsupported claims in RefAnswer: procedure signatures ENQUEUE(F, R, X) and DEQUEUE(F, R, Y), initialization (INFO(p):=X, LINK(p):=Null), and front extraction (p := F, Y := INFO(p)) do not appear in Q007_E01 or Q007_E02.",
+        "Truncated evidence: Q007_E01 and Q007_E02 omit procedure names and step 1, so they do not independently verify ENQUEUE/DEQUEUE attribution.",
+        "Incomplete coverage: neither evidence nor RefAnswer/KU2 addresses how DEQUEUE handles an empty queue (underflow)."
+      ],
+      "ku_complete": false,
+      "query_id": "Q007",
+      "recommended_question_type": "pseudocode_interpretation",
+      "reference_answer_supported": false,
+      "review_summary": "Question type 'pseudocode_interpretation' fits, but RefAnswer and KU2 misplace Dispose(p) solely inside the else branch (causing a single-element memory leak), RefAnswer adds ungrounded setup/signature lines from truncated snippets, and DEQUEUE empty-list handling is missing."
+    },
+    {
+      "evidence_verified": true,
+      "factual_correct": true,
+      "issues": [
+        "Artificial dual-part structure: combines two unrelated topics—Python FIFO Queue (collections.deque vs list) and C++ std::priority_queue Min-Heap configuration (Priority Queue/Heap)—which lack a shared reasoning link and should be split into two separate questions (e.g., time_complexity/comparison for Python Queue and code_interpretation for C++ priority_queue).",
+        "Incomplete KU and RefAnswer: the query explicitly asks why Python should use collections.deque instead of list ('thay vì list'), but Q008_E01, KU1, and RefAnswer never mention list or that list.pop(0) takes O(n).",
+        "Unsupported claims in RefAnswer: 'top() trong O(1)' and 'pop() trong O(log n)' are absent from Q008_E02 (and Q008_E01 does not show the 'collections.' module prefix).",
+        "Minor precision notes: claiming Python Queue 'phải dùng' (must use) collections.deque ignores queue.Queue, and the C++ declaration shown is specialized for int."
+      ],
+      "ku_complete": false,
+      "query_id": "Q008",
+      "recommended_question_type": "code_interpretation",
+      "reference_answer_supported": false,
+      "review_summary": "Poorly constructed dual-part question stitching unrelated Python Queue and C++ Min-Heap code snippets; it leaves the 'instead of list' comparison completely unanswered and hallucinates top()/pop() complexities not in Q008_E02."
+    },
+    {
+      "evidence_verified": true,
+      "factual_correct": true,
+      "issues": [],
+      "ku_complete": true,
+      "query_id": "Q009",
+      "recommended_question_type": "comparison",
+      "reference_answer_supported": true,
+      "review_summary": "Clean item: factually accurate, well-grounded in Q009_E01 and Q009_E02, with complete KUs and an accurate 'comparison' type."
+    },
+    {
+      "evidence_verified": true,
+      "factual_correct": true,
+      "issues": [],
+      "ku_complete": true,
+      "query_id": "Q010",
+      "recommended_question_type": "application_scenario",
+      "reference_answer_supported": true,
+      "review_summary": "Clean item: factually accurate, directly supported by Q010_E01 and Q010_E02, with complete KUs and an appropriate 'application_scenario' type."
+    },
+    {
+      "evidence_verified": true,
+      "factual_correct": true,
+      "issues": [
+        "Q011_E01 and Q011_E03 state 'cho ra mảng tăng dần' without explicitly including the 'BST' qualifier (which is supplied by the query context rather than the standalone snippet).",
+        "RefAnswer adds the parenthetical abbreviation 'LNR', which does not appear in Q011_E01–Q011_E03."
+      ],
+      "ku_complete": true,
+      "query_id": "Q011",
+      "recommended_question_type": "definition",
+      "reference_answer_supported": true,
+      "review_summary": "Factually accurate definition of Pre-order, In-order, and Post-order traversals and the BST sorted-order property. KUs are complete and question_type 'definition' is appropriate; only minor gaps are the missing 'BST' context inside Q011_E01/Q011_E03 and the unstated 'LNR' alias in RefAnswer."
+    },
+    {
+      "evidence_verified": false,
+      "factual_correct": true,
+      "issues": [
+        "Q012_E03 is truncated after the first two cases (empty tree and 1-node tree) and omits inserting into a node with 2 children (required by KU3) as well as splitting a node with 3 children (claimed in RefAnswer).",
+        "RefAnswer references 'TYPE(p) = 1' for internal nodes, which does not appear in Q012_E01–Q012_E03.",
+        "Q012_E01 does not show the loop header or fallback behavior when RPTR(p) is NULL and X > MDATA(p).",
+        "KU3 omits the 3-child node-splitting case present in RefAnswer, and KU1 omits TYPE(p) = 1."
+      ],
+      "ku_complete": false,
+      "query_id": "Q012",
+      "recommended_question_type": "multi_evidence_reasoning",
+      "reference_answer_supported": false,
+      "review_summary": "Factually consistent with leaf-storing 2-3 tree pseudocode and insertion rules, and 'multi_evidence_reasoning' fits. However, Q012_E03 is severely incomplete (omitting the 2-children and 3-children/splitting insertion cases), Q012_E01 lacks 'TYPE(p) = 1' and the RPTR=NULL fallback, and KU3 misses the 3-child split case included in RefAnswer."
+    },
+    {
+      "evidence_verified": true,
+      "factual_correct": true,
+      "issues": [
+        "Misclassified question_type: labeled 'application_scenario', whereas the query asks why Heap is array-implemented and how level-order array indexing works; should be 'concept_explanation'.",
+        "Minor PDF/OCR spacing artifacts in Q013_E02 (e.g., 'sốcác', 'từtrái', 'sối' for 'số i', and 'z' bullet characters)."
+      ],
+      "ku_complete": true,
+      "query_id": "Q013",
+      "recommended_question_type": "concept_explanation",
+      "reference_answer_supported": true,
+      "review_summary": "Factually accurate and fully grounded by Q013_E01 and Q013_E02 with complete KUs, apart from minor PDF spacing glitches in Q013_E02. The main defect is question_type='application_scenario', which should be 'concept_explanation'."
+    },
+    {
+      "evidence_verified": true,
+      "factual_correct": true,
+      "issues": [
+        "Minor: Q014_E02 omits the closing braces of the else branch and function, and RefAnswer's concluding phrase 'để khôi phục tính chất cây Đỏ-Đen' is standard domain rationale rather than explicitly printed in the C snippet."
+      ],
+      "ku_complete": true,
+      "query_id": "Q014",
+      "recommended_question_type": "code_interpretation",
+      "reference_answer_supported": true,
+      "review_summary": "Factually accurate C code interpretation of Red-Black tree insert_case5. Q014_E01 and Q014_E02 directly support the recoloring and single-rotation steps, KUs are complete, and question_type 'code_interpretation' is accurate."
+    },
+    {
+      "evidence_verified": false,
+      "factual_correct": true,
+      "issues": [
+        "Unstated MIT 6.006 convention: 'traversal order' refers specifically to in-order traversal; neither the query, RefAnswer, KUs, nor evidence clarifies 'in-order', making 'in a binary tree' ambiguous in isolation.",
+        "RefAnswer cites 'O(h) time' for both operations and 'down to a leaf' (the base case), neither of which appears in Q015_E01 or Q015_E02; '(leftmost)' and 'walk upward' are also implicit rather than verbatim in Q015_E01.",
+        "Q015_E02 omits the leaf base case and O(h) runtime explicitly claimed in KU2.",
+        "Borderline question_type: 'concept_explanation' is acceptable for explaining how traversal-order operations preserve order, though 'algorithm_steps' could also fit given the procedural case breakdown."
+      ],
+      "ku_complete": true,
+      "query_id": "Q015",
+      "recommended_question_type": "concept_explanation",
+      "reference_answer_supported": false,
+      "review_summary": "Under MIT 6.006's convention ('traversal order' = in-order traversal), both the successor and non-leaf deletion procedures are factually correct, and KU1/KU2 cover both parts of the query. However, the evidence lacks the 'in-order' clarification, the leaf base case, and the O(h) complexity bounds asserted by KU2 and RefAnswer."
+    },
+    {
+      "evidence_verified": true,
+      "factual_correct": true,
+      "issues": [
+        "Minor: Q016_E03 omits the preceding condition header stating skew(B) = 2 and that F is B's right child (relies on query context).",
+        "Minor PDF formatting artifacts in Q016_E02: flattened exponents '2Ω(h)' and '2h/2' for 2^{\\Omega(h)} and 2^{h/2}, plus ligature 'ﬁ'."
+      ],
+      "ku_complete": true,
+      "query_id": "Q016",
+      "recommended_question_type": "multi_evidence_reasoning",
+      "reference_answer_supported": true,
+      "review_summary": "Factually accurate AVL skew definition, O(log n) minimum-node proof, and skew=+2 rotation cases. All claims in RefAnswer and KUs are supported by Q016_E01–Q016_E04 (with the skew(B)=2 premise from the query), and 'multi_evidence_reasoning' is appropriate."
+    },
+    {
+      "evidence_verified": true,
+      "factual_correct": true,
+      "issues": [
+        "KU1 is incomplete relative to RefAnswer and Q017_E01–Q017_E02: it omits that row/column k sum equals vertex degree (undirected, Q017_E01) and that matrix sum equals edge count (directed, Q017_E02).",
+        "Q017_E01, Q017_E02, and Q017_E03 omit section headers naming undirected graphs, directed graphs, and adjacency lists.",
+        "Minor: adjacency-matrix degree and edge-count sums assume simple unweighted graphs without self-loops, and KU2's 'tối ưu cho BFS/DFS' slightly overstates Q017_E03's 'hữu ích'."
+      ],
+      "ku_complete": false,
+      "query_id": "Q017",
+      "recommended_question_type": "comparison",
+      "reference_answer_supported": true,
+      "review_summary": "Factually accurate comparison of undirected vs directed adjacency matrices and adjacency list advantages, well grounded in Q017_E01–Q017_E03 and properly typed as 'comparison'. However, KU1 drops two symmetrical comparison properties present in RefAnswer and evidence, and the evidence chunks lack their section headers."
+    },
+    {
+      "evidence_verified": false,
+      "factual_correct": true,
+      "issues": [
+        "Q018_E02 is truncated right after 'Xây dựng mảng bổ trợ fup[v]:', missing the fup[v] recurrence formula required by KU2 and RefAnswer.",
+        "Q018_E01 only defines a bridge and omits the 'offline' and 'O(n + m)' complexity claimed in KU1 and RefAnswer.",
+        "Q018_E03 only contains 'if (fup[to] > tin[v]) IS_BRIDGE(v,to);' and does not substantiate RefAnswer's 'trong cây DFS', 'khi và chỉ khi', or the no-back-edge reachability explanation.",
+        "KUs (and RefAnswer) are incomplete for an algorithm_steps question: they omit the DFS traversal mechanics (skipping the direct parent edge, updating fup[v] for back-edges vs tree-edges, and handling disconnected components) and leave p and to undefined in KU2."
+      ],
+      "ku_complete": false,
+      "query_id": "Q018",
+      "recommended_question_type": "algorithm_steps",
+      "reference_answer_supported": false,
+      "review_summary": "Statements in RefAnswer are factually accurate for offline DFS bridge finding in simple undirected graphs, and 'algorithm_steps' fits the query. However, the evidence is severely truncated (Q018_E02 ends before the fup[v] formula; Q018_E01 lacks O(n+m)), leaving key RefAnswer and KU claims unsupported, and the KUs omit essential DFS step mechanics such as ignoring the parent edge."
+    },
+    {
+      "evidence_verified": true,
+      "factual_correct": true,
+      "issues": [
+        "Minor: neither query, RefAnswer, nor evidence explicitly specifies that this Goodrich & Tamassia DFS(G, v) pseudocode (using incidentEdges/opposite and only DISCOVERY/BACK labels) is for undirected graphs."
+      ],
+      "ku_complete": true,
+      "query_id": "Q019",
+      "recommended_question_type": "pseudocode_interpretation",
+      "reference_answer_supported": true,
+      "review_summary": "Clean, factually accurate pseudocode interpretation of DFS(G, v) edge labeling (DISCOVERY vs BACK). Q019_E01 and Q019_E02 directly support RefAnswer and KUs, and 'pseudocode_interpretation' is exact."
+    },
+    {
+      "evidence_verified": false,
+      "factual_correct": true,
+      "issues": [
+        "Q020_E01–Q020_E03 omit the edge-relaxation loop (updating d[to] and pushing make_pair(-d[to], to) without deleting stale entries) as well as the neighbor-traversal loop and any explanatory text for why cur_d > d[v] occurs.",
+        "RefAnswer cites unshown code elements ('lưu khoảng cách âm', 'mỗi lần tối ưu d[to] đều đẩy một bản sao mới... mà không xóa bản cũ', 'trước khi duyệt các cạnh kề của v') that are not evidenced in Q020_E01–Q020_E03.",
+        "Minor: KU1 does not explicitly mention storing negated distances on push, and KU2 states what cur_d > d[v] skips without explicitly explaining the lazy-deletion cause of duplicate entries."
+      ],
+      "ku_complete": true,
+      "query_id": "Q020",
+      "recommended_question_type": "code_interpretation",
+      "reference_answer_supported": false,
+      "review_summary": "Factually accurate C++ Dijkstra explanation and appropriately typed as 'code_interpretation', with KUs addressing both parts of the query. However, Q020_E01–Q020_E03 omit the relaxation loop pushing -d[to] duplicates and any prose explaining lazy deletion, leaving RefAnswer's references to d[to] and duplicate pushes unsupported by the provided evidence."
+    },
+    {
+      "evidence_verified": false,
+      "factual_correct": true,
+      "issues": [
+        "Q021_E02 is truncated mid-line at '- Set of ', cutting off the Shortest Paths Tree concept and the O(|V|) space/size bound needed to verify KU2 and RefAnswer.",
+        "Q021_E02 states Omega(|V|^2) time for returning every path explicitly, whereas RefAnswer writes Omega(|V|^2) time/space (implicitly true from output size, but 'space' is not explicit in Q021_E02)."
+      ],
+      "ku_complete": true,
+      "query_id": "Q021",
+      "recommended_question_type": "space_complexity",
+      "reference_answer_supported": false,
+      "review_summary": "Factually accurate and question_type 'space_complexity' fits, with complete KUs; however, Q021_E02 is truncated at '- Set of ' before stating Shortest Paths Tree and O(|V|) space, leaving KU2 and part of RefAnswer unverified by the excerpt."
+    },
+    {
+      "evidence_verified": false,
+      "factual_correct": true,
+      "issues": [
+        "Q022_E01 omits the inter-level edge construction ((v_{k-1}, v_k) with weight 0 and (u_{k-1}, v_k) with weight w(u,v)), omits 'DAG Relaxation' from s_0 (present in KU1 and RefAnswer), omits graph name G', and omits d(s, v) = delta(s_0, v_{|V|-1}).",
+        "Q022_E02 contains a source-note notation error writing delta_{|V|}(s, v) = -infinity instead of delta(s, v) = -infinity (RefAnswer avoids repeating this typo).",
+        "KU1 summarizes graph duplication and DAG Relaxation at a high level without capturing the edge-duplication rules or reading finite shortest paths from level |V|-1, which RefAnswer includes to answer how shortest paths are computed."
+      ],
+      "ku_complete": false,
+      "query_id": "Q022",
+      "recommended_question_type": "algorithm_steps",
+      "reference_answer_supported": false,
+      "review_summary": "RefAnswer is factually sound and 'algorithm_steps' fits, but Q022_E01 omits the edge weights, DAG Relaxation, and level-|V|-1 shortest-path assignment used in RefAnswer/KU1, Q022_E02 has a delta_{|V|}=-infinity notation typo, and KUs omit the edge construction and level-|V|-1 readout."
+    },
+    {
+      "evidence_verified": false,
+      "factual_correct": true,
+      "issues": [
+        "Q023_E01 begins at 'Bước 2', omitting 'Bước 1' ('bắt đầu với tay trái trống' / empty left hand) stated in RefAnswer.",
+        "'trong mảng tăng dần' (ascending order) in RefAnswer is not explicitly stated in Q023_E01 or Q023_E02.",
+        "KU1 and KU2 omit the initial empty-hand setup (Step 1) and strip out the playing-card analogy ('lá bài', 'tay trái') explicitly requested by the query."
+      ],
+      "ku_complete": false,
+      "query_id": "Q023",
+      "recommended_question_type": "algorithm_steps",
+      "reference_answer_supported": false,
+      "review_summary": "Factually accurate and 'algorithm_steps' fits, but Q023_E01 omits Step 1 (empty left hand) included in RefAnswer, and the KUs omit both Step 1 and the card-sorting analogy requested in the query."
+    },
+    {
+      "evidence_verified": false,
+      "factual_correct": true,
+      "issues": [
+        "Q024_E02 is truncated mid-token at '5. Else return BINARY-SE', omitting the right-half recursive call BINARY-SEARCH(A, m+1, r, key) stated in KU2 and RefAnswer.",
+        "Pseudocode m = (l+r)/2 implicitly assumes integer floor division and ascending sorted order of A, and the interpretation '-1 (không tìm thấy)' is implicit rather than stated verbatim in Q024_E02."
+      ],
+      "ku_complete": true,
+      "query_id": "Q024",
+      "recommended_question_type": "pseudocode_interpretation",
+      "reference_answer_supported": false,
+      "review_summary": "Factually accurate, KUs are complete, and 'pseudocode_interpretation' fits; however, Q024_E02 is truncated at '5. Else return BINARY-SE', cutting off the (m+1, r) recursive branch."
+    },
+    {
+      "evidence_verified": true,
+      "factual_correct": true,
+      "issues": [
+        "Applies to unoptimized Bubble Sort without an early-termination swapped flag (an optimized variant performs n-1 comparisons in the best case); Q025_E01-E02 do not show the pseudocode body or the name 'Procedure BUBBLE-SORT'.",
+        "Q025_E02 nests 'Độ phức tạp thời gian trung bình O(n2)' as a sub-bullet under 'Trường hợp xấu nhất' due to source slide formatting."
+      ],
+      "ku_complete": true,
+      "query_id": "Q025",
+      "recommended_question_type": "time_complexity",
+      "reference_answer_supported": true,
+      "review_summary": "Factually accurate for standard unoptimized Procedure BUBBLE-SORT, directly supported by intact excerpts Q025_E01-E02, with complete KUs and accurate 'time_complexity' label (minor note on source slide nesting and absent pseudocode body)."
+    },
+    {
+      "evidence_verified": false,
+      "factual_correct": true,
+      "issues": [
+        "Q026_E01 does not mention Quick Sort's instability ('không ổn định') claimed in KU1 and RefAnswer.",
+        "Q026_E01 is truncated mid-word at 'quick sort có thể làm v', cutting off the O(n^2) worst-case complexity claim in KU1 and RefAnswer.",
+        "Q026_E03 ('int* temp = new int[right - left + 1];') is an isolated code line lacking Merge Sort function context.",
+        "Technical nuance: Quick Sort still uses O(log n) average / O(n) worst-case recursion stack space (RefAnswer accurately narrows this to 'không cần mảng phụ lớn'), and O(n^2) on sorted/reversed arrays assumes deterministic endpoint pivot selection."
+      ],
+      "ku_complete": true,
+      "query_id": "Q026",
+      "recommended_question_type": "comparison",
+      "reference_answer_supported": false,
+      "review_summary": "Factually accurate (with stack-space/pivot nuances), complete KUs, and accurate 'comparison' label, but Q026_E01 omits Quick Sort instability and truncates before O(n^2), and Q026_E03 lacks Merge Sort context."
+    },
+    {
+      "evidence_verified": false,
+      "factual_correct": true,
+      "issues": [
+        "None of Q027_E01-E03 name 'Counting Sort' (present in Query, KU1, and RefAnswer), stating only 'sort each of the c base-n digits in O(n) time'.",
+        "RefAnswer details '(via repeated divmod by n)' and '(preserving insertion order within each chain)' are absent from Q027_E01-E03.",
+        "Q027_E02 illustrates stability on a 2-key example ('b', 'a') rather than general c-digit base-n tuples."
+      ],
+      "ku_complete": true,
+      "query_id": "Q027",
+      "recommended_question_type": "algorithm_steps",
+      "reference_answer_supported": false,
+      "review_summary": "Factually sound with complete KUs and acceptable 'algorithm_steps' type, but Q027_E01-E03 never name Counting Sort and omit the 'divmod by n' and chain insertion-order details included in RefAnswer."
+    },
+    {
+      "evidence_verified": true,
+      "factual_correct": true,
+      "issues": [
+        "Q028_E01-E02 and KU1-KU2 leave implicit the bridge that decision-tree height lower-bounds worst-case running time (and that a binary tree with L leaves has height >= log_2 L).",
+        "RefAnswer writes 'Omega(log(n!)) >= log((n/2)^(n/2)) = Omega(n log n)', awkwardly mixing asymptotic Omega notation with '>=' (Q028_E02 correctly writes 'log(n!) >= log((n/2)^(n/2)) = Omega(n log n)')."
+      ],
+      "ku_complete": true,
+      "query_id": "Q028",
+      "recommended_question_type": "time_complexity",
+      "reference_answer_supported": true,
+      "review_summary": "Factually sound and intact evidence supports the decision-tree lower bound argument with complete KUs and accurate 'time_complexity' type; minor issues are the implicit tree-height-to-worst-case-time bridge and mixed Omega/>= notation in RefAnswer."
+    },
+    {
+      "evidence_verified": false,
+      "factual_correct": false,
+      "issues": [
+        "Major factual error in RefAnswer, KU1, and Q029_E01: claiming Big O = worst-case, Big Omega = best-case, and Big Theta = average-case conflates asymptotic bounds (upper, lower, tight) with input cases (best, average, worst). Each input case can be bounded using O, Omega, or Theta.",
+        "Q029_E02 illustrates dropping lower-order terms and additive constants in O(n^2 + 2n + 3) -> O(n^2), without explicitly demonstrating dropping a leading multiplicative constant factor."
+      ],
+      "ku_complete": true,
+      "query_id": "Q029",
+      "recommended_question_type": "concept_explanation",
+      "reference_answer_supported": true,
+      "review_summary": "RefAnswer faithfully reflects Q029_E01-E02 and 'concept_explanation' fits, but Q029_E01, KU1, and RefAnswer contain a serious factual misconception equating Big O, Big Omega, and Big Theta with worst, best, and average cases."
+    },
+    {
+      "evidence_verified": false,
+      "factual_correct": true,
+      "issues": [
+        "Q030_E02 is truncated mid-word at 'Lập trình viên phải tự gi', cutting off the 'delete' deallocation claim in KU2 and RefAnswer.",
+        "Technical nuance: Q030_E01 and RefAnswer define Space Complexity strictly as extra/auxiliary memory ('bộ nhớ bổ sung'), conflating total Space Complexity (input + auxiliary) with Auxiliary Space.",
+        "Technical nuance: RefAnswer drops '(trong C++)' present in Q030_E02, stating unconditionally that Heap Memory uses 'new' and must be freed with 'delete' (inaccurate for C, GC languages like Java/Python, and C++ smart pointers).",
+        "Question type mismatch: labeled 'space_complexity', but the query asks for the definition of Space Complexity, Stack vs Heap memory allocation, and Stack Overflow causes rather than space-complexity analysis of an algorithm/structure; 'concept_explanation' is more accurate."
+      ],
+      "ku_complete": true,
+      "query_id": "Q030",
+      "recommended_question_type": "concept_explanation",
+      "reference_answer_supported": false,
+      "review_summary": "Evidence Q030_E02 is truncated before 'delete', RefAnswer drops the '(trong C++)' qualifier and conflates Space Complexity with Auxiliary Space (matching Q030_E01), and 'concept_explanation' is more accurate than 'space_complexity'."
+    },
+    {
+      "evidence_verified": true,
+      "factual_correct": true,
+      "issues": [],
+      "ku_complete": true,
+      "query_id": "Q031",
+      "recommended_question_type": "time_complexity",
+      "reference_answer_supported": true,
+      "review_summary": "Accurate and well-supported entry covering the formal definition of amortized cost T(n) and dynamic array growth to fill ratio 1/2 yielding Theta(1) amortized insertion time (distinct from shrinking policy). Minor source artifacts only ('at most <=' in E01, 'ri' without subscript in E02), and KU2 leaves the single-resize Theta(n) cost and Theta(1) amortized conclusion implicit via KU1+KU2."
+    },
+    {
+      "evidence_verified": false,
+      "factual_correct": true,
+      "issues": [
+        "question_type 'space_complexity' is inaccurate: P, NP, NP-hard, and NP-complete are polynomial-time complexity classes, not space complexity (recommended: 'concept_explanation').",
+        "Q032_E01 is truncated mid-sentence at 'takes as input an input I', omitting the polynomial-time verifier details, polynomial-length certificate c, and 'iff I is a YES instance'.",
+        "Evidence does not support 'P subseteq NP subseteq EXP' or the reduction explanation 'A -> B converts A into B so B is at least as hard as A' in RefAnswer.",
+        "KUs and RefAnswer do not fully explain how polynomial-time reductions establish NP-completeness of a target problem (proving membership in NP and reducing from a known NP-complete problem via transitivity)."
+      ],
+      "ku_complete": false,
+      "query_id": "Q032",
+      "recommended_question_type": "concept_explanation",
+      "reference_answer_supported": false,
+      "review_summary": "Factually correct complexity-class definitions, but mislabeled as 'space_complexity' (should be 'concept_explanation'). Q032_E01 is truncated mid-sentence before defining NP's verifier/certificate, evidence lacks P subseteq NP subseteq EXP and reduction mechanics, and KUs omit the reduction-based proof procedure requested by the query."
+    },
+    {
+      "evidence_verified": true,
+      "factual_correct": true,
+      "issues": [],
+      "ku_complete": true,
+      "query_id": "Q033",
+      "recommended_question_type": "definition",
+      "reference_answer_supported": true,
+      "review_summary": "Clean, factually accurate, and well-supported entry defining hash collisions and chaining. Minor notes: E01 uses '#' for '!=', E02 (tagged alternative for KU1) omits that the two keys must be distinct, and E03 (tagged alternative for KU2) omits naming Chaining and the slot index, which are provided by E04."
+    },
+    {
+      "evidence_verified": true,
+      "factual_correct": true,
+      "issues": [
+        "question_type 'application_scenario' is inaccurate: the query explains why linear probing causes clustering and asks for quadratic probing and double hashing rehash formulas without any application scenario (recommended: 'concept_explanation').",
+        "RefAnswer claims 'giúp rải nút đều hơn' and 'với một số giá trị M', neither of which appears in Q034_E03; moreover, 'với một số giá trị M' is imprecise because (f(key) + i^2) % M visits at most (M+1)/2 slots for any odd prime M >= 3 and can still miss empty slots when load exceeds 0.5.",
+        "Minor source extraction issues: stray 'z' bullet characters in E02/E04, dropped superscript 'i2' in E03, missing space 'sốnguyên tố' in E04, and omitted method names in E02 and E04."
+      ],
+      "ku_complete": true,
+      "query_id": "Q034",
+      "recommended_question_type": "concept_explanation",
+      "reference_answer_supported": false,
+      "review_summary": "Core formulas and linear-probing limitation are factually sound, but question_type 'application_scenario' should be 'concept_explanation', and RefAnswer introduces two unsupported statements regarding quadratic probing ('giúp rải nút đều hơn' and the imprecise qualifier 'với một số giá trị M')."
+    },
+    {
+      "evidence_verified": true,
+      "factual_correct": true,
+      "issues": [
+        "Q035_E03 states O(n) chain size rather than Theta(n) worst-case (and leaves m = Theta(n) implicit), with a minor typo 'will a create'.",
+        "KU2 is labeled 'single' despite having two evidence items (Q035_E02 and Q035_E03)."
+      ],
+      "ku_complete": true,
+      "query_id": "Q035",
+      "recommended_question_type": "concept_explanation",
+      "reference_answer_supported": true,
+      "review_summary": "Factually accurate and well-typed concept explanation covering the pigeonhole principle for m << u and adversarial chains for fixed division hashing h(k) = k mod m, with minor metadata/source discrepancies (KU2 cardinality label 'single' for two evidences, and E03 writing O(n) instead of Theta(n))."
+    },
+    {
+      "evidence_verified": false,
+      "factual_correct": true,
+      "issues": [
+        "Q036_E02 truncates mid-formula at 'H is a Universal family: P', omitting Pr[h(k_i) = h(k_j)] <= 1/m and random selection of h_{ab} from H(p, m).",
+        "Q036_E03 omits the linearity-of-expectation bound E[X_i] <= 1 + (n - 1)/m and states m = Omega(n) rather than m = Theta(n), creating an inconsistency with Theta(n) space in KU3 and RefAnswer.",
+        "PDF extraction artifacts: E01 drops superscript in '2610' (26^10) and does not explicitly name Direct Access Array; E02 renders '!=' as '6='."
+      ],
+      "ku_complete": true,
+      "query_id": "Q036",
+      "recommended_question_type": "space_complexity",
+      "reference_answer_supported": false,
+      "review_summary": "Factually accurate and appropriately typed as 'space_complexity', but evidence is incomplete/truncated: Q036_E02 cuts off before the universal hashing probability bound, Q036_E03 lacks the linearity-of-expectation formula, and E03/KU3 state m = Omega(n) rather than m = Theta(n) required for Theta(n) space."
+    },
+    {
+      "evidence_verified": false,
+      "factual_correct": true,
+      "issues": [
+        "Incomplete answer and KUs: the query asks how CHT is applied to Commando (APIO 2010), yet RefAnswer, KU3, and E04-E05 only state the problem's adjusted effectiveness formula and sample I/O table (output 9), omitting the DP formulation and conversion to linear functions.",
+        "RefAnswer includes claims not present in the provided evidence: 'y = a_i*x + b_i', 'hệ tọa độ Oxy', discarding non-optimal lines in E01, and 'chia n binh sĩ thành các đoạn liên tiếp', 'sao cho tổng lớn nhất', and sample parameter mapping in E04-E05.",
+        "Q037_E03 truncates closing parenthesis ('O((Q+M)logM'), and E02/E04 drop superscripts ('O(n2)', 'ax2')."
+      ],
+      "ku_complete": false,
+      "query_id": "Q037",
+      "recommended_question_type": "multi_evidence_reasoning",
+      "reference_answer_supported": false,
+      "review_summary": "All stated facts (including the Commando sample answer of 9) and the 'multi_evidence_reasoning' type are valid, but both KUs and evidence miss how CHT is actually applied to Commando's DP recurrence, and several RefAnswer details lack support in E01/E04/E05."
+    },
+    {
+      "evidence_verified": true,
+      "factual_correct": true,
+      "issues": [
+        "question_type 'application_scenario' is inaccurate: the query asks how Quick Sort partitions around a pivot and when recursion terminates, with no application scenario (recommended: 'algorithm_steps').",
+        "Minor chunk-boundary clipping at the end of Q038_E01 ('của piv' instead of 'pivot')."
+      ],
+      "ku_complete": true,
+      "query_id": "Q038",
+      "recommended_question_type": "algorithm_steps",
+      "reference_answer_supported": true,
+      "review_summary": "Factually correct and supported by E01-E02 (aside from trivial 2-character clipping of 'pivot' at the end of E01), but misclassified as 'application_scenario' instead of 'algorithm_steps'."
+    },
+    {
+      "evidence_verified": false,
+      "factual_correct": true,
+      "issues": [
+        "Q039_E03 suffers from PDF text-interleaving corruption ('return x[0][0]' appears inside 'x[i][j \\n return x[0][0] \\n + 1])') and omits the 'lcs(A, B)' function header and 'for' loop lines.",
+        "Minor wording imprecision in RefAnswer: 'strictly larger indices' (recurrence uses (i+1, j), (i, j+1), and (i+1, j+1), so the index sum i+j is strictly larger rather than both indices simultaneously)."
+      ],
+      "ku_complete": true,
+      "query_id": "Q039",
+      "recommended_question_type": "pseudocode_interpretation",
+      "reference_answer_supported": true,
+      "review_summary": "Factually sound and correctly typed as 'pseudocode_interpretation', with KUs and RefAnswer matching the evidence content; however, Q039_E03 has PDF line-interleaving corruption around 'return x[0][0]' and omits the function/loop headers, and RefAnswer says 'strictly larger indices' loosely."
+    },
+    {
+      "evidence_verified": false,
+      "factual_correct": true,
+      "issues": [
+        "Q040_E01 truncates mid-sentence at 'that includes ', omitting 'A[i]' from the core subproblem constraint.",
+        "Q040_E02 corrupts the union symbol as '[' ('[ {1}').",
+        "Q040_E03 drops '<=' in '0  i < |A|'."
+      ],
+      "ku_complete": true,
+      "query_id": "Q040",
+      "recommended_question_type": "multi_evidence_reasoning",
+      "reference_answer_supported": false,
+      "review_summary": "Factually correct, complete in KUs, and appropriately typed as 'multi_evidence_reasoning', but evidence snippets contain truncation and symbol-extraction defects ('that includes ' missing 'A[i]', '[' for union, and missing '<=') so key expressions in RefAnswer are not intact in the evidence."
+    }
+  ],
+  "minimal_revisions_applied": [
+    {
+      "query_id": "Q007",
+      "field": "reference_answer+KU2",
+      "reason": "Fix Dispose(p) outer-level execution in both branches of DEQUEUE pseudocode (no query text change).",
+      "original": {
+        "reference_answer": "Trong ENQUEUE(F, R, X), sau khi tạo nút mới p với INFO(p):=X và LINK(p):=Null, nếu hàng đợi đang rỗng (F = Null) thì gán cả F := R := p; ngược lại nối LINK(R) := p rồi cập nhật R := p. Trong DEQUEUE(F, R, Y), lấy nút đầu p := F và Y := INFO(p); nếu hàng đợi chỉ có một phần tử ((F = R) and (F <> Null)) thì đặt cả F := R := Null, ngược lại dịch F := LINK(p) và giải phóng nút p.",
+        "KU2": "DEQUEUE khi chỉ có 1 phần tử (F = R và F <> Null) đặt F := R := Null; ngược lại F := LINK(p) và Dispose(p)."
+      },
+      "revised": {
+        "reference_answer": "Trong ENQUEUE(F, R, X), sau khi tạo nút mới p với INFO(p):=X và LINK(p):=Null, nếu hàng đợi đang rỗng (F = Null) thì gán cả F := R := p; ngược lại nối LINK(R) := p rồi cập nhật R := p. Trong DEQUEUE(F, R, Y), lấy nút đầu p := F và Y := INFO(p); nếu hàng đợi chỉ có một phần tử ((F = R) and (F <> Null)) thì đặt cả F := R := Null, ngược lại dịch F := LINK(p); sau nhánh if/else gọi Call Dispose(p) để giải phóng nút p trong cả hai trường hợp.",
+        "KU2": "DEQUEUE khi chỉ có 1 phần tử (F = R và F <> Null) đặt F := R := Null, ngược lại F := LINK(p); sau đó gọi Dispose(p) ở bước 3 cho cả hai trường hợp."
+      }
+    },
+    {
+      "query_id": "Q015",
+      "field": "reference_answer",
+      "reason": "Clarify MIT 6.006 traversal order = in-order traversal (no query text change).",
+      "original": "To find the successor of node X: if X has a right child, return the first (leftmost) node in X's right subtree; otherwise, walk upward and return the lowest ancestor of X for which X lies in its left subtree (O(h) time). To delete a non-leaf node X: swap its item with its predecessor (if X has a left child) or with its successor (if X has a right child) and recursively delete down to a leaf in O(h) time.",
+      "revised": "Under MIT 6.006 convention, traversal order refers to in-order traversal (left subtree before node, right subtree after node). To find the successor of node X: if X has a right child, return the first (leftmost) node in X's right subtree; otherwise, walk upward and return the lowest ancestor of X for which X lies in its left subtree (O(h) time). To delete a non-leaf node X: swap its item with its predecessor (if X has a left child) or with its successor (if X has a right child) and recursively delete down to a leaf in O(h) time."
+    },
+    {
+      "query_id": "Q029",
+      "field": "reference_answer",
+      "reason": "Add formal asymptotic-bound clarification alongside textbook wording (no query text change).",
+      "original": "Big O mô tả trường hợp xấu nhất (cận trên đảm bảo thuật toán không vượt quá), Big Ω mô tả trường hợp tốt nhất và Big Θ mô tả trường hợp trung bình. Khi hàm f(n) chứa hằng số và nhiều bậc khác nhau của n, quy tắc Big O bỏ hằng số và giữ lại bậc cao nhất đại diện (ví dụ O(n^2 + 2n + 3) rút gọn thành O(n^2)).",
+      "revised": "Big O mô tả trường hợp xấu nhất (cận trên đảm bảo thuật toán không vượt quá), Big Ω mô tả trường hợp tốt nhất và Big Θ mô tả trường hợp trung bình. Khi hàm f(n) chứa hằng số và nhiều bậc khác nhau của n, quy tắc Big O bỏ hằng số và giữ lại bậc cao nhất đại diện (ví dụ O(n^2 + 2n + 3) rút gọn thành O(n^2)). (Lưu ý về mặt lý thuyết hình thức: O, Ω, Θ là các cận tiệm cận trên/dưới/chặt áp dụng cho mọi trường hợp, còn tài liệu nguồn minh họa gắn với trường hợp xấu nhất/tốt nhất/trung bình.)"
+    },
+    {
+      "query_id": "Q032",
+      "field": "question_type",
+      "reason": "Correct metadata misclassification: P/NP/NP-complete is concept_explanation, not space_complexity.",
+      "original": "space_complexity",
+      "revised": "concept_explanation"
+    },
+    {
+      "query_id": "Q038",
+      "field": "question_type",
+      "reason": "Correct metadata misclassification: QuickSort partitioning & termination is algorithm_steps, not application_scenario.",
+      "original": "application_scenario",
+      "revised": "algorithm_steps"
+    }
+  ],
+  "query_text_modified_count": 0,
+  "pools_regeneration_required": false
+}

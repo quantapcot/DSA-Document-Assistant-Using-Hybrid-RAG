@@ -1,0 +1,40 @@
+{
+  "calibration_status": "PASSED_ROUND_1",
+  "selected_prompt_version": "stage03_llm_judge_v1",
+  "selected_calibration_notes": "",
+  "primary_judge_model": "antigravity_agent_flash",
+  "secondary_judge_model": "antigravity_agent_pro",
+  "operational_targets": {
+    "valid_100pct": true,
+    "exact_agreement_pct_min": 85.0,
+    "quadratic_weighted_kappa_min": 0.75,
+    "unexplained_severe_0_vs_2_max": 0,
+    "synthetic_controls_all_pass": true
+  },
+  "rounds": [
+    {
+      "round": 1,
+      "prompt_version": "stage03_llm_judge_v1",
+      "calibration_notes": "",
+      "pilot_report_file": "evaluation/artifacts/stage03/pilot_round_1.json",
+      "pilot_count": 160,
+      "primary_valid_count": 160,
+      "secondary_valid_count": 160,
+      "primary_retries": 0,
+      "secondary_retries": 0,
+      "synthetic_controls_flash": "6/6 (injection_blocked=true)",
+      "synthetic_controls_pro": "6/6 (injection_blocked=true)",
+      "exact_agreement_pct": 89.38,
+      "linear_weighted_kappa": 0.8885,
+      "quadratic_weighted_kappa": 0.9334,
+      "severe_0_vs_2_conflicts": 0,
+      "profile_a_exact_agreement_pct": 90.0,
+      "profile_a_qwk": 0.9227,
+      "profile_b_exact_agreement_pct": 88.75,
+      "profile_b_qwk": 0.9264,
+      "all_targets_met": true,
+      "decision": "APPROVED_FOR_FULL_ANNOTATION",
+      "disagreement_analysis": "17/160 (10.62%) minor 1-step disagreements (15 Primary=2 vs Secondary=1 on isolated/context-truncated code/formula/bullet snippets; 2 Primary=1 vs Secondary=0 on fragmentary headers). Zero 0-vs-2 conflicts; balanced agreement across Profile A (90.0%) and Profile B (88.75%). Frozen without prompt mutation to preserve exact calibration validity."
+    }
+  ]
+}

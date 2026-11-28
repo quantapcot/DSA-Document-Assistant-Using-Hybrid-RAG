@@ -1,0 +1,902 @@
+{
+  "requested_top_k": 60,
+  "candidate_pool": 120,
+  "methods": [
+    "bm25",
+    "dense",
+    "hybrid_rrf",
+    "hybrid_rerank"
+  ],
+  "totals_by_profile": {
+    "recursive_512_100": {
+      "raw_candidates": 9600,
+      "unique_retrieval_candidates": 4515,
+      "duplicates_removed": 5085,
+      "evidence_added_candidates": 11,
+      "final_annotation_workload": 4526,
+      "actual_retrieval_calls": 160,
+      "fewer_than_60_calls": [],
+      "deduplication_rate_pct": 52.97,
+      "fewer_than_60_count": 0
+    },
+    "structure_adaptive": {
+      "raw_candidates": 9600,
+      "unique_retrieval_candidates": 4496,
+      "duplicates_removed": 5104,
+      "evidence_added_candidates": 46,
+      "final_annotation_workload": 4542,
+      "actual_retrieval_calls": 160,
+      "fewer_than_60_calls": [],
+      "deduplication_rate_pct": 53.17,
+      "fewer_than_60_count": 0
+    }
+  },
+  "totals_combined": {
+    "raw_candidates": 19200,
+    "unique_retrieval_candidates": 9011,
+    "duplicates_removed": 10189,
+    "evidence_added_candidates": 57,
+    "final_annotation_workload": 9068,
+    "actual_retrieval_calls": 320,
+    "deduplication_rate_pct": 53.07
+  },
+  "per_query": [
+    {
+      "query_id": "Q001",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 118,
+          "duplicates_removed": 122,
+          "deduplication_rate_pct": 50.83,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 118
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 116,
+          "duplicates_removed": 124,
+          "deduplication_rate_pct": 51.67,
+          "evidence_added_candidates": 1,
+          "final_annotation_workload": 117
+        }
+      }
+    },
+    {
+      "query_id": "Q002",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 114,
+          "duplicates_removed": 126,
+          "deduplication_rate_pct": 52.5,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 114
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 118,
+          "duplicates_removed": 122,
+          "deduplication_rate_pct": 50.83,
+          "evidence_added_candidates": 1,
+          "final_annotation_workload": 119
+        }
+      }
+    },
+    {
+      "query_id": "Q003",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 112,
+          "duplicates_removed": 128,
+          "deduplication_rate_pct": 53.33,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 112
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 109,
+          "duplicates_removed": 131,
+          "deduplication_rate_pct": 54.58,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 109
+        }
+      }
+    },
+    {
+      "query_id": "Q004",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 113,
+          "duplicates_removed": 127,
+          "deduplication_rate_pct": 52.92,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 113
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 109,
+          "duplicates_removed": 131,
+          "deduplication_rate_pct": 54.58,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 109
+        }
+      }
+    },
+    {
+      "query_id": "Q005",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 113,
+          "duplicates_removed": 127,
+          "deduplication_rate_pct": 52.92,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 113
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 117,
+          "duplicates_removed": 123,
+          "deduplication_rate_pct": 51.25,
+          "evidence_added_candidates": 2,
+          "final_annotation_workload": 119
+        }
+      }
+    },
+    {
+      "query_id": "Q006",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 113,
+          "duplicates_removed": 127,
+          "deduplication_rate_pct": 52.92,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 113
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 115,
+          "duplicates_removed": 125,
+          "deduplication_rate_pct": 52.08,
+          "evidence_added_candidates": 1,
+          "final_annotation_workload": 116
+        }
+      }
+    },
+    {
+      "query_id": "Q007",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 110,
+          "duplicates_removed": 130,
+          "deduplication_rate_pct": 54.17,
+          "evidence_added_candidates": 1,
+          "final_annotation_workload": 111
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 111,
+          "duplicates_removed": 129,
+          "deduplication_rate_pct": 53.75,
+          "evidence_added_candidates": 2,
+          "final_annotation_workload": 113
+        }
+      }
+    },
+    {
+      "query_id": "Q008",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 113,
+          "duplicates_removed": 127,
+          "deduplication_rate_pct": 52.92,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 113
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 112,
+          "duplicates_removed": 128,
+          "deduplication_rate_pct": 53.33,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 112
+        }
+      }
+    },
+    {
+      "query_id": "Q009",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 108,
+          "duplicates_removed": 132,
+          "deduplication_rate_pct": 55.0,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 108
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 108,
+          "duplicates_removed": 132,
+          "deduplication_rate_pct": 55.0,
+          "evidence_added_candidates": 4,
+          "final_annotation_workload": 112
+        }
+      }
+    },
+    {
+      "query_id": "Q010",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 120,
+          "duplicates_removed": 120,
+          "deduplication_rate_pct": 50.0,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 120
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 119,
+          "duplicates_removed": 121,
+          "deduplication_rate_pct": 50.42,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 119
+        }
+      }
+    },
+    {
+      "query_id": "Q011",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 110,
+          "duplicates_removed": 130,
+          "deduplication_rate_pct": 54.17,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 110
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 114,
+          "duplicates_removed": 126,
+          "deduplication_rate_pct": 52.5,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 114
+        }
+      }
+    },
+    {
+      "query_id": "Q012",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 110,
+          "duplicates_removed": 130,
+          "deduplication_rate_pct": 54.17,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 110
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 119,
+          "duplicates_removed": 121,
+          "deduplication_rate_pct": 50.42,
+          "evidence_added_candidates": 2,
+          "final_annotation_workload": 121
+        }
+      }
+    },
+    {
+      "query_id": "Q013",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 120,
+          "duplicates_removed": 120,
+          "deduplication_rate_pct": 50.0,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 120
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 118,
+          "duplicates_removed": 122,
+          "deduplication_rate_pct": 50.83,
+          "evidence_added_candidates": 1,
+          "final_annotation_workload": 119
+        }
+      }
+    },
+    {
+      "query_id": "Q014",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 104,
+          "duplicates_removed": 136,
+          "deduplication_rate_pct": 56.67,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 104
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 104,
+          "duplicates_removed": 136,
+          "deduplication_rate_pct": 56.67,
+          "evidence_added_candidates": 1,
+          "final_annotation_workload": 105
+        }
+      }
+    },
+    {
+      "query_id": "Q015",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 112,
+          "duplicates_removed": 128,
+          "deduplication_rate_pct": 53.33,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 112
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 113,
+          "duplicates_removed": 127,
+          "deduplication_rate_pct": 52.92,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 113
+        }
+      }
+    },
+    {
+      "query_id": "Q016",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 109,
+          "duplicates_removed": 131,
+          "deduplication_rate_pct": 54.58,
+          "evidence_added_candidates": 1,
+          "final_annotation_workload": 110
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 113,
+          "duplicates_removed": 127,
+          "deduplication_rate_pct": 52.92,
+          "evidence_added_candidates": 3,
+          "final_annotation_workload": 116
+        }
+      }
+    },
+    {
+      "query_id": "Q017",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 104,
+          "duplicates_removed": 136,
+          "deduplication_rate_pct": 56.67,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 104
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 107,
+          "duplicates_removed": 133,
+          "deduplication_rate_pct": 55.42,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 107
+        }
+      }
+    },
+    {
+      "query_id": "Q018",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 115,
+          "duplicates_removed": 125,
+          "deduplication_rate_pct": 52.08,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 115
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 111,
+          "duplicates_removed": 129,
+          "deduplication_rate_pct": 53.75,
+          "evidence_added_candidates": 1,
+          "final_annotation_workload": 112
+        }
+      }
+    },
+    {
+      "query_id": "Q019",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 119,
+          "duplicates_removed": 121,
+          "deduplication_rate_pct": 50.42,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 119
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 117,
+          "duplicates_removed": 123,
+          "deduplication_rate_pct": 51.25,
+          "evidence_added_candidates": 2,
+          "final_annotation_workload": 119
+        }
+      }
+    },
+    {
+      "query_id": "Q020",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 117,
+          "duplicates_removed": 123,
+          "deduplication_rate_pct": 51.25,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 117
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 118,
+          "duplicates_removed": 122,
+          "deduplication_rate_pct": 50.83,
+          "evidence_added_candidates": 1,
+          "final_annotation_workload": 119
+        }
+      }
+    },
+    {
+      "query_id": "Q021",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 111,
+          "duplicates_removed": 129,
+          "deduplication_rate_pct": 53.75,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 111
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 106,
+          "duplicates_removed": 134,
+          "deduplication_rate_pct": 55.83,
+          "evidence_added_candidates": 1,
+          "final_annotation_workload": 107
+        }
+      }
+    },
+    {
+      "query_id": "Q022",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 100,
+          "duplicates_removed": 140,
+          "deduplication_rate_pct": 58.33,
+          "evidence_added_candidates": 3,
+          "final_annotation_workload": 103
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 100,
+          "duplicates_removed": 140,
+          "deduplication_rate_pct": 58.33,
+          "evidence_added_candidates": 2,
+          "final_annotation_workload": 102
+        }
+      }
+    },
+    {
+      "query_id": "Q023",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 108,
+          "duplicates_removed": 132,
+          "deduplication_rate_pct": 55.0,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 108
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 108,
+          "duplicates_removed": 132,
+          "deduplication_rate_pct": 55.0,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 108
+        }
+      }
+    },
+    {
+      "query_id": "Q024",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 120,
+          "duplicates_removed": 120,
+          "deduplication_rate_pct": 50.0,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 120
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 119,
+          "duplicates_removed": 121,
+          "deduplication_rate_pct": 50.42,
+          "evidence_added_candidates": 1,
+          "final_annotation_workload": 120
+        }
+      }
+    },
+    {
+      "query_id": "Q025",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 112,
+          "duplicates_removed": 128,
+          "deduplication_rate_pct": 53.33,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 112
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 118,
+          "duplicates_removed": 122,
+          "deduplication_rate_pct": 50.83,
+          "evidence_added_candidates": 1,
+          "final_annotation_workload": 119
+        }
+      }
+    },
+    {
+      "query_id": "Q026",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 104,
+          "duplicates_removed": 136,
+          "deduplication_rate_pct": 56.67,
+          "evidence_added_candidates": 1,
+          "final_annotation_workload": 105
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 104,
+          "duplicates_removed": 136,
+          "deduplication_rate_pct": 56.67,
+          "evidence_added_candidates": 2,
+          "final_annotation_workload": 106
+        }
+      }
+    },
+    {
+      "query_id": "Q027",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 113,
+          "duplicates_removed": 127,
+          "deduplication_rate_pct": 52.92,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 113
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 107,
+          "duplicates_removed": 133,
+          "deduplication_rate_pct": 55.42,
+          "evidence_added_candidates": 1,
+          "final_annotation_workload": 108
+        }
+      }
+    },
+    {
+      "query_id": "Q028",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 112,
+          "duplicates_removed": 128,
+          "deduplication_rate_pct": 53.33,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 112
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 117,
+          "duplicates_removed": 123,
+          "deduplication_rate_pct": 51.25,
+          "evidence_added_candidates": 1,
+          "final_annotation_workload": 118
+        }
+      }
+    },
+    {
+      "query_id": "Q029",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 118,
+          "duplicates_removed": 122,
+          "deduplication_rate_pct": 50.83,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 118
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 108,
+          "duplicates_removed": 132,
+          "deduplication_rate_pct": 55.0,
+          "evidence_added_candidates": 2,
+          "final_annotation_workload": 110
+        }
+      }
+    },
+    {
+      "query_id": "Q030",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 116,
+          "duplicates_removed": 124,
+          "deduplication_rate_pct": 51.67,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 116
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 113,
+          "duplicates_removed": 127,
+          "deduplication_rate_pct": 52.92,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 113
+        }
+      }
+    },
+    {
+      "query_id": "Q031",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 114,
+          "duplicates_removed": 126,
+          "deduplication_rate_pct": 52.5,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 114
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 113,
+          "duplicates_removed": 127,
+          "deduplication_rate_pct": 52.92,
+          "evidence_added_candidates": 2,
+          "final_annotation_workload": 115
+        }
+      }
+    },
+    {
+      "query_id": "Q032",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 112,
+          "duplicates_removed": 128,
+          "deduplication_rate_pct": 53.33,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 112
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 112,
+          "duplicates_removed": 128,
+          "deduplication_rate_pct": 53.33,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 112
+        }
+      }
+    },
+    {
+      "query_id": "Q033",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 112,
+          "duplicates_removed": 128,
+          "deduplication_rate_pct": 53.33,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 112
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 111,
+          "duplicates_removed": 129,
+          "deduplication_rate_pct": 53.75,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 111
+        }
+      }
+    },
+    {
+      "query_id": "Q034",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 119,
+          "duplicates_removed": 121,
+          "deduplication_rate_pct": 50.42,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 119
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 119,
+          "duplicates_removed": 121,
+          "deduplication_rate_pct": 50.42,
+          "evidence_added_candidates": 3,
+          "final_annotation_workload": 122
+        }
+      }
+    },
+    {
+      "query_id": "Q035",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 115,
+          "duplicates_removed": 125,
+          "deduplication_rate_pct": 52.08,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 115
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 112,
+          "duplicates_removed": 128,
+          "deduplication_rate_pct": 53.33,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 112
+        }
+      }
+    },
+    {
+      "query_id": "Q036",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 110,
+          "duplicates_removed": 130,
+          "deduplication_rate_pct": 54.17,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 110
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 107,
+          "duplicates_removed": 133,
+          "deduplication_rate_pct": 55.42,
+          "evidence_added_candidates": 1,
+          "final_annotation_workload": 108
+        }
+      }
+    },
+    {
+      "query_id": "Q037",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 116,
+          "duplicates_removed": 124,
+          "deduplication_rate_pct": 51.67,
+          "evidence_added_candidates": 4,
+          "final_annotation_workload": 120
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 114,
+          "duplicates_removed": 126,
+          "deduplication_rate_pct": 52.5,
+          "evidence_added_candidates": 3,
+          "final_annotation_workload": 117
+        }
+      }
+    },
+    {
+      "query_id": "Q038",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 117,
+          "duplicates_removed": 123,
+          "deduplication_rate_pct": 51.25,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 117
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 112,
+          "duplicates_removed": 128,
+          "deduplication_rate_pct": 53.33,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 112
+        }
+      }
+    },
+    {
+      "query_id": "Q039",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 118,
+          "duplicates_removed": 122,
+          "deduplication_rate_pct": 50.83,
+          "evidence_added_candidates": 1,
+          "final_annotation_workload": 119
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 116,
+          "duplicates_removed": 124,
+          "deduplication_rate_pct": 51.67,
+          "evidence_added_candidates": 3,
+          "final_annotation_workload": 119
+        }
+      }
+    },
+    {
+      "query_id": "Q040",
+      "profiles": {
+        "recursive_512_100": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 114,
+          "duplicates_removed": 126,
+          "deduplication_rate_pct": 52.5,
+          "evidence_added_candidates": 0,
+          "final_annotation_workload": 114
+        },
+        "structure_adaptive": {
+          "raw_candidates": 240,
+          "unique_retrieval_candidates": 112,
+          "duplicates_removed": 128,
+          "deduplication_rate_pct": 53.33,
+          "evidence_added_candidates": 1,
+          "final_annotation_workload": 113
+        }
+      }
+    }
+  ],
+  "execution_environment": {
+    "embedding_device": "cuda:0",
+    "reranker_device": "cuda:0",
+    "reranker_batch_size": 4,
+    "reranker_max_length": 512,
+    "retrieval_config_fingerprint": "54980e5829c2bf70",
+    "corpus_sha256": {
+      "recursive_512_100": "e39811da17d99201e4ad26f54c4a53614a087e76e3e0cb6d031a733862af0649",
+      "structure_adaptive": "81c568275754e35d7323b1e51fc247b885abc873eef4c5caa5c1ec4daa0b5d63"
+    }
+  },
+  "artifact_sha256": {
+    "raw_retrieval_results.jsonl": "db0b2700cc35898ef859a70021a8a812d55616d2d1abab32be96766d1a25f37b",
+    "candidate_pool_recursive.jsonl": "96b71712e59aba158da5deac7f5af637f355aae57536e5e83047456e3d324cb0",
+    "candidate_pool_adaptive.jsonl": "64454c644876a8879ebf14b14e5b9b90250eab948b6bc5004eb06b948f622151",
+    "method_candidate_mapping.jsonl": "7514da93ca037cd519b8ef13338aa5b2481ea76a6c5855bab7d553f2e8889c07"
+  }
+}

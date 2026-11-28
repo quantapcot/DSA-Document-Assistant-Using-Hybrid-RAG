@@ -1,0 +1,15 @@
+{
+  "profile_filter": "recursive_512_100",
+  "model_tier": "flash",
+  "prompt_version": "stage03_llm_judge_v1",
+  "target_count": 4526,
+  "newly_written": 4525,
+  "total_checkpointed": 4525,
+  "missing_count": 1,
+  "missing_sample": [
+    "A_Q040_0008"
+  ],
+  "total_invalids": 5,
+  "total_retries": 7,
+  "runtime_sec": 998.32
+}
