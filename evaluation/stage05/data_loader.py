@@ -217,23 +217,41 @@ def _is_git_ancestor(root: Path, ancestor: str, descendant: str = "HEAD") -> boo
 
 def verify_inputs_and_integrity(root: Path) -> dict[str, Any]:
     """Verify Git baseline (Stage 04 checkpoint or descendant), frozen inputs, 59 Stage 04 artifacts, and backups."""
-    stage04_dir = root / "evaluation" / "artifacts" / "stage04"
+    from evaluation.path_resolver import resolve_path, resolve_stage04_file, verify_relocation_manifest
+
     branch = _run_git(root, "branch", "--show-current")
     head = _run_git(root, "rev-parse", "HEAD")
     main_sha = _run_git(root, "rev-parse", "main")
     stage04_ancestor_ok = _is_git_ancestor(root, EXPECTED_HEAD, "HEAD")
 
-    all_stage04_files = sorted(
-        p.relative_to(stage04_dir).as_posix()
-        for p in stage04_dir.rglob("*")
-        if p.is_file()
-    )
+    stage04_dir = root / "evaluation" / "artifacts" / "stage04"
+    reloc_manifest_path = root / "evaluation" / "manifests" / "relocation_manifest.json"
+    if stage04_dir.exists() and any(stage04_dir.rglob("*")):
+        all_stage04_files = sorted(
+            p.relative_to(stage04_dir).as_posix()
+            for p in stage04_dir.rglob("*")
+            if p.is_file()
+        )
+        reloc_ok = True
+    elif reloc_manifest_path.is_file():
+        rdata = json.loads(reloc_manifest_path.read_text(encoding="utf-8"))
+        all_stage04_files = sorted(
+            e["old_path"].removeprefix("evaluation/artifacts/stage04/")
+            for e in rdata.get("relocated_files", [])
+            if e["old_path"].startswith("evaluation/artifacts/stage04/")
+            and (root / e["new_path"]).is_file()
+        )
+        reloc_ok = verify_relocation_manifest(root)["ok"]
+    else:
+        all_stage04_files = []
+        reloc_ok = False
+
     missing_required = [
-        rel for rel in REQUIRED_STAGE04_FILES if not (stage04_dir / rel).is_file()
+        rel for rel in REQUIRED_STAGE04_FILES if not resolve_stage04_file(root, rel).is_file()
     ]
 
     # Verify frozen corpus checksums against Stage 04 manifest
-    manifest = json.loads((stage04_dir / "manifest.json").read_text(encoding="utf-8"))
+    manifest = json.loads(resolve_stage04_file(root, "manifest.json").read_text(encoding="utf-8"))
     frozen_checks: dict[str, dict[str, Any]] = {}
     for rel, expected in EXPECTED_FROZEN_SHA256.items():
         p = root / rel
@@ -261,7 +279,7 @@ def verify_inputs_and_integrity(root: Path) -> dict[str, Any]:
         bdata = json.loads(backup_manifest_path.read_text(encoding="utf-8"))
         for orig_rel, info in bdata.items():
             bp = root / info["backup_path"]
-            op = root / orig_rel
+            op = resolve_path(root, orig_rel)
             b_sha = sha256_file(bp) if bp.is_file() else None
             o_sha = sha256_file(op) if op.is_file() else None
             backup_checks[orig_rel] = {
@@ -276,6 +294,7 @@ def verify_inputs_and_integrity(root: Path) -> dict[str, Any]:
         branch == EXPECTED_BRANCH
         and stage04_ancestor_ok
         and main_sha == EXPECTED_MAIN
+        and reloc_ok
         and len(missing_required) == 0
         and len(all_stage04_files) == 59
         and all(v["matches"] for v in frozen_checks.values())
@@ -328,49 +347,54 @@ def load_stage04_bundle(root: Path) -> Stage04Bundle:
             f"Stage 04 input verification failed: {json.dumps(integrity, indent=2)}"
         )
 
-    s4 = root / "evaluation" / "artifacts" / "stage04"
+    from evaluation.path_resolver import resolve_stage04_file
+
+    def _s4(rel: str) -> Path:
+        return resolve_stage04_file(root, rel)
+
+    s4 = root / "evaluation" / "results"
     return Stage04Bundle(
         root=root,
         stage04_dir=s4,
         integrity=integrity,
-        manifest=json.loads((s4 / "manifest.json").read_text(encoding="utf-8")),
-        chunking_metrics=pd.read_csv(s4 / "chunking/chunking_metrics.csv"),
-        chunking_diagnostics=json.loads((s4 / "chunking/chunking_diagnostics.json").read_text(encoding="utf-8")),
-        retrieval_summary=pd.read_csv(s4 / "retrieval/retrieval_metrics_summary.csv"),
-        strict_retrieval=pd.read_csv(s4 / "retrieval/strict_relevance_metrics.csv"),
-        judgment_coverage=pd.read_csv(s4 / "retrieval/judgment_coverage.csv"),
-        ranking_drift=json.loads((s4 / "retrieval/ranking_drift.json").read_text(encoding="utf-8")),
-        evidence_summary=pd.read_csv(s4 / "evidence/evidence_metrics_summary.csv"),
-        latency_summary=pd.read_csv(s4 / "performance/latency_summary.csv"),
-        stage_latency=pd.read_csv(s4 / "performance/stage_latency.csv"),
-        cold_start_latency=pd.read_csv(s4 / "performance/cold_start_latency.csv"),
-        resource_usage=pd.read_csv(s4 / "performance/resource_usage.csv"),
-        production_profile_latency=pd.read_csv(s4 / "performance/production_profile_latency.csv"),
-        performance_manifest=json.loads((s4 / "performance/performance_run_manifest.json").read_text(encoding="utf-8")),
-        answer_summary=pd.read_csv(s4 / "generation/answer_metrics_summary.csv"),
-        answer_per_query=pd.read_csv(s4 / "generation/answer_metrics_per_query.csv"),
-        answer_audit=json.loads((s4 / "generation/answer_quality_audit.json").read_text(encoding="utf-8")),
-        citation_validation=pd.read_csv(s4 / "generation/citation_validation.csv"),
-        generation_manifest=json.loads((s4 / "generation/generation_run_manifest.json").read_text(encoding="utf-8")),
-        ablation_results=pd.read_csv(s4 / "ablation/ablation_results.csv"),
-        paired_comparisons=pd.read_csv(s4 / "ablation/paired_method_comparisons.csv"),
-        rag_contribution=pd.read_csv(s4 / "ablation/rag_contribution.csv"),
-        top_k_sensitivity=pd.read_csv(s4 / "sensitivity/top_k_sensitivity.csv"),
-        candidate_pool_sensitivity=pd.read_csv(s4 / "sensitivity/candidate_pool_sensitivity.csv"),
-        context_budget_sensitivity=pd.read_csv(s4 / "sensitivity/context_budget_sensitivity.csv"),
-        confidence_intervals=pd.read_csv(s4 / "statistics/confidence_intervals.csv"),
-        paired_bootstrap=pd.read_csv(s4 / "statistics/paired_bootstrap_results.csv"),
-        win_tie_loss=pd.read_csv(s4 / "statistics/win_tie_loss.csv"),
-        subgroup_metrics=pd.read_csv(s4 / "statistics/subgroup_metrics.csv"),
-        annotation_sensitivity=pd.read_csv(s4 / "statistics/annotation_sensitivity.csv"),
-        robustness_metrics=pd.read_csv(s4 / "robustness/robustness_metrics.csv"),
-        robustness_results=_read_jsonl(s4 / "robustness/robustness_results.jsonl"),
-        study_summary=pd.read_csv(s4 / "study_features/study_features_summary.csv"),
-        functional_tests=json.loads((s4 / "study_features/functional_test_results.json").read_text(encoding="utf-8")),
-        failure_taxonomy=pd.read_csv(s4 / "error_analysis/failure_taxonomy_summary.csv"),
-        error_records=_read_jsonl(s4 / "error_analysis/error_analysis.jsonl"),
-        representative_cases=json.loads((s4 / "error_analysis/representative_case_studies.json").read_text(encoding="utf-8")),
-        tradeoff=pd.read_csv(s4 / "tradeoff/quality_latency_tradeoff.csv"),
-        pareto_frontier=pd.read_csv(s4 / "tradeoff/pareto_frontier.csv"),
-        stage04_recommendations=json.loads((s4 / "tradeoff/configuration_recommendations.json").read_text(encoding="utf-8")),
+        manifest=json.loads(_s4("manifest.json").read_text(encoding="utf-8")),
+        chunking_metrics=pd.read_csv(_s4("chunking/chunking_metrics.csv")),
+        chunking_diagnostics=json.loads(_s4("chunking/chunking_diagnostics.json").read_text(encoding="utf-8")),
+        retrieval_summary=pd.read_csv(_s4("retrieval/retrieval_metrics_summary.csv")),
+        strict_retrieval=pd.read_csv(_s4("retrieval/strict_relevance_metrics.csv")),
+        judgment_coverage=pd.read_csv(_s4("retrieval/judgment_coverage.csv")),
+        ranking_drift=json.loads(_s4("retrieval/ranking_drift.json").read_text(encoding="utf-8")),
+        evidence_summary=pd.read_csv(_s4("evidence/evidence_metrics_summary.csv")),
+        latency_summary=pd.read_csv(_s4("performance/latency_summary.csv")),
+        stage_latency=pd.read_csv(_s4("performance/stage_latency.csv")),
+        cold_start_latency=pd.read_csv(_s4("performance/cold_start_latency.csv")),
+        resource_usage=pd.read_csv(_s4("performance/resource_usage.csv")),
+        production_profile_latency=pd.read_csv(_s4("performance/production_profile_latency.csv")),
+        performance_manifest=json.loads(_s4("performance/performance_run_manifest.json").read_text(encoding="utf-8")),
+        answer_summary=pd.read_csv(_s4("generation/answer_metrics_summary.csv")),
+        answer_per_query=pd.read_csv(_s4("generation/answer_metrics_per_query.csv")),
+        answer_audit=json.loads(_s4("generation/answer_quality_audit.json").read_text(encoding="utf-8")),
+        citation_validation=pd.read_csv(_s4("generation/citation_validation.csv")),
+        generation_manifest=json.loads(_s4("generation/generation_run_manifest.json").read_text(encoding="utf-8")),
+        ablation_results=pd.read_csv(_s4("ablation/ablation_results.csv")),
+        paired_comparisons=pd.read_csv(_s4("ablation/paired_method_comparisons.csv")),
+        rag_contribution=pd.read_csv(_s4("ablation/rag_contribution.csv")),
+        top_k_sensitivity=pd.read_csv(_s4("sensitivity/top_k_sensitivity.csv")),
+        candidate_pool_sensitivity=pd.read_csv(_s4("sensitivity/candidate_pool_sensitivity.csv")),
+        context_budget_sensitivity=pd.read_csv(_s4("sensitivity/context_budget_sensitivity.csv")),
+        confidence_intervals=pd.read_csv(_s4("statistics/confidence_intervals.csv")),
+        paired_bootstrap=pd.read_csv(_s4("statistics/paired_bootstrap_results.csv")),
+        win_tie_loss=pd.read_csv(_s4("statistics/win_tie_loss.csv")),
+        subgroup_metrics=pd.read_csv(_s4("statistics/subgroup_metrics.csv")),
+        annotation_sensitivity=pd.read_csv(_s4("statistics/annotation_sensitivity.csv")),
+        robustness_metrics=pd.read_csv(_s4("robustness/robustness_metrics.csv")),
+        robustness_results=_read_jsonl(_s4("robustness/robustness_results.jsonl")),
+        study_summary=pd.read_csv(_s4("study_features/study_features_summary.csv")),
+        functional_tests=json.loads(_s4("study_features/functional_test_results.json").read_text(encoding="utf-8")),
+        failure_taxonomy=pd.read_csv(_s4("error_analysis/failure_taxonomy_summary.csv")),
+        error_records=_read_jsonl(_s4("error_analysis/error_analysis.jsonl")),
+        representative_cases=json.loads(_s4("error_analysis/representative_case_studies.json").read_text(encoding="utf-8")),
+        tradeoff=pd.read_csv(_s4("tradeoff/quality_latency_tradeoff.csv")),
+        pareto_frontier=pd.read_csv(_s4("tradeoff/pareto_frontier.csv")),
+        stage04_recommendations=json.loads(_s4("tradeoff/configuration_recommendations.json").read_text(encoding="utf-8")),
     )

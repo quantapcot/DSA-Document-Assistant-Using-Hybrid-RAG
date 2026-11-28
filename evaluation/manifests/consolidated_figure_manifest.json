@@ -1,0 +1,121 @@
+{
+  "generated_utc": "2026-11-28T18:06:41.422224+00:00",
+  "base_commit": "9b09c2e904648cb2eb85acd8986b099b84494f65",
+  "language": "vi",
+  "primary_font": "Arial",
+  "dpi": 300,
+  "total_consolidated_figures": 10,
+  "total_original_figures_preserved": 34,
+  "figures": [
+    {
+      "figure_number": 1,
+      "figure_id": "fig01_danh_gia_chunking",
+      "title_vi": "Hình 01: Đánh giá chiến lược Chunking (Recursive vs Structure-Adaptive)",
+      "png_path": "evaluation/figures/consolidated/png/fig01_danh_gia_chunking.png",
+      "svg_path": "evaluation/figures/consolidated/svg/fig01_danh_gia_chunking.svg",
+      "png_bytes": 1116237,
+      "svg_bytes": 99135,
+      "png_sha256": "30433bc44adf71481dc0294af61d377493b711418f0194f5cce276a66dacd67b",
+      "svg_sha256": "4e8fb0018e911b15311011e8bbbdb3fe068ec42f234dfbcfffdbdc0dbb0fca9c"
+    },
+    {
+      "figure_number": 2,
+      "figure_id": "fig02_chat_luong_retrieval",
+      "title_vi": "Hình 02: Đánh giá chất lượng Retrieval trên 8 tổ hợp và 9 mốc Top-K",
+      "png_path": "evaluation/figures/consolidated/png/fig02_chat_luong_retrieval.png",
+      "svg_path": "evaluation/figures/consolidated/svg/fig02_chat_luong_retrieval.svg",
+      "png_bytes": 1919989,
+      "svg_bytes": 235007,
+      "png_sha256": "c16445eaa099ffaddc0f7de8dcf6c2f42fbacc363295028ac18bd4690954d111",
+      "svg_sha256": "2fe0e4f151485c8586d8516d849afbbb72da56cf3bbcf566ad95395bb794eed0"
+    },
+    {
+      "figure_number": 3,
+      "figure_id": "fig03_chat_luong_evidence",
+      "title_vi": "Hình 03: Đánh giá chất lượng Evidence nguồn xác thực và độ phủ Knowledge Unit",
+      "png_path": "evaluation/figures/consolidated/png/fig03_chat_luong_evidence.png",
+      "svg_path": "evaluation/figures/consolidated/svg/fig03_chat_luong_evidence.svg",
+      "png_bytes": 1560486,
+      "svg_bytes": 167208,
+      "png_sha256": "e6f221ea5507e0ac90ba3f99c105db175cab115f8259c1ce5a89c5767f60b5a2",
+      "svg_sha256": "75973f2b1a8eb3670a3829a1496e7463fc9da33f3a646ca17c8f7c4d5981f875"
+    },
+    {
+      "figure_number": 4,
+      "figure_id": "fig04_hieu_nang_va_tai_nguyen",
+      "title_vi": "Hình 04: Hiệu năng độ trễ Retrieval (tách biệt 4 giao thức) và tài nguyên hệ thống",
+      "png_path": "evaluation/figures/consolidated/png/fig04_hieu_nang_va_tai_nguyen.png",
+      "svg_path": "evaluation/figures/consolidated/svg/fig04_hieu_nang_va_tai_nguyen.svg",
+      "png_bytes": 1165011,
+      "svg_bytes": 153038,
+      "png_sha256": "4db17cafd6630e5c79f8a13c4f39a3d54b35d5d39f460c42318916f4b4389990",
+      "svg_sha256": "17e2350f6c02a121246633a2dce2a0ee04b97abb6a74411f7474606c2152d515"
+    },
+    {
+      "figure_number": 5,
+      "figure_id": "fig05_chat_luong_cau_tra_loi",
+      "title_vi": "Hình 05: Chất lượng sinh câu trả lời (10 thước đo Controlled Agent Generation)",
+      "png_path": "evaluation/figures/consolidated/png/fig05_chat_luong_cau_tra_loi.png",
+      "svg_path": "evaluation/figures/consolidated/svg/fig05_chat_luong_cau_tra_loi.svg",
+      "png_bytes": 1022215,
+      "svg_bytes": 151392,
+      "png_sha256": "f009bcac6b4aa3087cf82e3f32c0f2aefc88ce54d5fa0fd4a2543fe3b4ea1c82",
+      "svg_sha256": "c82982456a2674fbeaa9480ce951e055812bd22a7fc3b90cb2c221170e4ff93a"
+    },
+    {
+      "figure_number": 6,
+      "figure_id": "fig06_ablation_va_do_nhay",
+      "title_vi": "Hình 06: Nghiên cứu Ablation và phân tích độ nhạy (Top-K, Candidate Pool, Context Budget)",
+      "png_path": "evaluation/figures/consolidated/png/fig06_ablation_va_do_nhay.png",
+      "svg_path": "evaluation/figures/consolidated/svg/fig06_ablation_va_do_nhay.svg",
+      "png_bytes": 1373363,
+      "svg_bytes": 93474,
+      "png_sha256": "697b479a14540e7f77ac10104fdd912bceaf9471a480ad0841302f03d31f3408",
+      "svg_sha256": "3174cb95d9253b5b4c5735b8d80a1ec94a96aaef5a5cdacc7bc5fc2bb702c607"
+    },
+    {
+      "figure_number": 7,
+      "figure_id": "fig07_thong_ke_va_tradeoff",
+      "title_vi": "Hình 07: Phân tích thống kê và biên tối ưu cân bằng Chất lượng – Độ trễ – Tài nguyên",
+      "png_path": "evaluation/figures/consolidated/png/fig07_thong_ke_va_tradeoff.png",
+      "svg_path": "evaluation/figures/consolidated/svg/fig07_thong_ke_va_tradeoff.svg",
+      "png_bytes": 1078763,
+      "svg_bytes": 119140,
+      "png_sha256": "a1978b205d91057fdb6c93c44645323ebf9c9e1dc25b9875d59ede1cbc8cece7",
+      "svg_sha256": "e219a4e58dbc461728c221bd43dd9fdbda3e0745df9d8801eadb5657042bfbd0"
+    },
+    {
+      "figure_number": 8,
+      "figure_id": "fig08_do_tin_cay_va_phan_tich_loi",
+      "title_vi": "Hình 08: Độ tin cậy (Robustness), tính năng học tập và phân tích lỗi thực nghiệm",
+      "png_path": "evaluation/figures/consolidated/png/fig08_do_tin_cay_va_phan_tich_loi.png",
+      "svg_path": "evaluation/figures/consolidated/svg/fig08_do_tin_cay_va_phan_tich_loi.svg",
+      "png_bytes": 1138937,
+      "svg_bytes": 77755,
+      "png_sha256": "1df49011ec40adef340b6f6f9136dbb6017dfd5d1096fa03bbe9a016afc08bc6",
+      "svg_sha256": "bfde9d8d0c8b946392f82b970405900620d4ba87584bca19ab6c94d8c55f46f4"
+    },
+    {
+      "figure_number": 9,
+      "figure_id": "fig09_live_groq_va_http_e2e",
+      "title_vi": "Hình 09: Đánh giá Live Groq API (openai/gpt-oss-120b) và HTTP End-to-End",
+      "png_path": "evaluation/figures/consolidated/png/fig09_live_groq_va_http_e2e.png",
+      "svg_path": "evaluation/figures/consolidated/svg/fig09_live_groq_va_http_e2e.svg",
+      "png_bytes": 1053847,
+      "svg_bytes": 154085,
+      "png_sha256": "386a8ca59eeeaa4312bd17b273feb430be0ec2dbdd6ec5c6387162229219af99",
+      "svg_sha256": "38be2658437d0d2bdc75d41808f0a0370db87f6c6e30113ebb8f3af07aa4b777"
+    },
+    {
+      "figure_number": 10,
+      "figure_id": "fig10_chuc_nang_va_do_on_dinh_api",
+      "title_vi": "Hình 10: Chức năng thực tế (Quiz, Roadmap, Robustness) và độ ổn định API sản phẩm",
+      "png_path": "evaluation/figures/consolidated/png/fig10_chuc_nang_va_do_on_dinh_api.png",
+      "svg_path": "evaluation/figures/consolidated/svg/fig10_chuc_nang_va_do_on_dinh_api.svg",
+      "png_bytes": 1192134,
+      "svg_bytes": 72820,
+      "png_sha256": "e8e5e208b824dab17bf5c62873d1f4b27bcff0f1917aa08f24f2473352cfe4db",
+      "svg_sha256": "701fe9f55dc2bcddc31bfbf6a3e5229d7bdf539ba21c71dea773d31d57fbdeb2"
+    }
+  ]
+}

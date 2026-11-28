@@ -507,16 +507,17 @@ def generate_ac04_figures(root: Path) -> list[dict[str, Any]]:
 
 def validate_ac04_completion(root: Path, *, write_manifest: bool = False) -> dict[str, Any]:
     """Validate all 6 supplementary figures, manifests, zero secret exposure, and frozen integrity."""
-    out_dir = artifacts_dir(root)
-    fman = json.loads((out_dir / "figure_manifest.json").read_text(encoding="utf-8"))
+    from evaluation.path_resolver import resolve_ac04_file, resolve_path
+
+    fman = json.loads(resolve_ac04_file(root, "figure_manifest.json").read_text(encoding="utf-8"))
     figs = fman["figures"]
     stage05_integrity = verify_inputs_and_integrity(root)
 
     png_ok = 0
     svg_ok = 0
     for f in figs:
-        pp = root / f["png_path"]
-        sp = root / f["svg_path"]
+        pp = resolve_path(root, f["png_path"])
+        sp = resolve_path(root, f["svg_path"])
         if pp.is_file():
             with Image.open(pp) as im:
                 dpi = im.info.get("dpi", (0, 0))
@@ -531,13 +532,23 @@ def validate_ac04_completion(root: Path, *, write_manifest: bool = False) -> dic
             except ET.ParseError:
                 pass
 
-    # Secret scan across ALL non-PNG files under evaluation/artifacts/ac04_completion/
+    # Secret scan across ALL non-PNG AC-04 artifacts (supports both legacy and relocated locations)
     secret_pat = re.compile(r"(gsk_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9]{20,}|AIza[0-9A-Za-z\-_]{30,})")
     secret_hits: list[str] = []
     checksums: dict[str, dict[str, Any]] = {}
-    for p in sorted(out_dir.rglob("*")):
-        if not p.is_file():
-            continue
+    scan_paths: list[Path] = []
+    legacy_dir = root / "evaluation" / "artifacts" / "ac04_completion"
+    reloc_path = root / "evaluation" / "manifests" / "relocation_manifest.json"
+    if legacy_dir.exists() and any(legacy_dir.rglob("*")):
+        scan_paths = [p for p in sorted(legacy_dir.rglob("*")) if p.is_file()]
+    elif reloc_path.is_file():
+        rdata = json.loads(reloc_path.read_text(encoding="utf-8"))
+        scan_paths = [
+            root / e["new_path"]
+            for e in rdata.get("relocated_files", [])
+            if e["old_path"].startswith("evaluation/artifacts/ac04_completion/") and (root / e["new_path"]).is_file()
+        ]
+    for p in scan_paths:
         rel = p.relative_to(root).as_posix()
         checksums[rel] = {"bytes": p.stat().st_size, "sha256": sha256_file(p)}
         if p.suffix.lower() != ".png":
@@ -545,7 +556,7 @@ def validate_ac04_completion(root: Path, *, write_manifest: bool = False) -> dic
             if secret_pat.search(txt):
                 secret_hits.append(rel)
 
-    report_path = root / "STAGE_04_AC04_COMPLETION_REPORT.md"
+    report_path = resolve_path(root, "STAGE_04_AC04_COMPLETION_REPORT.md")
     report_ok = False
     broken_links: list[str] = []
     if report_path.is_file():
@@ -561,7 +572,9 @@ def validate_ac04_completion(root: Path, *, write_manifest: bool = False) -> dic
         report_ok = len(broken_links) == 0 and all_figs_mentioned
 
     # Check Stage 05 original 28 PNGs still untouched
-    s5_pngs = list((root / "evaluation/artifacts/stage05/figures/png").glob("fig*.png"))
+    orig_png_dir = root / "evaluation" / "figures" / "original" / "png"
+    legacy_s5_png_dir = root / "evaluation" / "artifacts" / "stage05" / "figures" / "png"
+    s5_pngs = list((orig_png_dir if orig_png_dir.exists() else legacy_s5_png_dir).glob("fig*.png"))
     s5_untouched = len(s5_pngs) == 28
 
     summary = {
@@ -587,7 +600,9 @@ def validate_ac04_completion(root: Path, *, write_manifest: bool = False) -> dic
     )
 
     if write_manifest:
-        (out_dir / "manifest.json").write_text(
+        out_manifest = resolve_ac04_file(root, "manifest.json")
+        out_manifest.parent.mkdir(parents=True, exist_ok=True)
+        out_manifest.write_text(
             json.dumps(
                 {
                     "generated_utc": datetime.now(timezone.utc).isoformat(),

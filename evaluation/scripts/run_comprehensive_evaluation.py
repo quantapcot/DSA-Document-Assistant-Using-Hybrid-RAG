@@ -151,7 +151,9 @@ def main(argv: list[str] | None = None) -> int:
             "tradeoff/configuration_recommendations.json",
             "study_features/functional_test_results.json",
         ]
-        missing = [r for r in required if not (stage04_dir / r).exists()]
+        from evaluation.path_resolver import resolve_stage04_file
+
+        missing = [r for r in required if not resolve_stage04_file(ROOT, r).exists()]
         print("VALIDATE_MISSING:", missing)
         return 1 if missing else 0
 

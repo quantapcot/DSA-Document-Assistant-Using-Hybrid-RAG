@@ -1,0 +1,1152 @@
+{
+  "generated_utc": "2026-11-28T17:47:44.467515+00:00",
+  "base_commit": "9b09c2e904648cb2eb85acd8986b099b84494f65",
+  "historical_checksums_modified": false,
+  "relocated_count": 168,
+  "retained_legacy_frozen_count": 22,
+  "relocated_files": [
+    {
+      "old_path": "evaluation/artifacts/stage04/ablation/ablation_results.csv",
+      "new_path": "evaluation/results/ablation/ablation_results.csv",
+      "bytes": 22143,
+      "sha256": "54d87d01af80a110b4172e3383c92433798b18019cdb75ff189faf6f7d842fe2"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/ablation/paired_method_comparisons.csv",
+      "new_path": "evaluation/results/ablation/paired_method_comparisons.csv",
+      "bytes": 18642,
+      "sha256": "75eb4c3717a2194e1174ead221e2987b4e9d85453f4b92acdfcdd838ac64f927"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/ablation/rag_contribution.csv",
+      "new_path": "evaluation/results/ablation/rag_contribution.csv",
+      "bytes": 3442,
+      "sha256": "f6342b89d398264b4ec1e3100bbc1f65326fa537608a43fbc6ccf8be7e85100d"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/chunking/chunking_diagnostics.json",
+      "new_path": "evaluation/results/chunking/chunking_diagnostics.json",
+      "bytes": 5747,
+      "sha256": "d95079330a800f0f0956fb8707c34fa44f8cf65e8d1ddec081948f415c63248c"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/chunking/chunking_metrics.csv",
+      "new_path": "evaluation/results/chunking/chunking_metrics.csv",
+      "bytes": 1605,
+      "sha256": "7dc88adf76ecf7cd5625ccaf512485fd2649cef757b67ec2a1b4a138827d30e0"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/error_analysis/error_analysis.jsonl",
+      "new_path": "evaluation/results/error_analysis/error_analysis.jsonl",
+      "bytes": 59151,
+      "sha256": "ce84b59081ee0b9531480f8cc13458a04cf39f89da81a930927ec4f0982cbe0c"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/error_analysis/failure_taxonomy_summary.csv",
+      "new_path": "evaluation/results/error_analysis/failure_taxonomy_summary.csv",
+      "bytes": 246,
+      "sha256": "1ee24d3221020c0d26f9c589d4b02661871f3cdd0c99b817a193d5d6ec25b2a1"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/error_analysis/representative_case_studies.json",
+      "new_path": "evaluation/results/error_analysis/representative_case_studies.json",
+      "bytes": 45466,
+      "sha256": "ba8ff5cb2f4e98610a35aeb03a7cc99aca1acb7976f668c817aa13ff197e5fa8"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/evidence/evidence_metrics_per_query.csv",
+      "new_path": "evaluation/results/evidence/evidence_metrics_per_query.csv",
+      "bytes": 435317,
+      "sha256": "77ec6a0431ab33021ded3e84a586a926dad93e8f806250066a0b9f9e1baf0a5a"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/evidence/evidence_metrics_summary.csv",
+      "new_path": "evaluation/results/evidence/evidence_metrics_summary.csv",
+      "bytes": 6599,
+      "sha256": "adc83446638b4ac61c73bbed25488c357caabc069d0ad9e10dca881d733ab761"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/evidence/evidence_redundancy.csv",
+      "new_path": "evaluation/results/evidence/evidence_redundancy.csv",
+      "bytes": 159483,
+      "sha256": "ebb24e770d1439d1985bc5dacf9b8b5a28fa41485ed6ad8d1f61fa17471748b4"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/evidence/knowledge_unit_coverage.jsonl",
+      "new_path": "evaluation/results/evidence/knowledge_unit_coverage.jsonl",
+      "bytes": 221483,
+      "sha256": "e7638816b19c675f330d71699321f5e1382efb2086f9150fa5047e07bb776154"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/generation/answer_judgments.jsonl",
+      "new_path": "evaluation/results/generation/controlled_agent/answer_judgments.jsonl",
+      "bytes": 348515,
+      "sha256": "b8a5d812e57dde51fde7c9a4044c776f4d1241c0e701d44b0c0892ff39afc025"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/generation/answer_metrics_per_query.csv",
+      "new_path": "evaluation/results/generation/controlled_agent/answer_metrics_per_query.csv",
+      "bytes": 35027,
+      "sha256": "38f26e503edc42c49adca534f327d345db12c2aaa6ec2037db24e2a4b295af28"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/generation/answer_metrics_summary.csv",
+      "new_path": "evaluation/results/generation/controlled_agent/answer_metrics_summary.csv",
+      "bytes": 1603,
+      "sha256": "d5e5a790a49f921aaa4668544ba2d64eef17ba2dd429b0bc63793c258c364572"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/generation/answer_quality_audit.json",
+      "new_path": "evaluation/results/generation/controlled_agent/answer_quality_audit.json",
+      "bytes": 3120,
+      "sha256": "8985225233425252faea065d3e244bcbc30c42af48728c0e48e958e5c2feddc2"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/generation/citation_validation.csv",
+      "new_path": "evaluation/results/generation/controlled_agent/citation_validation.csv",
+      "bytes": 22125,
+      "sha256": "eaae9c5461a07a39a71fee3b6c11c079f0f70621dfeddc3c96aff9563002cc0a"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/generation/context_budget_answers.jsonl",
+      "new_path": "evaluation/results/generation/controlled_agent/context_budget_answers.jsonl",
+      "bytes": 172221,
+      "sha256": "ac8f49bf304aa1c443166f49e574d1a730f762198484e0f8eb3b3447ac3eb9b8"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/generation/generated_answers.jsonl",
+      "new_path": "evaluation/results/generation/controlled_agent/generated_answers.jsonl",
+      "bytes": 1314075,
+      "sha256": "6405d27e5289af680976cbdd1faa15418bbc4f8262cad0cd359ef7f7add508ce"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/generation/generation_run_manifest.json",
+      "new_path": "evaluation/results/generation/controlled_agent/generation_run_manifest.json",
+      "bytes": 489,
+      "sha256": "13625f1f92289d1b849a564d9063d879832c3d7e5402a5371a5f627d92748939"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/generation/no_rag_baseline_answers.jsonl",
+      "new_path": "evaluation/results/generation/controlled_agent/no_rag_baseline_answers.jsonl",
+      "bytes": 78464,
+      "sha256": "af05fe645fa7834daebb037c7ded95d5424b086be52bd58ee18f2334ffbf19a1"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/generation/packed_contexts_budget.jsonl",
+      "new_path": "evaluation/results/generation/controlled_agent/packed_contexts_budget.jsonl",
+      "bytes": 471003,
+      "sha256": "371bfb4c2a9fba66043c1c9c9a42797bc9cf1098636802dea0cffe69e0a5a796"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/generation/packed_contexts_main.jsonl",
+      "new_path": "evaluation/results/generation/controlled_agent/packed_contexts_main.jsonl",
+      "bytes": 3284792,
+      "sha256": "3d43a140c11bbe97633c6a6c93c09d69419eca12cfd45004aa3b2f648b8062ea"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/manifest.json",
+      "new_path": "evaluation/manifests/stage04_manifest.json",
+      "bytes": 3409,
+      "sha256": "177028a0a2d5e1fca47b222a611011b3bd7d885b2b57d177f00f3158880cbd83"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/performance/cold_start_latency.csv",
+      "new_path": "evaluation/results/performance/cold_start_latency.csv",
+      "bytes": 2463,
+      "sha256": "505f4fca11acd616dd98aa47b0659857297907372df2fee17ded896343326672"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/performance/latency_raw.jsonl",
+      "new_path": "evaluation/results/performance/latency_raw.jsonl",
+      "bytes": 3024602,
+      "sha256": "0df2a162ae0fd628f08c4fba6a0d7a06b223cc87b7683bb17d73131b69eafe64"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/performance/latency_summary.csv",
+      "new_path": "evaluation/results/performance/latency_summary.csv",
+      "bytes": 9468,
+      "sha256": "18be0e3b502b1c09155e75ef037de97ff9c1808a939252a9898bd47dfa0649d9"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/performance/performance_run_manifest.json",
+      "new_path": "evaluation/results/performance/performance_run_manifest.json",
+      "bytes": 2839,
+      "sha256": "f9fefdfb8cecd84b14cc1e4820a275b72c641a034b932c12130d700af3a712e5"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/performance/production_profile_latency.csv",
+      "new_path": "evaluation/results/performance/production_profile_latency.csv",
+      "bytes": 1222,
+      "sha256": "23b92e8c26d89d2d10359bbfb89f491928ef1226ffd11f558dc66a0aeff8f329"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/performance/resource_usage.csv",
+      "new_path": "evaluation/results/performance/resource_usage.csv",
+      "bytes": 1551,
+      "sha256": "869fbbb6bf2a72fc112ca86052e207034f34f59d0da149f2f3e2651a6390f8e0"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/performance/stage_latency.csv",
+      "new_path": "evaluation/results/performance/stage_latency.csv",
+      "bytes": 1612,
+      "sha256": "c6d3921f2f87571709e0dd4d4984939537dfcd8cbc423447bf2d29a85a7d2182"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/retrieval/judgment_coverage.csv",
+      "new_path": "evaluation/results/retrieval/judgment_coverage.csv",
+      "bytes": 145541,
+      "sha256": "827463c00408c00f03b4d13680a59e860d7a748065be90b886564cf4a7317956"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/retrieval/ranking_drift.json",
+      "new_path": "evaluation/results/retrieval/ranking_drift.json",
+      "bytes": 4529,
+      "sha256": "52b16bd34bc4a107ca08414f4f3209523c855ebcd89f35f2cfa92e0b6b146a67"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/retrieval/retrieval_metrics_per_query.csv",
+      "new_path": "evaluation/results/retrieval/retrieval_metrics_per_query.csv",
+      "bytes": 543842,
+      "sha256": "2134a05837d0df47c11a2193665e93e969c9dd11eaeb61b01209c0b502c7a330"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/retrieval/retrieval_metrics_summary.csv",
+      "new_path": "evaluation/results/retrieval/retrieval_metrics_summary.csv",
+      "bytes": 9512,
+      "sha256": "4c4d50a172d386c33aec078a4be7ea61adf595baaa14dfabf97af204d38f89a9"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/retrieval/retrieval_rankings.jsonl",
+      "new_path": "evaluation/results/retrieval/retrieval_rankings.jsonl",
+      "bytes": 1569731,
+      "sha256": "cc00ca7a06576f0100f718642115227157ee0e781bae9b9261867d8df59ae529"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/retrieval/strict_relevance_metrics.csv",
+      "new_path": "evaluation/results/retrieval/strict_relevance_metrics.csv",
+      "bytes": 9540,
+      "sha256": "36bc9acf1fa8c65888575f024d83397b8a1c51803af538840f79f2a445d0e319"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/robustness/robustness_metrics.csv",
+      "new_path": "evaluation/results/robustness/controlled/robustness_metrics.csv",
+      "bytes": 532,
+      "sha256": "37102948647a5650c25da6fda4a289516bd6dd6867669b1a3d3b02ff0a95628f"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/robustness/robustness_prepared.jsonl",
+      "new_path": "evaluation/results/robustness/controlled/robustness_prepared.jsonl",
+      "bytes": 71694,
+      "sha256": "295ba355b79c780ae974a29c4a514941f9eeaaa1a786357a8147d49c283a57ca"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/robustness/robustness_questions.jsonl",
+      "new_path": "evaluation/results/robustness/controlled/robustness_questions.jsonl",
+      "bytes": 6483,
+      "sha256": "6b9a3d0d6087eb794bb67c033568b74d632c25d44ee66f66ad1796f8fd78f794"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/robustness/robustness_results.jsonl",
+      "new_path": "evaluation/results/robustness/controlled/robustness_results.jsonl",
+      "bytes": 31466,
+      "sha256": "f70ae2bf25fde462541a7de73f6ae2390a2088dbeebc898e0da88dcd7a4b817d"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/sensitivity/candidate_pool_rankings.jsonl",
+      "new_path": "evaluation/results/sensitivity/candidate_pool_rankings.jsonl",
+      "bytes": 201635,
+      "sha256": "d94d82b234e32f88d9178d24d94147622eb27dc43937cb5339791bad550c24a4"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/sensitivity/candidate_pool_sensitivity.csv",
+      "new_path": "evaluation/results/sensitivity/candidate_pool_sensitivity.csv",
+      "bytes": 2168,
+      "sha256": "59d7b03535527cbfc37bc9cfb2d9b1a14e2a030d08944d48496e11e6db0ab006"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/sensitivity/context_budget_sensitivity.csv",
+      "new_path": "evaluation/results/sensitivity/context_budget_sensitivity.csv",
+      "bytes": 391,
+      "sha256": "0af6584de4ad9d55c7bd40bd1b65c0e83c3a936cd685ce066f119664a58b316d"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/sensitivity/top_k_sensitivity.csv",
+      "new_path": "evaluation/results/sensitivity/top_k_sensitivity.csv",
+      "bytes": 10684,
+      "sha256": "cfb2fb55b8b058247dcbc010d2ffe2c55b55b6bb37081083122eeca401fe57d9"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/statistics/annotation_sensitivity.csv",
+      "new_path": "evaluation/results/statistics/annotation_sensitivity.csv",
+      "bytes": 4669,
+      "sha256": "1d30b9548e48c9c0d478670fea4f45b3d2723edbf87e019a8e6b0f1b23364c6c"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/statistics/confidence_intervals.csv",
+      "new_path": "evaluation/results/statistics/confidence_intervals.csv",
+      "bytes": 28972,
+      "sha256": "333f05e6f75dbbbcd21e25fbb62e167297de4b7162d7c23ab1d9ddb3d7f2028f"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/statistics/paired_bootstrap_results.csv",
+      "new_path": "evaluation/results/statistics/paired_bootstrap_results.csv",
+      "bytes": 83382,
+      "sha256": "e6eef1b95eb17be173e3c5e1ad80ad402d8272768028882e5f7857791365810b"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/statistics/statistical_summary.csv",
+      "new_path": "evaluation/results/statistics/statistical_summary.csv",
+      "bytes": 62062,
+      "sha256": "a1e4422340c6e0fc4ebe065182ad97a53b3587edfdb2340953b83f338b13fe4d"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/statistics/subgroup_metrics.csv",
+      "new_path": "evaluation/results/statistics/subgroup_metrics.csv",
+      "bytes": 40842,
+      "sha256": "adeb0ebe253cca225d4833650056d682804a5c0824c7a8b0848f8b8be417a679"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/statistics/win_tie_loss.csv",
+      "new_path": "evaluation/results/statistics/win_tie_loss.csv",
+      "bytes": 8890,
+      "sha256": "47c09b9e4678530698e3c76980737ed3343323998456f791e3e63a4915dfd407"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/study_features/functional_test_results.json",
+      "new_path": "evaluation/results/study_features/controlled/functional_test_results.json",
+      "bytes": 4157,
+      "sha256": "759102284a21605087eb3a0339a4425cafb6111ef739551d8b0c5cc9c5cc2960"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/study_features/quiz_evaluation.jsonl",
+      "new_path": "evaluation/results/study_features/controlled/quiz_evaluation.jsonl",
+      "bytes": 31295,
+      "sha256": "42d341ecc792867ccc9d7a1a891074b14fa3f4b221352c0180cefc0627048f7a"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/study_features/roadmap_evaluation.jsonl",
+      "new_path": "evaluation/results/study_features/controlled/roadmap_evaluation.jsonl",
+      "bytes": 16519,
+      "sha256": "1c01178f8f4176bb45974e8fbd1b80e6502d5c97f57c79c516e28228f152d6ac"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/study_features/study_features_summary.csv",
+      "new_path": "evaluation/results/study_features/controlled/study_features_summary.csv",
+      "bytes": 436,
+      "sha256": "c210bac209ba878a7df9bba02413de668c7bb4a8cc7e6b2c00027c06d85e34ea"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/study_features/study_prepared.json",
+      "new_path": "evaluation/results/study_features/controlled/study_prepared.json",
+      "bytes": 51830,
+      "sha256": "5aa607c0098a97558b5dcfe783061c73e307b4187312ec2682b7584defcec42a"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/tradeoff/configuration_recommendations.json",
+      "new_path": "evaluation/results/tradeoff/configuration_recommendations.json",
+      "bytes": 541,
+      "sha256": "c4ff40730a15571d623d65104bb8a817ddc473228535d20c552a0d428fbf955c"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/tradeoff/pareto_frontier.csv",
+      "new_path": "evaluation/results/tradeoff/pareto_frontier.csv",
+      "bytes": 5166,
+      "sha256": "a6180021c7738f4eb37dc43c62813bd59631dcd8cc5fa40ed8ab5cf6c901b64c"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage04/tradeoff/quality_latency_tradeoff.csv",
+      "new_path": "evaluation/results/tradeoff/quality_latency_tradeoff.csv",
+      "bytes": 4910,
+      "sha256": "8fc0725355f44fe040a8a43dc983858e5765c27fe62957025d33c514bd77715e"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/chart_validation.json",
+      "new_path": "evaluation/manifests/stage05_chart_validation.json",
+      "bytes": 19817,
+      "sha256": "0a50be6a6d9861f44e3115b6112fda006cc117d20e37c7fb5d40c1ea01d1376a"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/configuration_recommendations.json",
+      "new_path": "evaluation/manifests/stage05_configuration_recommendations.json",
+      "bytes": 5546,
+      "sha256": "112b91cded811bf5a392be6e3ac456d608dd26a251f1c0b224526f7a901e6868"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figure_manifest.json",
+      "new_path": "evaluation/manifests/stage05_figure_manifest.json",
+      "bytes": 45755,
+      "sha256": "34c2727b522c02fdd68a96917b2544adf11bb9ed662fe5f4c9640bf4f8a57f82"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/png/fig01_chunk_count_and_storage.png",
+      "new_path": "evaluation/figures/original/png/fig01_chunk_count_and_storage.png",
+      "bytes": 279552,
+      "sha256": "2f4e9c4faf0cbc41368c5cf179a9f8b6022a862c9d78ea5a9ee3e9760f3fe787"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/png/fig02_chunk_length_distribution.png",
+      "new_path": "evaluation/figures/original/png/fig02_chunk_length_distribution.png",
+      "bytes": 265763,
+      "sha256": "21a0d11545e4bad460a6d7ba962c0cc8fc4b499de4f85e22cc7dcefa82d2c02b"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/png/fig03_token_distribution_and_context_volume.png",
+      "new_path": "evaluation/figures/original/png/fig03_token_distribution_and_context_volume.png",
+      "bytes": 331767,
+      "sha256": "7a0f6187883a0e64153b70072ead889d3049a85da855cf0000d78e8e2e6ca82d"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/png/fig04_truncation_rate_and_discarded_tokens.png",
+      "new_path": "evaluation/figures/original/png/fig04_truncation_rate_and_discarded_tokens.png",
+      "bytes": 256120,
+      "sha256": "0d0e426c698e0673e8c69f505eefc195b202270bb22c32eff8816302c7a4b058"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/png/fig05_source_coverage_ku_and_redundancy.png",
+      "new_path": "evaluation/figures/original/png/fig05_source_coverage_ku_and_redundancy.png",
+      "bytes": 274490,
+      "sha256": "851d501a387427fa9bcb99e7703ad74ff6f48f925c712de9c49a10b3e55df3e9"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/png/fig06_precision_at_k.png",
+      "new_path": "evaluation/figures/original/png/fig06_precision_at_k.png",
+      "bytes": 481748,
+      "sha256": "dca4bef1e51f3d195aeb7d00882bed371d6ddf7c6995d1102b664de4601ce3b8"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/png/fig07_pooled_recall_at_k.png",
+      "new_path": "evaluation/figures/original/png/fig07_pooled_recall_at_k.png",
+      "bytes": 499742,
+      "sha256": "186d7f88bb574f7f53587b5b5b6c19ff46021e5efaf4489de1b35e9d32d2b36b"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/png/fig08_mrr_at_k.png",
+      "new_path": "evaluation/figures/original/png/fig08_mrr_at_k.png",
+      "bytes": 379849,
+      "sha256": "9b64b1952c00f267cbd2901060ab9ba125c9a2a7587b0b1e7a552fe289e5f0f9"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/png/fig09_ndcg_at_k.png",
+      "new_path": "evaluation/figures/original/png/fig09_ndcg_at_k.png",
+      "bytes": 455667,
+      "sha256": "15ee41f8eca1d1f96c384a97dab60e76666d36e006bcbb98beb48b0b896c4394"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/png/fig10_map_at_k.png",
+      "new_path": "evaluation/figures/original/png/fig10_map_at_k.png",
+      "bytes": 441860,
+      "sha256": "129f084d3483dd00b0f8d0d31d242f50a7ea94f65619a58fcf68e89eac008453"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/png/fig11_f1_at_k.png",
+      "new_path": "evaluation/figures/original/png/fig11_f1_at_k.png",
+      "bytes": 457069,
+      "sha256": "9e23bb7c5aee618461d99f74cdb7f0ecbb45473869863424128098863ec6bf46"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/png/fig12_hit_rate_and_judged_at_k.png",
+      "new_path": "evaluation/figures/original/png/fig12_hit_rate_and_judged_at_k.png",
+      "bytes": 352612,
+      "sha256": "803c04dc9e0b6cb26d5dfc1117c6c2780c378808e113f675e6cabfdf57a9d062"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/png/fig13_evidence_recall_and_semantic_ku_at_k.png",
+      "new_path": "evaluation/figures/original/png/fig13_evidence_recall_and_semantic_ku_at_k.png",
+      "bytes": 470341,
+      "sha256": "ee4f590947a6c8c17e6dece4590eaa3dc45171c23e6b157db400ef5cf679cffd"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/png/fig14_evidence_precision_and_redundancy_at_k.png",
+      "new_path": "evaluation/figures/original/png/fig14_evidence_precision_and_redundancy_at_k.png",
+      "bytes": 404298,
+      "sha256": "1801b307e08f51673e38033cab14e863a5730a53d7c0dbcac349bad44cfc2cdd"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/png/fig15_complete_vs_partial_evidence_coverage.png",
+      "new_path": "evaluation/figures/original/png/fig15_complete_vs_partial_evidence_coverage.png",
+      "bytes": 407508,
+      "sha256": "d3e3dfd35a4df69bd6d69adde131bb38e58a266024ef668366a2da06f8aa72e2"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/png/fig16_mean_latency_at_k.png",
+      "new_path": "evaluation/figures/original/png/fig16_mean_latency_at_k.png",
+      "bytes": 409936,
+      "sha256": "ae3c06471b45a7d3c684c0b60766eaa4b9c84fac2c7d217b1a2f5f32d8d8c904"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/png/fig17_p95_latency_at_k.png",
+      "new_path": "evaluation/figures/original/png/fig17_p95_latency_at_k.png",
+      "bytes": 328866,
+      "sha256": "86655d1345ec17c60eb24cb60fac66d1e33bd5a834b11b0475ce9d9db9adcd79"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/png/fig18_retrieval_latency_breakdown.png",
+      "new_path": "evaluation/figures/original/png/fig18_retrieval_latency_breakdown.png",
+      "bytes": 307445,
+      "sha256": "8eba2b14637855a2c41dc06708c24b1dcce5c29427b5c0af4a059062a9dd859b"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/png/fig19_cold_vs_warm_and_prod_profile_latency.png",
+      "new_path": "evaluation/figures/original/png/fig19_cold_vs_warm_and_prod_profile_latency.png",
+      "bytes": 286238,
+      "sha256": "1a6c74628a38ef576d131d4074837591e6de14170f80adb1d129fe66a2421564"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/png/fig20_resource_usage.png",
+      "new_path": "evaluation/figures/original/png/fig20_resource_usage.png",
+      "bytes": 266258,
+      "sha256": "13c3759bed74045640040f4220d147e462673afc7094a5dd484f87164509e89f"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/png/fig21_answer_quality_comparison.png",
+      "new_path": "evaluation/figures/original/png/fig21_answer_quality_comparison.png",
+      "bytes": 399218,
+      "sha256": "6373cc18c4b692017a0033e767cc665941dfeea1d612cd2f90e9720462797ef1"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/png/fig22_rag_vs_norag_and_ablation_study.png",
+      "new_path": "evaluation/figures/original/png/fig22_rag_vs_norag_and_ablation_study.png",
+      "bytes": 407170,
+      "sha256": "2fd940b4a1c59735356b5014ef9e713f14e6099e580a5bb3d924b56d8d428ff6"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/png/fig23_candidate_pool_and_topk_sensitivity.png",
+      "new_path": "evaluation/figures/original/png/fig23_candidate_pool_and_topk_sensitivity.png",
+      "bytes": 437626,
+      "sha256": "e8d9474aaaa0925becd9d424c408bbf8942eb616801a920aecc6703a9153694e"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/png/fig24_context_budget_sensitivity.png",
+      "new_path": "evaluation/figures/original/png/fig24_context_budget_sensitivity.png",
+      "bytes": 371945,
+      "sha256": "d6ae6bcf9dc6270f4d18f1bbf53ee43657ff4ea9f7bd4095463a0b7edb9f3b77"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/png/fig25_quality_latency_pareto_tradeoff.png",
+      "new_path": "evaluation/figures/original/png/fig25_quality_latency_pareto_tradeoff.png",
+      "bytes": 414150,
+      "sha256": "612005ded63d38b48fd111108fa6709908ee2ade9ade5a168e9e932c2a0563b7"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/png/fig26_statistical_ci_subgroups_and_audit.png",
+      "new_path": "evaluation/figures/original/png/fig26_statistical_ci_subgroups_and_audit.png",
+      "bytes": 489555,
+      "sha256": "159a4cee66022b4c689d2adfeba53e1092f639c8a631f9ec10af29da9b28ce9f"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/png/fig27_robustness_and_study_features.png",
+      "new_path": "evaluation/figures/original/png/fig27_robustness_and_study_features.png",
+      "bytes": 380825,
+      "sha256": "9fa11c9c76f31cf2e6a734bc05b3b0fab8a4679d6cb22caf6a5caf94536f8848"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/png/fig28_error_distribution_and_taxonomy.png",
+      "new_path": "evaluation/figures/original/png/fig28_error_distribution_and_taxonomy.png",
+      "bytes": 382105,
+      "sha256": "856922f5e9a20e4989ecfdfc505cf9697cf6998ca3fef9442c34458055ae642b"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/svg/fig01_chunk_count_and_storage.svg",
+      "new_path": "evaluation/figures/original/svg/fig01_chunk_count_and_storage.svg",
+      "bytes": 28444,
+      "sha256": "24cacef7e82254e479e57fff4cc0d8adcabe391c24dce9079f852d38876f808b"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/svg/fig02_chunk_length_distribution.svg",
+      "new_path": "evaluation/figures/original/svg/fig02_chunk_length_distribution.svg",
+      "bytes": 34791,
+      "sha256": "eee6cec5c49154ee4711c19338aa85357aa5c943554dfe4c4ee85bbcba29afe9"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/svg/fig03_token_distribution_and_context_volume.svg",
+      "new_path": "evaluation/figures/original/svg/fig03_token_distribution_and_context_volume.svg",
+      "bytes": 44735,
+      "sha256": "50d4f3741cd824a4555390dd49979dc6c0ab7e501d5c922e6e0ece18186bf600"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/svg/fig04_truncation_rate_and_discarded_tokens.svg",
+      "new_path": "evaluation/figures/original/svg/fig04_truncation_rate_and_discarded_tokens.svg",
+      "bytes": 25154,
+      "sha256": "74b4794b129047b3c0e597a1d0b54a8176fb32af9e7c75535627ee4a942712ec"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/svg/fig05_source_coverage_ku_and_redundancy.svg",
+      "new_path": "evaluation/figures/original/svg/fig05_source_coverage_ku_and_redundancy.svg",
+      "bytes": 27098,
+      "sha256": "83645a01d46ae23bc2f8387ea68548ab2318cab0f9ce2572defec3f0ac672440"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/svg/fig06_precision_at_k.svg",
+      "new_path": "evaluation/figures/original/svg/fig06_precision_at_k.svg",
+      "bytes": 58460,
+      "sha256": "e6cc0bcb6b24f493ccf4cd2e3b28734be14c320cb212bc1f924bdb32c31692c3"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/svg/fig07_pooled_recall_at_k.svg",
+      "new_path": "evaluation/figures/original/svg/fig07_pooled_recall_at_k.svg",
+      "bytes": 58436,
+      "sha256": "4119272ab49f63fec0774d8f0b8cb285acd2271e0a451973461aff9d089aaff8"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/svg/fig08_mrr_at_k.svg",
+      "new_path": "evaluation/figures/original/svg/fig08_mrr_at_k.svg",
+      "bytes": 58378,
+      "sha256": "b0a61f8334d3ed5d3f0dd3e31239975f0f5c5f3b7139a4ae7d94c0c30b292ec9"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/svg/fig09_ndcg_at_k.svg",
+      "new_path": "evaluation/figures/original/svg/fig09_ndcg_at_k.svg",
+      "bytes": 57299,
+      "sha256": "dd27e382c6dd8f070837f5b902993ded31f3a2266d574eeadd70eacf2fab9b3e"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/svg/fig10_map_at_k.svg",
+      "new_path": "evaluation/figures/original/svg/fig10_map_at_k.svg",
+      "bytes": 58449,
+      "sha256": "09198090cd988c2e5a2245232e16e059489490dca863f30ffe02c4f51b121676"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/svg/fig11_f1_at_k.svg",
+      "new_path": "evaluation/figures/original/svg/fig11_f1_at_k.svg",
+      "bytes": 59894,
+      "sha256": "83f2cbc7d102b620d028481b95214b274d47d18d093d6c6c56841671294a3afd"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/svg/fig12_hit_rate_and_judged_at_k.svg",
+      "new_path": "evaluation/figures/original/svg/fig12_hit_rate_and_judged_at_k.svg",
+      "bytes": 50016,
+      "sha256": "6dcdae400b239ce776371c3c54c34b560629d03646186259fdaeb482fa300089"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/svg/fig13_evidence_recall_and_semantic_ku_at_k.svg",
+      "new_path": "evaluation/figures/original/svg/fig13_evidence_recall_and_semantic_ku_at_k.svg",
+      "bytes": 53376,
+      "sha256": "ecd6639c3bca687efe1ce1ab4f5bba4f40509ce9d9aa24c7b3c773bf0bd6c12a"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/svg/fig14_evidence_precision_and_redundancy_at_k.svg",
+      "new_path": "evaluation/figures/original/svg/fig14_evidence_precision_and_redundancy_at_k.svg",
+      "bytes": 54315,
+      "sha256": "5ef32eb94465a39b0ad7aecd6400e34d6e2737714c174d906db1cc56914c102e"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/svg/fig15_complete_vs_partial_evidence_coverage.svg",
+      "new_path": "evaluation/figures/original/svg/fig15_complete_vs_partial_evidence_coverage.svg",
+      "bytes": 53125,
+      "sha256": "ca077762d50c2fc9006e3404e1b6b24ed0cd8d562e12b30162904c3514ceed52"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/svg/fig16_mean_latency_at_k.svg",
+      "new_path": "evaluation/figures/original/svg/fig16_mean_latency_at_k.svg",
+      "bytes": 66747,
+      "sha256": "71f417b87a1a51ad6838e42b48404efc02b3f4a6dc97b161b32b0eb13b060693"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/svg/fig17_p95_latency_at_k.svg",
+      "new_path": "evaluation/figures/original/svg/fig17_p95_latency_at_k.svg",
+      "bytes": 56366,
+      "sha256": "6822eab2aa0922a2d5388df6aca39fc3230068999d1212ff030f3118dfd9cd98"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/svg/fig18_retrieval_latency_breakdown.svg",
+      "new_path": "evaluation/figures/original/svg/fig18_retrieval_latency_breakdown.svg",
+      "bytes": 51014,
+      "sha256": "f4c600a511e58053e3a01b6be9bd2c9f57cb79c99d6ddf1b314de7b5ef4c9600"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/svg/fig19_cold_vs_warm_and_prod_profile_latency.svg",
+      "new_path": "evaluation/figures/original/svg/fig19_cold_vs_warm_and_prod_profile_latency.svg",
+      "bytes": 43876,
+      "sha256": "c0ad6c9c927d5bbaaffe9544fbc9354c63ac272710a10353151881c59256fc77"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/svg/fig20_resource_usage.svg",
+      "new_path": "evaluation/figures/original/svg/fig20_resource_usage.svg",
+      "bytes": 39959,
+      "sha256": "06bdaf2b7b235a5a6a7c240a72b9603164e1324b7d11d1c744def82cbee246ef"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/svg/fig21_answer_quality_comparison.svg",
+      "new_path": "evaluation/figures/original/svg/fig21_answer_quality_comparison.svg",
+      "bytes": 60730,
+      "sha256": "ba2b8a7fd2f9fdc8150bad78348068745bb864cf39385e2994a4000040d25f6d"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/svg/fig22_rag_vs_norag_and_ablation_study.svg",
+      "new_path": "evaluation/figures/original/svg/fig22_rag_vs_norag_and_ablation_study.svg",
+      "bytes": 45008,
+      "sha256": "ce9fec862eade105a01fcf78a9df1ff2330e9cef7722e730cb531630f4a074af"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/svg/fig23_candidate_pool_and_topk_sensitivity.svg",
+      "new_path": "evaluation/figures/original/svg/fig23_candidate_pool_and_topk_sensitivity.svg",
+      "bytes": 52129,
+      "sha256": "bb6f1e74bed07e8f30ce6926299019c259241db5c8cbb5ef7b4d454fada6f480"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/svg/fig24_context_budget_sensitivity.svg",
+      "new_path": "evaluation/figures/original/svg/fig24_context_budget_sensitivity.svg",
+      "bytes": 38359,
+      "sha256": "2a3f3c5a6f5f72d9d54e9108e65979218c05ef877a39921714be1de62f02d5c6"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/svg/fig25_quality_latency_pareto_tradeoff.svg",
+      "new_path": "evaluation/figures/original/svg/fig25_quality_latency_pareto_tradeoff.svg",
+      "bytes": 40677,
+      "sha256": "e6978d0a414f27b4d7227d991c1a52fdc29f48b60c33b0f9f7a1e4fd823ced76"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/svg/fig26_statistical_ci_subgroups_and_audit.svg",
+      "new_path": "evaluation/figures/original/svg/fig26_statistical_ci_subgroups_and_audit.svg",
+      "bytes": 89443,
+      "sha256": "6875074df7559166fb093322f7e47516f9c1f0784d2f856d220410269fc623b5"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/svg/fig27_robustness_and_study_features.svg",
+      "new_path": "evaluation/figures/original/svg/fig27_robustness_and_study_features.svg",
+      "bytes": 37625,
+      "sha256": "c030a4928709c52b4f6f1f397f12f00957dc599718896b5a66d6a46a0b8a3bda"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/figures/svg/fig28_error_distribution_and_taxonomy.svg",
+      "new_path": "evaluation/figures/original/svg/fig28_error_distribution_and_taxonomy.svg",
+      "bytes": 45042,
+      "sha256": "b1575bc6f86430573d2eb651bbaabcb170620d2ac2e7da40bb09947679ac266a"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/manifest.json",
+      "new_path": "evaluation/manifests/stage05_manifest.json",
+      "bytes": 18888,
+      "sha256": "071daec54d728d3196e5d9aa8afb324d362958028f172e5b7378def0d113322f"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/tables/table_01_chunking_summary.csv",
+      "new_path": "evaluation/tables/table_01_chunking_summary.csv",
+      "bytes": 1605,
+      "sha256": "7dc88adf76ecf7cd5625ccaf512485fd2649cef757b67ec2a1b4a138827d30e0"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/tables/table_02_retrieval_k5_k15_k60.csv",
+      "new_path": "evaluation/tables/table_02_retrieval_k5_k15_k60.csv",
+      "bytes": 981,
+      "sha256": "12e52cf8facf34bc8f5e93fa56c0c43399e570df6936cd7f28110966f097b123"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/tables/table_03_evidence_summary.csv",
+      "new_path": "evaluation/tables/table_03_evidence_summary.csv",
+      "bytes": 739,
+      "sha256": "082953299f19c14080f33dc426b14ba5bcd60eaed605946c1262809610333c6e"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/tables/table_04_latency_protocols.csv",
+      "new_path": "evaluation/tables/table_04_latency_protocols.csv",
+      "bytes": 906,
+      "sha256": "fe788ff2c582288b2e403b195a20129a16fa8a91a854ef23711dd84130ed35b7"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/tables/table_05_generation_summary.csv",
+      "new_path": "evaluation/tables/table_05_generation_summary.csv",
+      "bytes": 853,
+      "sha256": "c6984d6d5e65cc5981f37f85662e12e412e7e4d00e0120d41c4d11009392c459"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/tables/table_06_ablation_and_stats.csv",
+      "new_path": "evaluation/tables/table_06_ablation_and_stats.csv",
+      "bytes": 2620,
+      "sha256": "c85cd97af03ed06451847d3818adf59f8b0e62570b3264ac60f36d533dd4bfed"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/tables/table_07_sensitivity_summary.csv",
+      "new_path": "evaluation/tables/table_07_sensitivity_summary.csv",
+      "bytes": 2687,
+      "sha256": "cdb51a89088965110478497ed8962987fd6a80e4fa34e3b9fd9034de6873457a"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/tables/table_08_robustness_and_study.csv",
+      "new_path": "evaluation/tables/table_08_robustness_and_study.csv",
+      "bytes": 532,
+      "sha256": "37102948647a5650c25da6fda4a289516bd6dd6867669b1a3d3b02ff0a95628f"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/tables/table_09_pareto_and_recommendations.csv",
+      "new_path": "evaluation/tables/table_09_pareto_and_recommendations.csv",
+      "bytes": 3525,
+      "sha256": "fa61ce9c558cc77cdd8a45ffb9d9994e1d8b64c304c7bc8f82248f747b4c9e88"
+    },
+    {
+      "old_path": "evaluation/artifacts/stage05/tables/table_10_stage04_ac_reconciliation.csv",
+      "new_path": "evaluation/tables/table_10_stage04_ac_reconciliation.csv",
+      "bytes": 1673,
+      "sha256": "468a6b0bbf622c4feb34fb6f1c1512590995066ad68624d75d90667b9e78afe3"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/ac04_gates_assessment.json",
+      "new_path": "evaluation/manifests/ac04_gates_assessment.json",
+      "bytes": 2016,
+      "sha256": "b121f15ba66e6b35024ebe2cd0ff5a4c10950bff76805245df184024c74d316f"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/answer_judgments_live.jsonl",
+      "new_path": "evaluation/results/generation/live_groq/answer_judgments_live.jsonl",
+      "bytes": 94059,
+      "sha256": "16a70a0cdc81ccfa019a2204694cb2f4917e175e7a74911cfcdde8fc30b0b619"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/answer_metrics_per_query_live.csv",
+      "new_path": "evaluation/results/generation/live_groq/answer_metrics_per_query_live.csv",
+      "bytes": 13167,
+      "sha256": "22fcc946352f3aa4529aa93f0ab7a61714aa7f6e4169fdeedefb3c07d42121ce"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/answer_quality_audit_live.json",
+      "new_path": "evaluation/results/generation/live_groq/answer_quality_audit_live.json",
+      "bytes": 468,
+      "sha256": "60e8fcfded4b4be6d24f2c5209a09395bc32337fb1f739184cb579ecc2f9e309"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/answer_quality_summary.csv",
+      "new_path": "evaluation/results/generation/live_groq/answer_quality_summary.csv",
+      "bytes": 1578,
+      "sha256": "b7e822bd2df4ff2f3c782a8ce39bde11efeeb6b0dbf7e36a01b9251ab7bfcf3f"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/edge_cases_summary.csv",
+      "new_path": "evaluation/results/http_e2e/edge_cases_summary.csv",
+      "bytes": 589,
+      "sha256": "478a9d0f16b5c1a8058fd0ea56630d80db83033ae3f58391f74714033ea3198d"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/figure_manifest.json",
+      "new_path": "evaluation/manifests/ac04_figure_manifest.json",
+      "bytes": 6091,
+      "sha256": "522d958a107fc2789a9d76d9eee2bc806cd01f2c454da87918b7c20f60b7a647"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/figures/png/sup_fig01_live_groq_answer_quality.png",
+      "new_path": "evaluation/figures/original/png/sup_fig01_live_groq_answer_quality.png",
+      "bytes": 405372,
+      "sha256": "699b441aa9a3d25f3be43072b04d07bb3e458ca141ba0a6dd506d4b11432ebc0"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/figures/png/sup_fig02_controlled_agent_vs_live_groq.png",
+      "new_path": "evaluation/figures/original/png/sup_fig02_controlled_agent_vs_live_groq.png",
+      "bytes": 327628,
+      "sha256": "b87c66c7ebac4118013661effd5c46735310b3e4c7d16e99c8a94e8a16e2eea0"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/figures/png/sup_fig03_http_e2e_latency.png",
+      "new_path": "evaluation/figures/original/png/sup_fig03_http_e2e_latency.png",
+      "bytes": 277555,
+      "sha256": "57a41d3b539c5d864756664a5eb2c7c2c7c47e04be72bc84666a1a5f9d6fd2ca"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/figures/png/sup_fig04_retrieval_vs_generation_vs_total_time.png",
+      "new_path": "evaluation/figures/original/png/sup_fig04_retrieval_vs_generation_vs_total_time.png",
+      "bytes": 268973,
+      "sha256": "3c065e00b3a3d8e6b988fa8b2bb826c6fa7646fb3487b964158f8627e30b4d38"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/figures/png/sup_fig05_live_quiz_and_roadmap.png",
+      "new_path": "evaluation/figures/original/png/sup_fig05_live_quiz_and_roadmap.png",
+      "bytes": 339108,
+      "sha256": "d4129d16f41265463a4fa07e8c555cf7b8980d48ca93334ac5de973c29be0174"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/figures/png/sup_fig06_live_api_robustness_and_reliability.png",
+      "new_path": "evaluation/figures/original/png/sup_fig06_live_api_robustness_and_reliability.png",
+      "bytes": 297106,
+      "sha256": "911ede0b62fb6a521857357cb6f47576b205a0300302d6ae63c9ff71c6b320e5"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/figures/svg/sup_fig01_live_groq_answer_quality.svg",
+      "new_path": "evaluation/figures/original/svg/sup_fig01_live_groq_answer_quality.svg",
+      "bytes": 49077,
+      "sha256": "c5e1c7f90320d626f491b223629514c1e3c9077e31917b23def4fd2a4e523337"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/figures/svg/sup_fig02_controlled_agent_vs_live_groq.svg",
+      "new_path": "evaluation/figures/original/svg/sup_fig02_controlled_agent_vs_live_groq.svg",
+      "bytes": 32021,
+      "sha256": "b562584c02b291104ff90fb5f9fbf0e297e10f3daa4f7f29ef9f54580da7e48c"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/figures/svg/sup_fig03_http_e2e_latency.svg",
+      "new_path": "evaluation/figures/original/svg/sup_fig03_http_e2e_latency.svg",
+      "bytes": 30537,
+      "sha256": "e5e48877dddda09bc8ec52e89ef1c826c7eeb408732daca917d4e4a9d312fa89"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/figures/svg/sup_fig04_retrieval_vs_generation_vs_total_time.svg",
+      "new_path": "evaluation/figures/original/svg/sup_fig04_retrieval_vs_generation_vs_total_time.svg",
+      "bytes": 21654,
+      "sha256": "e21918c9797497c67b1069b04f32f9f1d7c475e88eb974b2e1acb60cf4f0a406"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/figures/svg/sup_fig05_live_quiz_and_roadmap.svg",
+      "new_path": "evaluation/figures/original/svg/sup_fig05_live_quiz_and_roadmap.svg",
+      "bytes": 37374,
+      "sha256": "81b18833bc9d8fa36dc78f037c79c693066e269e445eacb4ccc688e2aa35ad30"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/figures/svg/sup_fig06_live_api_robustness_and_reliability.svg",
+      "new_path": "evaluation/figures/original/svg/sup_fig06_live_api_robustness_and_reliability.svg",
+      "bytes": 37330,
+      "sha256": "9bbfbda7161aca174c512e6935ddd8bc79a89b1ff43ee5741d72ff1c8bedf061"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/http_chat_config_a.jsonl",
+      "new_path": "evaluation/results/http_e2e/http_chat_config_a.jsonl",
+      "bytes": 131603,
+      "sha256": "d3aaebe14cd26c18864850b8c06decead358bd2d5ccbf61171478d8be4691fdc"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/http_chat_config_b.jsonl",
+      "new_path": "evaluation/results/http_e2e/http_chat_config_b.jsonl",
+      "bytes": 141251,
+      "sha256": "5c22bca78937aee950b74fe9ec196b1ad25e2aeee3ba2ad7111731dc859ea479"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/http_edge_cases.jsonl",
+      "new_path": "evaluation/results/http_e2e/http_edge_cases.jsonl",
+      "bytes": 5616,
+      "sha256": "034083aeec773fa3b96ee1a987058b37834fb4c7f4d21a15638a3618f81baee4"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/http_latency_summary.csv",
+      "new_path": "evaluation/results/http_e2e/http_latency_summary.csv",
+      "bytes": 1166,
+      "sha256": "86c7bfc421b32219746fd55b2582be97e8edf6a64f6780b896b899c733958040"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/http_quiz.jsonl",
+      "new_path": "evaluation/results/study_features/live_http/http_quiz.jsonl",
+      "bytes": 115992,
+      "sha256": "af6c81139239680ffb5e91e9e504cc5b2ae6fa0fdad758485223c5fc6b7b9dc2"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/http_roadmap.jsonl",
+      "new_path": "evaluation/results/study_features/live_http/http_roadmap.jsonl",
+      "bytes": 4725,
+      "sha256": "ecfd7a33a8edfe8f708826e8da244a5214a1914196a6e4188923006272e7105b"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/http_robustness.jsonl",
+      "new_path": "evaluation/results/robustness/live_http/http_robustness.jsonl",
+      "bytes": 39503,
+      "sha256": "6e0b75a5db3dc17f730b353f60d6abbbc0bbec594a1199145f54fda0aa58281a"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/http_smoke_3q.jsonl",
+      "new_path": "evaluation/results/http_e2e/http_smoke_3q.jsonl",
+      "bytes": 15332,
+      "sha256": "e7eea5895453a4633c28ceebeac51b40c769c7a86dd0042f37424e6df55592f9"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/judge_inputs_chat.jsonl",
+      "new_path": "evaluation/results/generation/live_groq/judge_inputs_chat.jsonl",
+      "bytes": 374564,
+      "sha256": "7a058f16c5ae933404e51c70baa64fb312e396752657b26b8ec09d40312868e3"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/judge_inputs_robustness.jsonl",
+      "new_path": "evaluation/results/robustness/live_http/judge_inputs_robustness.jsonl",
+      "bytes": 19075,
+      "sha256": "916fe9301e3979f362b29ca87f55ac47adea83caa1b01019aa22fa6973910d3b"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/judge_inputs_study.jsonl",
+      "new_path": "evaluation/results/study_features/live_http/judge_inputs_study.jsonl",
+      "bytes": 71936,
+      "sha256": "95d3fe517a687cccd1f8979b42700f790fd0cb998f068e48de8e19186d0654a0"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/live_groq_no_rag.jsonl",
+      "new_path": "evaluation/results/generation/live_groq/live_groq_no_rag.jsonl",
+      "bytes": 190593,
+      "sha256": "c4bb1964088b61670ccfd48a98cc8bc5a1ff3fce9d977bd8b388a039e5d1ee6e"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/manifest.json",
+      "new_path": "evaluation/manifests/ac04_manifest.json",
+      "bytes": 8185,
+      "sha256": "eae8d6940ba4c0dc5c160ac993256248a93ac07e556c2b8bc055198fead32740"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/robustness_judgments_live.jsonl",
+      "new_path": "evaluation/results/robustness/live_http/robustness_judgments_live.jsonl",
+      "bytes": 6467,
+      "sha256": "084be1d94c2bc52726926b53ba3c6f65368cc3fd348823c4acf3c19a94cc74ea"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/robustness_summary_live.csv",
+      "new_path": "evaluation/results/robustness/live_http/robustness_summary_live.csv",
+      "bytes": 575,
+      "sha256": "f012db68e91819e1fa08e03e309bf9fef9adadc0f622dc4154f8edfb4f45746d"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/secondary_audit_live.jsonl",
+      "new_path": "evaluation/results/generation/live_groq/secondary_audit_live.jsonl",
+      "bytes": 7700,
+      "sha256": "4bd81fadd72cefc96cdeda3d6c288d027073258e828e261229e5676f9b84dcad"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/smoke_test_report.json",
+      "new_path": "evaluation/manifests/ac04_smoke_test_report.json",
+      "bytes": 2761,
+      "sha256": "fa8cd1c3a04ae1117f9f2c58e48cc9dbe4b9c0d986ebe7e84b00d8649da45f29"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/study_features_summary_live.csv",
+      "new_path": "evaluation/results/study_features/live_http/study_features_summary_live.csv",
+      "bytes": 359,
+      "sha256": "bcb7325159d216111682263eb348d838c24697cfc7a6863f126c37e41e28be90"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/study_judgments_live.jsonl",
+      "new_path": "evaluation/results/study_features/live_http/study_judgments_live.jsonl",
+      "bytes": 6618,
+      "sha256": "68ce2133f93a25584c849783e6d23f8518dcaa4c3efffa194b54849ce4cc2411"
+    },
+    {
+      "old_path": "evaluation/artifacts/ac04_completion/token_usage_summary.csv",
+      "new_path": "evaluation/results/http_e2e/token_usage_summary.csv",
+      "bytes": 699,
+      "sha256": "a214a088b09274520ed26d22b6e6f2c342efdfe2f046ffa6b47ca663cf3ddea2"
+    }
+  ],
+  "retained_legacy_frozen_files": [
+    {
+      "path": "evaluation/artifacts/diagnostics.json",
+      "bytes": 5246,
+      "sha256": "43d7bd84a5f052ebdf9f7f3f6ab52ab8c41aea163e2fbeb343401e1f9cdbb249",
+      "reason": "Frozen Stage 02 benchmark input/manifest referenced by immutable SHA-256 verification and dataset_manifest.json"
+    },
+    {
+      "path": "evaluation/artifacts/smoke_test_8_combos.json",
+      "bytes": 13881,
+      "sha256": "008b93b0ef6b716b2482a792a0785064425db71a20e0d5f3e02bb136052b1220",
+      "reason": "Frozen Stage 02 benchmark input/manifest referenced by immutable SHA-256 verification and dataset_manifest.json"
+    },
+    {
+      "path": "evaluation/artifacts/recursive_512_100/chunks.jsonl",
+      "bytes": 10444658,
+      "sha256": "e39811da17d99201e4ad26f54c4a53614a087e76e3e0cb6d031a733862af0649",
+      "reason": "Frozen Stage 02 benchmark input/manifest referenced by immutable SHA-256 verification and dataset_manifest.json"
+    },
+    {
+      "path": "evaluation/artifacts/recursive_512_100/manifest.json",
+      "bytes": 12323,
+      "sha256": "20d19868a5d063b02057df7b781654cb46cc32c0de934300058019882e46f84c",
+      "reason": "Frozen Stage 02 benchmark input/manifest referenced by immutable SHA-256 verification and dataset_manifest.json"
+    },
+    {
+      "path": "evaluation/artifacts/structure_adaptive/chunks.jsonl",
+      "bytes": 16288716,
+      "sha256": "81c568275754e35d7323b1e51fc247b885abc873eef4c5caa5c1ec4daa0b5d63",
+      "reason": "Frozen Stage 02 benchmark input/manifest referenced by immutable SHA-256 verification and dataset_manifest.json"
+    },
+    {
+      "path": "evaluation/artifacts/structure_adaptive/manifest.json",
+      "bytes": 15202,
+      "sha256": "ca33315f2b705aec3f2cc3221ab0965858d5e6a889a56b904cee4e6edfa863aa",
+      "reason": "Frozen Stage 02 benchmark input/manifest referenced by immutable SHA-256 verification and dataset_manifest.json"
+    },
+    {
+      "path": "evaluation/artifacts/stage03/ai_adjudications.jsonl",
+      "bytes": 52753,
+      "sha256": "dc61300a234d77e60329d8e0e1f9c9ca49dce24eabd1ec3cab871426097bb8ec",
+      "reason": "Frozen Stage 03 pooling/annotation provenance artifact referenced by Stage 03 importer and dataset_manifest.json"
+    },
+    {
+      "path": "evaluation/artifacts/stage03/ai_annotations_final.jsonl",
+      "bytes": 8248594,
+      "sha256": "f89d20f81c78c6ddca04425611bcbfee47c4f9fb76de1ab22ddaf6bf332ca290",
+      "reason": "Frozen Stage 03 pooling/annotation provenance artifact referenced by Stage 03 importer and dataset_manifest.json"
+    },
+    {
+      "path": "evaluation/artifacts/stage03/ai_annotations_primary.jsonl",
+      "bytes": 6612398,
+      "sha256": "8f5ae81d411698f8b408a510a6963a2f5a33a02458268ff3f393b67f1ce9cee0",
+      "reason": "Frozen Stage 03 pooling/annotation provenance artifact referenced by Stage 03 importer and dataset_manifest.json"
+    },
+    {
+      "path": "evaluation/artifacts/stage03/ai_annotations_secondary.jsonl",
+      "bytes": 940000,
+      "sha256": "2d633ff6468d286b3819a56856196a6337c1eee12a8ca1945a823f9a551958ea",
+      "reason": "Frozen Stage 03 pooling/annotation provenance artifact referenced by Stage 03 importer and dataset_manifest.json"
+    },
+    {
+      "path": "evaluation/artifacts/stage03/automated_quality_audit.json",
+      "bytes": 5710,
+      "sha256": "f6f926b1a3367f6987735e6885300bf0a74877fe3d1c6c2c0d3b58f6a61cb383",
+      "reason": "Frozen Stage 03 pooling/annotation provenance artifact referenced by Stage 03 importer and dataset_manifest.json"
+    },
+    {
+      "path": "evaluation/artifacts/stage03/automated_question_review.json",
+      "bytes": 45494,
+      "sha256": "bfc2644f9092bec2dbaaa69d6472d3bab5ab30a9f91644d8c15483ea45ac499e",
+      "reason": "Frozen Stage 03 pooling/annotation provenance artifact referenced by Stage 03 importer and dataset_manifest.json"
+    },
+    {
+      "path": "evaluation/artifacts/stage03/calibration_history.json",
+      "bytes": 1711,
+      "sha256": "462049aa0c6e93c8c8e376381e35b858b4d9822d838bf28f3adc3465783906ee",
+      "reason": "Frozen Stage 03 pooling/annotation provenance artifact referenced by Stage 03 importer and dataset_manifest.json"
+    },
+    {
+      "path": "evaluation/artifacts/stage03/candidate_pool_adaptive.jsonl",
+      "bytes": 3160316,
+      "sha256": "64454c644876a8879ebf14b14e5b9b90250eab948b6bc5004eb06b948f622151",
+      "reason": "Frozen Stage 03 pooling/annotation provenance artifact referenced by Stage 03 importer and dataset_manifest.json"
+    },
+    {
+      "path": "evaluation/artifacts/stage03/candidate_pool_recursive.jsonl",
+      "bytes": 4306833,
+      "sha256": "96b71712e59aba158da5deac7f5af637f355aae57536e5e83047456e3d324cb0",
+      "reason": "Frozen Stage 03 pooling/annotation provenance artifact referenced by Stage 03 importer and dataset_manifest.json"
+    },
+    {
+      "path": "evaluation/artifacts/stage03/method_candidate_mapping.jsonl",
+      "bytes": 3408080,
+      "sha256": "7514da93ca037cd519b8ef13338aa5b2481ea76a6c5855bab7d553f2e8889c07",
+      "reason": "Frozen Stage 03 pooling/annotation provenance artifact referenced by Stage 03 importer and dataset_manifest.json"
+    },
+    {
+      "path": "evaluation/artifacts/stage03/pilot_round_1.json",
+      "bytes": 14641,
+      "sha256": "1e0bad981eb29128d41e5dfda94fabbadc1e01840db283307ef07b9aaf792f88",
+      "reason": "Frozen Stage 03 pooling/annotation provenance artifact referenced by Stage 03 importer and dataset_manifest.json"
+    },
+    {
+      "path": "evaluation/artifacts/stage03/pilot_round_1_records.json",
+      "bytes": 272790,
+      "sha256": "100c70a70ea20bb0e9270384a4a9563d963cd1f95542745b89776f01adda05b3",
+      "reason": "Frozen Stage 03 pooling/annotation provenance artifact referenced by Stage 03 importer and dataset_manifest.json"
+    },
+    {
+      "path": "evaluation/artifacts/stage03/pool_diagnostics.json",
+      "bytes": 28519,
+      "sha256": "dee4a8962e8645cbee69d3c6685acba151abb697e60fdc230d4954f0da472d76",
+      "reason": "Frozen Stage 03 pooling/annotation provenance artifact referenced by Stage 03 importer and dataset_manifest.json"
+    },
+    {
+      "path": "evaluation/artifacts/stage03/primary_run_stats_all.json",
+      "bytes": 300,
+      "sha256": "4e849914e5f11e6192a462fe657028c91a3c5375e65fd36db4daad0c8b19bad1",
+      "reason": "Frozen Stage 03 pooling/annotation provenance artifact referenced by Stage 03 importer and dataset_manifest.json"
+    },
+    {
+      "path": "evaluation/artifacts/stage03/primary_run_stats_recursive_512_100.json",
+      "bytes": 342,
+      "sha256": "c7863bac3eddf2a0ae3daae6da309283bd1dce6c24a1f26fc2dadfbff6ab38b9",
+      "reason": "Frozen Stage 03 pooling/annotation provenance artifact referenced by Stage 03 importer and dataset_manifest.json"
+    },
+    {
+      "path": "evaluation/artifacts/stage03/raw_retrieval_results.jsonl",
+      "bytes": 1545091,
+      "sha256": "db0b2700cc35898ef859a70021a8a812d55616d2d1abab32be96766d1a25f37b",
+      "reason": "Frozen Stage 03 pooling/annotation provenance artifact referenced by Stage 03 importer and dataset_manifest.json"
+    }
+  ],
+  "rollback_archive_dir": "data/runtime/consolidation_rollback_archive"
+}

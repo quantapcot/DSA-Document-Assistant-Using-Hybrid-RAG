@@ -104,10 +104,11 @@ def run_stage05_validation(
     By default ``write_outputs=False`` so validation is strictly read-only and never dirties
     committed Stage 05 manifest files after checkpointing.
     """
-    stage05_dir = root / "evaluation" / "artifacts" / "stage05"
-    fig_manifest_path = stage05_dir / "figure_manifest.json"
-    rec_path = stage05_dir / "configuration_recommendations.json"
-    report_path = root / "STAGE_05_FINAL_EVALUATION_REPORT.md"
+    from evaluation.path_resolver import resolve_path, resolve_stage05_file
+
+    fig_manifest_path = resolve_stage05_file(root, "figure_manifest.json")
+    rec_path = resolve_stage05_file(root, "configuration_recommendations.json")
+    report_path = resolve_path(root, "STAGE_05_FINAL_EVALUATION_REPORT.md")
 
     integrity = verify_inputs_and_integrity(root)
     if not fig_manifest_path.is_file():
@@ -129,8 +130,8 @@ def run_stage05_validation(
         for g in str(fig["group"]).split(","):
             seen_groups.add(g.strip())
 
-        png_res = _check_png(root / fig["png_path"])
-        svg_res = _check_svg(root / fig["svg_path"])
+        png_res = _check_png(resolve_path(root, fig["png_path"]))
+        svg_res = _check_svg(resolve_path(root, fig["svg_path"]))
         if png_res["ok"]:
             png_ok_count += 1
         if svg_res["ok"]:
@@ -138,7 +139,7 @@ def run_stage05_validation(
 
         src_ok = True
         for src in fig.get("source_artifacts", []):
-            if not (root / src).is_file():
+            if not resolve_path(root, src).is_file():
                 src_ok = False
                 missing_sources.append(src)
 
@@ -156,7 +157,7 @@ def run_stage05_validation(
         })
 
     # Verify NO_RAG N/A preservation in table_05_generation_summary.csv
-    t5_path = stage05_dir / "tables" / "table_05_generation_summary.csv"
+    t5_path = resolve_stage05_file(root, "tables/table_05_generation_summary.csv")
     na_preserved = False
     if t5_path.is_file():
         t5_txt = t5_path.read_text(encoding="utf-8")

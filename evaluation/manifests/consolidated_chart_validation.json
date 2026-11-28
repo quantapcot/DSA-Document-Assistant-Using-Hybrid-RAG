@@ -1,0 +1,256 @@
+{
+  "validated_utc": "2026-11-28T18:06:46.536816+00:00",
+  "overall_pass": true,
+  "summary": {
+    "consolidated_figures_expected": 10,
+    "consolidated_png_passed": 10,
+    "consolidated_svg_passed": 10,
+    "original_34_figures_verified": true,
+    "data_parity_34_of_34_pass": true,
+    "relocation_manifest_ok": true,
+    "relocated_files_verified": 168,
+    "stage04_frozen_integrity_ok": true,
+    "exact_5_official_reports": true,
+    "actual_reports_in_dir": [
+      "01_environment.md",
+      "02_chunking_indexing.md",
+      "03_dataset_ground_truth.md",
+      "04_system_evaluation.md",
+      "05_final_evaluation.md"
+    ],
+    "report_broken_links": {},
+    "readme_broken_links": []
+  },
+  "consolidated_figures": [
+    {
+      "number": 1,
+      "figure_id": "fig01_danh_gia_chunking",
+      "title": "Hình 01: Đánh giá chiến lược Chunking (Recursive vs Structure-Adaptive)",
+      "png": {
+        "ok": true,
+        "width_px": 7088,
+        "height_px": 4236,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 62.81,
+        "bytes": 1116237
+      },
+      "svg": {
+        "ok": true,
+        "viewBox": "0 0 1700.347891 1016.753625",
+        "text_elements": 168,
+        "bytes": 99135
+      },
+      "ok": true
+    },
+    {
+      "number": 2,
+      "figure_id": "fig02_chat_luong_retrieval",
+      "title": "Hình 02: Đánh giá chất lượng Retrieval trên 8 tổ hợp và 9 mốc Top-K",
+      "png": {
+        "ok": true,
+        "width_px": 7147,
+        "height_px": 3988,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 45.01,
+        "bytes": 1919989
+      },
+      "svg": {
+        "ok": true,
+        "viewBox": "0 0 1714.184551 957.065625",
+        "text_elements": 216,
+        "bytes": 235007
+      },
+      "ok": true
+    },
+    {
+      "number": 3,
+      "figure_id": "fig03_chat_luong_evidence",
+      "title": "Hình 03: Đánh giá chất lượng Evidence nguồn xác thực và độ phủ Knowledge Unit",
+      "png": {
+        "ok": true,
+        "width_px": 6894,
+        "height_px": 3988,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 55.73,
+        "bytes": 1560486
+      },
+      "svg": {
+        "ok": true,
+        "viewBox": "0 0 1647.06375 957.065625",
+        "text_elements": 152,
+        "bytes": 167208
+      },
+      "ok": true
+    },
+    {
+      "number": 4,
+      "figure_id": "fig04_hieu_nang_va_tai_nguyen",
+      "title": "Hình 04: Hiệu năng độ trễ Retrieval (tách biệt 4 giao thức) và tài nguyên hệ thống",
+      "png": {
+        "ok": true,
+        "width_px": 7074,
+        "height_px": 4271,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 60.33,
+        "bytes": 1165011
+      },
+      "svg": {
+        "ok": true,
+        "viewBox": "0 0 1695.591138 1025.105625",
+        "text_elements": 180,
+        "bytes": 153038
+      },
+      "ok": true
+    },
+    {
+      "number": 5,
+      "figure_id": "fig05_chat_luong_cau_tra_loi",
+      "title": "Hình 05: Chất lượng sinh câu trả lời (10 thước đo Controlled Agent Generation)",
+      "png": {
+        "ok": true,
+        "width_px": 7047,
+        "height_px": 3386,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 88.96,
+        "bytes": 1022215
+      },
+      "svg": {
+        "ok": true,
+        "viewBox": "0 0 1690.334375 812.705625",
+        "text_elements": 176,
+        "bytes": 151392
+      },
+      "ok": true
+    },
+    {
+      "number": 6,
+      "figure_id": "fig06_ablation_va_do_nhay",
+      "title": "Hình 06: Nghiên cứu Ablation và phân tích độ nhạy (Top-K, Candidate Pool, Context Budget)",
+      "png": {
+        "ok": true,
+        "width_px": 7294,
+        "height_px": 4271,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 46.28,
+        "bytes": 1373363
+      },
+      "svg": {
+        "ok": true,
+        "viewBox": "0 0 1750.799396 1025.105625",
+        "text_elements": 125,
+        "bytes": 93474
+      },
+      "ok": true
+    },
+    {
+      "number": 7,
+      "figure_id": "fig07_thong_ke_va_tradeoff",
+      "title": "Hình 07: Phân tích thống kê và biên tối ưu cân bằng Chất lượng – Độ trễ – Tài nguyên",
+      "png": {
+        "ok": true,
+        "width_px": 7043,
+        "height_px": 4271,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 66.81,
+        "bytes": 1078763
+      },
+      "svg": {
+        "ok": true,
+        "viewBox": "0 0 1689.980312 1025.105625",
+        "text_elements": 162,
+        "bytes": 119140
+      },
+      "ok": true
+    },
+    {
+      "number": 8,
+      "figure_id": "fig08_do_tin_cay_va_phan_tich_loi",
+      "title": "Hình 08: Độ tin cậy (Robustness), tính năng học tập và phân tích lỗi thực nghiệm",
+      "png": {
+        "ok": true,
+        "width_px": 7372,
+        "height_px": 4129,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 62.03,
+        "bytes": 1138937
+      },
+      "svg": {
+        "ok": true,
+        "viewBox": "0 0 1771.331406 991.085625",
+        "text_elements": 113,
+        "bytes": 77755
+      },
+      "ok": true
+    },
+    {
+      "number": 9,
+      "figure_id": "fig09_live_groq_va_http_e2e",
+      "title": "Hình 09: Đánh giá Live Groq API (openai/gpt-oss-120b) và HTTP End-to-End",
+      "png": {
+        "ok": true,
+        "width_px": 6902,
+        "height_px": 4271,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 68.94,
+        "bytes": 1053847
+      },
+      "svg": {
+        "ok": true,
+        "viewBox": "0 0 1655.881797 1025.105625",
+        "text_elements": 144,
+        "bytes": 154085
+      },
+      "ok": true
+    },
+    {
+      "number": 10,
+      "figure_id": "fig10_chuc_nang_va_do_on_dinh_api",
+      "title": "Hình 10: Chức năng thực tế (Quiz, Roadmap, Robustness) và độ ổn định API sản phẩm",
+      "png": {
+        "ok": true,
+        "width_px": 6889,
+        "height_px": 4271,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 66.33,
+        "bytes": 1192134
+      },
+      "svg": {
+        "ok": true,
+        "viewBox": "0 0 1653.176484 1025.105625",
+        "text_elements": 138,
+        "bytes": 72820
+      },
+      "ok": true
+    }
+  ]
+}
