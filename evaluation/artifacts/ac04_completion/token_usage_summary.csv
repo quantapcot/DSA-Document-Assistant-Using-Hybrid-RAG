@@ -1,0 +1,10 @@
+experiment_group,http_or_task_requests,actual_provider_calls,provider_success_calls,provider_error_calls,rate_limit_429_calls,prompt_tokens,completion_tokens,total_tokens,mean_tokens_per_provider_call
+Connectivity_Smoke_1q,1,1,1,0,0,97,32,129,129.0
+HTTP_Smoke_3q,3,1,1,0,0,1494,59,1553,1553.0
+HTTP_Config_A_pool10_40q,40,7,7,0,0,7752,2784,10536,1505.1
+HTTP_Config_B_pool30_40q,40,7,7,0,0,8707,3398,12105,1729.3
+Direct_Live_Groq_NO_RAG_40q,40,40,40,0,0,8774,38567,47341,1183.5
+HTTP_Robustness_20,20,1,1,0,0,1326,1024,2350,2350.0
+HTTP_Quiz_8_Topics,9,33,27,6,6,29966,13111,43077,1595.4
+HTTP_Roadmap_4_Scenarios,4,0,0,0,0,0,0,0,0.0
+TOTAL_ALL_LIVE_GROQ,157,90,84,6,6,58116,58975,117091,1393.9

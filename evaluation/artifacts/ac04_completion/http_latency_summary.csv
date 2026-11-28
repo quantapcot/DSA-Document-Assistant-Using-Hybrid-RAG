@@ -1,0 +1,7 @@
+experiment_group,endpoint,measured_requests,provider_api_calls,http_200_count,http_success_rate,live_llm_count,extractive_fallback_count,abstained_count,error_or_gen_error_count,error_rate,timeout_count,timeout_rate,retry_count,rate_limit_429_count,mean_ms,p50_ms,p95_ms,min_ms,max_ms,std_ms,retrieval_mean_ms,llm_generation_mean_ms,http_overhead_mean_ms
+HTTP_Config_A_pool10,/api/chat,40,7,40,1.0,4,3,33,0,0.0,0,0.0,0,0,2099.53,1287.55,4671.87,888.95,11682.37,1993.99,1814.0,281.25,5.34
+HTTP_Config_B_pool30,/api/chat,40,7,40,1.0,4,3,33,1,0.025,0,0.0,0,0,3022.1,1741.38,6644.89,1392.95,12209.28,2205.99,2689.47,328.1,5.83
+Direct_Live_Groq_NO_RAG,direct_groq_api,40,40,40,1.0,40,0,0,0,0.0,0,0.0,0,0,2596.12,2617.09,2874.32,1337.31,3903.12,355.07,0.0,2596.12,0.0
+HTTP_Robustness_20,/api/chat,20,1,20,1.0,0,0,20,0,0.0,0,0.0,0,0,3637.65,2010.6,5397.98,1169.9,29728.69,6206.46,3628.85,0.0,10.07
+HTTP_Quiz_8_Topics,/api/quiz,8,33,8,1.0,1,0,3,4,0.5,0,0.0,3,6,9833.67,10477.22,18854.78,1412.45,18867.93,7647.51,2578.25,6179.38,1076.04
+HTTP_Roadmap_4_Scenarios,/api/roadmap,4,0,4,1.0,0,0,4,0,0.0,0,0.0,0,0,4641.9,4609.9,4840.27,4476.55,4871.26,171.27,4640.75,0.0,4.7

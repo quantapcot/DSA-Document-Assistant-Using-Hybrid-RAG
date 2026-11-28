@@ -1,0 +1,10 @@
+case_id,endpoint,expected_status,http_status,passed,client_elapsed_ms,generation_mode
+EDGE_HEALTH,/health,200,200.0,True,29.42,
+EDGE_READY,/ready,200,200.0,True,1.26,
+EDGE_EMPTY_CHAT,/api/chat,200,200.0,True,1057.6,abstained
+EDGE_EMPTY_QUIZ,/api/quiz,200,200.0,True,255.25,abstained
+EDGE_EMPTY_ROADMAP,/api/roadmap,200,200.0,True,198.01,abstained
+EDGE_INVALID_EMPTY_QUERY,/api/chat,400,400.0,True,3.23,
+EDGE_INVALID_ROADMAP_EXTRA,/api/roadmap,422,422.0,True,4.59,
+EDGE_CLIENT_TIMEOUT,/api/chat,client_timeout,,True,16.19,
+EDGE_SERVER_504_TIMEOUT,/api/chat,504,504.0,True,125.01,

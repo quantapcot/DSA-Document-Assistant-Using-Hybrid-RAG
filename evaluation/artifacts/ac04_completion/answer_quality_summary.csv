@@ -1,0 +1,8 @@
+protocol,subset,n_total,n_live_llm,n_extractive,n_abstained,n_with_verbatim_context,answer_correctness_norm,answer_correctness_norm_n,answer_relevancy_norm,answer_relevancy_norm_n,faithfulness_norm,faithfulness_norm_n,answer_completeness_norm,answer_completeness_norm_n,citation_accuracy_norm,citation_accuracy_norm_n,citation_validity,citation_validity_n,unsupported_claim_rate,unsupported_claim_rate_n,contradiction_rate,contradiction_rate_n,complexity_correctness_norm,complexity_correctness_norm_n,code_correctness_norm,code_correctness_norm_n
+http_e2e_config_a_prod_default_pool10,all_40_queries,40,4,3,33,7,0.1,40,0.0938,40,0.7143,7,0.0917,40,0.8571,7,1.0,7,0.2586,7,0.0073,40,0.2031,16,0.1875,4
+http_e2e_config_a_prod_default_pool10,live_llm_only,4,4,0,0,4,0.9375,4,0.875,4,0.5,4,0.9167,4,0.75,4,1.0,4,0.4525,4,0.0725,4,1.0,3,0.75,1
+http_e2e_config_a_prod_default_pool10,with_verbatim_context,7,4,3,0,7,0.5714,7,0.5357,7,0.7143,7,0.5238,7,0.8571,7,1.0,7,0.2586,7,0.0414,7,0.65,5,0.75,1
+http_e2e_config_b_exploratory_pool30,all_40_queries,40,4,3,33,7,0.0938,40,0.0938,40,0.7143,7,0.0958,40,0.8214,7,1.0,7,0.2371,7,0.0103,40,0.1974,19,0.05,5
+http_e2e_config_b_exploratory_pool30,live_llm_only,4,4,0,0,4,0.75,4,0.75,4,0.5,4,0.875,4,0.6875,4,1.0,4,0.415,4,0.0675,4,0.8333,3,N/A,0
+http_e2e_config_b_exploratory_pool30,with_verbatim_context,7,4,3,0,7,0.5357,7,0.5357,7,0.7143,7,0.5476,7,0.8214,7,1.0,7,0.2371,7,0.0586,7,0.625,6,0.25,1
+direct_live_groq_no_rag,all_40_queries,40,40,0,0,0,0.7312,40,0.9125,40,N/A,0,0.6333,40,N/A,0,N/A,0,N/A,0,0.0575,40,0.875,34,0.8158,19

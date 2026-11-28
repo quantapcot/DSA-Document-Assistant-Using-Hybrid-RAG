@@ -1,0 +1,3 @@
+feature,scenarios,http_200_count,any_live_llm_output_count,functional_live_llm_success_count,schema_valid_rate,content_correctness_norm,source_grounding_norm,pedagogical_quality_norm,mean_duplicate_rate,mean_http_ms,p95_http_ms
+live_http_quiz,8,8,5,1,1.0,0.2812,0.3438,0.25,0.0,9833.67,18854.78
+live_http_roadmap,4,4,0,0,1.0,0.0,0.0,0.0,0.0,4641.9,4840.27

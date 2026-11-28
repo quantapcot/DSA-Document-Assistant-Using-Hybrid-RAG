@@ -1,0 +1,13 @@
+{
+  "human_validated": false,
+  "human_approval_status": "DRAFT",
+  "primary_judge_model": "antigravity_agent_pro",
+  "secondary_audit_model": "antigravity_agent_flash",
+  "stage04_synthetic_controls_retained": "3/3 PASS",
+  "total_chat_judgments": 120,
+  "total_robustness_judgments": 20,
+  "total_study_judgments": 12,
+  "secondary_audit_sample_size": 14,
+  "correctness_within_1pt_agreement_pct": 100.0,
+  "faithfulness_within_1pt_agreement_pct": 87.5
+}
