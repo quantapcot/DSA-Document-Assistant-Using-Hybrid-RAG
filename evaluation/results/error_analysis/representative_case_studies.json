@@ -1,0 +1,1784 @@
+{
+  "all_methods_strong": [],
+  "all_methods_weak": [
+    {
+      "query_id": "Q007",
+      "query": "Trong mã giả cài đặt Queue bằng danh sách móc nối với hai con trỏ F (front) và R (rear), thao tác ENQUEUE và DEQUEUE xử lý trường hợp danh sách rỗng hoặc chỉ có một phần tử như thế nào?",
+      "topic": "Stack & Queue",
+      "language": "vi",
+      "difficulty": "medium",
+      "question_type": "pseudocode_interpretation",
+      "source_references": [
+        "pdf_Files/vie_pdf/008_train_file_Vie.pdf (p.16)"
+      ],
+      "ndcg_at_5": {
+        "A1": 0.2262,
+        "A2": 0.4954,
+        "A3": 0.2955,
+        "A4": 0.1568,
+        "B1": 0.0,
+        "B2": 0.0,
+        "B3": 0.101,
+        "B4": 0.1275
+      },
+      "evidence_recall_at_5": {
+        "A1": 0.0,
+        "A2": 1.0,
+        "A3": 0.5,
+        "A4": 0.0,
+        "B1": 0.0,
+        "B2": 0.0,
+        "B3": 0.0,
+        "B4": 0.0
+      },
+      "evidence_recall_at_60": {
+        "A1": 1.0,
+        "A2": 1.0,
+        "A3": 1.0,
+        "A4": 1.0,
+        "B1": 0.5,
+        "B2": 0.0,
+        "B3": 0.0,
+        "B4": 0.5
+      },
+      "a4_top5_chunks": [
+        "0cd66759365ea5b99a16937f",
+        "fb0a1decd4385d52591723a9",
+        "4e438ceb266cd0f271da9e94",
+        "bdd478f8e98105f3606bdfe2",
+        "98b8e12b6383e3941a883cf2"
+      ],
+      "a4_top5_grades": [
+        0,
+        1,
+        1,
+        0,
+        0
+      ],
+      "b4_top5_chunks": [
+        "e63ebfd67b18c3b9abccaeb5",
+        "353b35b1b483969f9d77c3af",
+        "328cddf7e92d1cb450d9a803",
+        "d840ec844fdccdc45e6e75ab",
+        "ae900a4ad17f2e416e390650"
+      ],
+      "b4_top5_grades": [
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "pattern_tags": [
+        "all_methods_weak",
+        "dense_better_than_bm25",
+        "hybrid_improves_over_singles",
+        "reranker_degrades_ndcg5"
+      ],
+      "failure_modes": [
+        {
+          "combo": "A4",
+          "category": "2_relevant_evidence_ranked_too_low",
+          "certainty": "verified"
+        },
+        {
+          "combo": "B4",
+          "category": "1_relevant_evidence_not_retrieved",
+          "certainty": "verified"
+        },
+        {
+          "combo": "B4",
+          "category": "9_missing_knowledge_unit",
+          "certainty": "verified"
+        }
+      ]
+    },
+    {
+      "query_id": "Q022",
+      "query": "How does Bellman-Ford use graph duplication into |V| + 1 levels and negative-cycle witnesses to compute shortest paths and detect vertices with distance -infinity?",
+      "topic": "Graph Algorithms",
+      "language": "en",
+      "difficulty": "hard",
+      "question_type": "algorithm_steps",
+      "source_references": [
+        "pdf_Files/eng_pdf/019_train_file_Eng.pdf (p.3)",
+        "pdf_Files/eng_pdf/019_train_file_Eng.pdf (p.2)"
+      ],
+      "ndcg_at_5": {
+        "A1": 0.2705,
+        "A2": 0.214,
+        "A3": 0.2577,
+        "A4": 0.3878,
+        "B1": 0.2562,
+        "B2": 0.654,
+        "B3": 0.5636,
+        "B4": 0.7163
+      },
+      "evidence_recall_at_5": {
+        "A1": 0.3333,
+        "A2": 0.3333,
+        "A3": 0.3333,
+        "A4": 0.3333,
+        "B1": 0.3333,
+        "B2": 0.3333,
+        "B3": 0.3333,
+        "B4": 0.3333
+      },
+      "evidence_recall_at_60": {
+        "A1": 0.6667,
+        "A2": 0.6667,
+        "A3": 0.6667,
+        "A4": 0.6667,
+        "B1": 0.3333,
+        "B2": 0.6667,
+        "B3": 0.6667,
+        "B4": 0.6667
+      },
+      "a4_top5_chunks": [
+        "35425ffa4176bf9729961d1e",
+        "5e0107766e68f4b3dea4486d",
+        "3c9393eec73f3a28ad4d3ae4",
+        "fa77ba8f94f74c9ce956aaf7",
+        "3c6410d29f27cc6cf1dbff7f"
+      ],
+      "a4_top5_grades": [
+        2,
+        0,
+        0,
+        1,
+        0
+      ],
+      "b4_top5_chunks": [
+        "392fcaf6739fbb1328c23648",
+        "3f00d0b3933e310d2b065c6e",
+        "ba598e62641a154798ef97ad",
+        "42c4132b8d3649f57fcd9969",
+        "5c2934cb98dfb3ebeaf05046"
+      ],
+      "b4_top5_grades": [
+        2,
+        1,
+        0,
+        1,
+        1
+      ],
+      "pattern_tags": [
+        "all_methods_weak",
+        "adaptive_better_rerank",
+        "bm25_better_than_dense",
+        "dense_better_than_bm25"
+      ],
+      "failure_modes": [
+        {
+          "combo": "A4",
+          "category": "1_relevant_evidence_not_retrieved",
+          "certainty": "verified"
+        },
+        {
+          "combo": "A4",
+          "category": "9_missing_knowledge_unit",
+          "certainty": "verified"
+        },
+        {
+          "combo": "B4",
+          "category": "1_relevant_evidence_not_retrieved",
+          "certainty": "verified"
+        },
+        {
+          "combo": "B4",
+          "category": "9_missing_knowledge_unit",
+          "certainty": "verified"
+        }
+      ]
+    },
+    {
+      "query_id": "Q029",
+      "query": "Phân biệt ba ký hiệu tiệm cận Big O, Big Omega và Big Theta trong đánh giá hiệu năng thuật toán, và quy tắc rút gọn hàm f(n) theo Big O là gì?",
+      "topic": "Time & Space Complexity",
+      "language": "vi",
+      "difficulty": "easy",
+      "question_type": "concept_explanation",
+      "source_references": [
+        "docx_Files/vie_docx/006_train_file_Vie.docx (p.2)",
+        "pdf_Files/vie_pdf/019_train_file_Vie.pdf (p.5)"
+      ],
+      "ndcg_at_5": {
+        "A1": 0.2798,
+        "A2": 0.369,
+        "A3": 0.2678,
+        "A4": 0.4601,
+        "B1": 0.0,
+        "B2": 0.1016,
+        "B3": 0.0623,
+        "B4": 0.161
+      },
+      "evidence_recall_at_5": {
+        "A1": 0.0,
+        "A2": 0.5,
+        "A3": 0.0,
+        "A4": 0.5,
+        "B1": 0.0,
+        "B2": 0.0,
+        "B3": 0.0,
+        "B4": 0.0
+      },
+      "evidence_recall_at_60": {
+        "A1": 1.0,
+        "A2": 1.0,
+        "A3": 1.0,
+        "A4": 1.0,
+        "B1": 1.0,
+        "B2": 0.0,
+        "B3": 0.5,
+        "B4": 1.0
+      },
+      "a4_top5_chunks": [
+        "2cd37cca24e532d3f2a3dbf9",
+        "fcf2ce280723ceed43cb23b0",
+        "93da5c3fea1cb898b3beb97c",
+        "16c86aa7826116fe8c7c9284",
+        "495018c6b4a6b704605d8c3f"
+      ],
+      "a4_top5_grades": [
+        1,
+        0,
+        2,
+        1,
+        1
+      ],
+      "b4_top5_chunks": [
+        "ca55404ec339ceb9e04d4241",
+        "50a5d32ec6a99ebc449d3506",
+        "71cb5d6a0a6cd75ac4aa1205",
+        "23b77ae5774ba96e734b6e3a",
+        "e2a6b146810fc0a759d6bde1"
+      ],
+      "b4_top5_grades": [
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pattern_tags": [
+        "all_methods_weak",
+        "recursive_better_rerank",
+        "dense_better_than_bm25"
+      ],
+      "failure_modes": [
+        {
+          "combo": "A4",
+          "category": "2_relevant_evidence_ranked_too_low",
+          "certainty": "verified"
+        },
+        {
+          "combo": "B4",
+          "category": "2_relevant_evidence_ranked_too_low",
+          "certainty": "verified"
+        }
+      ]
+    }
+  ],
+  "recursive_better_rerank": [
+    {
+      "query_id": "Q001",
+      "query": "Mảng động (Dynamic Array) lưu trữ dữ liệu trong bộ nhớ như thế nào và cơ chế mở rộng dung lượng hoạt động ra sao?",
+      "topic": "Array & Linked List",
+      "language": "vi",
+      "difficulty": "easy",
+      "question_type": "definition",
+      "source_references": [
+        "docx_Files/vie_docx/003_train_file_Vie.docx (p.2)",
+        "pdf_Files/vie_pdf/020_train_file_Vie.pdf (p.3)"
+      ],
+      "ndcg_at_5": {
+        "A1": 0.4161,
+        "A2": 0.4705,
+        "A3": 0.2625,
+        "A4": 0.8866,
+        "B1": 0.4161,
+        "B2": 0.4758,
+        "B3": 0.4161,
+        "B4": 0.7479
+      },
+      "evidence_recall_at_5": {
+        "A1": 1.0,
+        "A2": 1.0,
+        "A3": 1.0,
+        "A4": 1.0,
+        "B1": 0.5,
+        "B2": 0.5,
+        "B3": 0.5,
+        "B4": 1.0
+      },
+      "evidence_recall_at_60": {
+        "A1": 1.0,
+        "A2": 1.0,
+        "A3": 1.0,
+        "A4": 1.0,
+        "B1": 1.0,
+        "B2": 0.5,
+        "B3": 1.0,
+        "B4": 1.0
+      },
+      "a4_top5_chunks": [
+        "e2340caceb766e186b7c0063",
+        "e140eaa98dbec45a9e756f21",
+        "68059c5d02feef0711266698",
+        "4af17f2ffff18d3f45203a2e",
+        "b27206530024c4ba0fe16ea8"
+      ],
+      "a4_top5_grades": [
+        2,
+        2,
+        2,
+        0,
+        0
+      ],
+      "b4_top5_chunks": [
+        "ac99b05a2faf07b0c8ca9875",
+        "7caa639e474751a3e69ab85f",
+        "80a790aeacc0f01d2d65e604",
+        "9d63fdab06f7ccb136b5ba65",
+        "311039887c767308b8d47bcb"
+      ],
+      "b4_top5_grades": [
+        2,
+        2,
+        1,
+        0,
+        0
+      ],
+      "pattern_tags": [
+        "recursive_better_rerank",
+        "dense_better_than_bm25"
+      ],
+      "failure_modes": []
+    },
+    {
+      "query_id": "Q003",
+      "query": "Trong C++, cấu trúc một Node của danh sách liên kết đơn được khai báo như thế nào và cần lưu ý gì về quản lý bộ nhớ khi tạo node bằng toán tử new?",
+      "topic": "Array & Linked List",
+      "language": "vi",
+      "difficulty": "easy",
+      "question_type": "code_interpretation",
+      "source_references": [
+        "docx_Files/vie_docx/005_train_file_Vie.docx (p.3)"
+      ],
+      "ndcg_at_5": {
+        "A1": 0.5594,
+        "A2": 0.476,
+        "A3": 0.5108,
+        "A4": 0.7995,
+        "B1": 0.1617,
+        "B2": 0.0437,
+        "B3": 0.12,
+        "B4": 0.4208
+      },
+      "evidence_recall_at_5": {
+        "A1": 1.0,
+        "A2": 1.0,
+        "A3": 1.0,
+        "A4": 1.0,
+        "B1": 0.0,
+        "B2": 0.0,
+        "B3": 0.0,
+        "B4": 0.0
+      },
+      "evidence_recall_at_60": {
+        "A1": 1.0,
+        "A2": 1.0,
+        "A3": 1.0,
+        "A4": 1.0,
+        "B1": 1.0,
+        "B2": 1.0,
+        "B3": 1.0,
+        "B4": 1.0
+      },
+      "a4_top5_chunks": [
+        "42bbbe2992172acc9994781f",
+        "d662755c1854b02ea5729bb8",
+        "4a791f76ae85c38e2d964ea9",
+        "09b0f69f2595399ed52088e3",
+        "acc12b031fbea2d48d02d3ea"
+      ],
+      "a4_top5_grades": [
+        2,
+        2,
+        1,
+        2,
+        1
+      ],
+      "b4_top5_chunks": [
+        "6a384977569efa1181e01e6d",
+        "1e0da9a9c677035c57cf7d7f",
+        "9690c61ae785d8e674dd72e6",
+        "0c32801dfd7664f9cae03186",
+        "247ce19bd90a3e21267b75e2"
+      ],
+      "b4_top5_grades": [
+        1,
+        1,
+        1,
+        1,
+        2
+      ],
+      "pattern_tags": [
+        "recursive_better_rerank",
+        "bm25_better_than_dense"
+      ],
+      "failure_modes": [
+        {
+          "combo": "B4",
+          "category": "2_relevant_evidence_ranked_too_low",
+          "certainty": "verified"
+        }
+      ]
+    },
+    {
+      "query_id": "Q004",
+      "query": "How does a Doubly Linked List differ structurally from a Singly Linked List, and what traversal capability does it enable?",
+      "topic": "Array & Linked List",
+      "language": "en",
+      "difficulty": "medium",
+      "question_type": "concept_explanation",
+      "source_references": [
+        "docx_Files/end_docx/005_train_file_Eng.docx (p.3)"
+      ],
+      "ndcg_at_5": {
+        "A1": 0.5531,
+        "A2": 0.6534,
+        "A3": 0.7409,
+        "A4": 0.9125,
+        "B1": 0.5575,
+        "B2": 0.2879,
+        "B3": 0.5317,
+        "B4": 0.8454
+      },
+      "evidence_recall_at_5": {
+        "A1": 1.0,
+        "A2": 1.0,
+        "A3": 1.0,
+        "A4": 1.0,
+        "B1": 1.0,
+        "B2": 1.0,
+        "B3": 1.0,
+        "B4": 1.0
+      },
+      "evidence_recall_at_60": {
+        "A1": 1.0,
+        "A2": 1.0,
+        "A3": 1.0,
+        "A4": 1.0,
+        "B1": 1.0,
+        "B2": 1.0,
+        "B3": 1.0,
+        "B4": 1.0
+      },
+      "a4_top5_chunks": [
+        "0d1084d6cf0c7483bd4b56b5",
+        "98b84d4291f57f94eb31e205",
+        "acc12b031fbea2d48d02d3ea",
+        "914d6813d8e700a399303869",
+        "924892ffc1fa07044713b7a0"
+      ],
+      "a4_top5_grades": [
+        2,
+        2,
+        2,
+        2,
+        1
+      ],
+      "b4_top5_chunks": [
+        "ed03242de1eef148fd64f44e",
+        "c75701dcd948755ce7f305ec",
+        "1e0da9a9c677035c57cf7d7f",
+        "dc07f17702fc40d3218baaae",
+        "598d877c1d4a0a4bd9e45554"
+      ],
+      "b4_top5_grades": [
+        2,
+        2,
+        2,
+        1,
+        0
+      ],
+      "pattern_tags": [
+        "recursive_better_rerank",
+        "bm25_better_than_dense",
+        "dense_better_than_bm25",
+        "hybrid_improves_over_singles"
+      ],
+      "failure_modes": []
+    }
+  ],
+  "adaptive_better_rerank": [
+    {
+      "query_id": "Q011",
+      "query": "Trình bày thứ tự thăm nút của ba phép duyệt cây nhị phân (Duyệt trước, Duyệt giữa, Duyệt sau) và phép duyệt nào cho ra dãy khóa tăng dần trên BST?",
+      "topic": "Tree, BST & AVL",
+      "language": "vi",
+      "difficulty": "easy",
+      "question_type": "definition",
+      "source_references": [
+        "docx_Files/vie_docx/004_train_file_Vie.docx (p.3)",
+        "pdf_Files/vie_pdf/021_train_file_Vie.pdf (p.70)"
+      ],
+      "ndcg_at_5": {
+        "A1": 0.3396,
+        "A2": 0.2678,
+        "A3": 0.3396,
+        "A4": 0.5663,
+        "B1": 0.5734,
+        "B2": 0.2174,
+        "B3": 0.4195,
+        "B4": 0.7113
+      },
+      "evidence_recall_at_5": {
+        "A1": 0.0,
+        "A2": 0.0,
+        "A3": 0.0,
+        "A4": 1.0,
+        "B1": 0.0,
+        "B2": 0.0,
+        "B3": 0.0,
+        "B4": 1.0
+      },
+      "evidence_recall_at_60": {
+        "A1": 1.0,
+        "A2": 0.0,
+        "A3": 0.5,
+        "A4": 1.0,
+        "B1": 1.0,
+        "B2": 0.0,
+        "B3": 0.0,
+        "B4": 1.0
+      },
+      "a4_top5_chunks": [
+        "c55549c961ea38688c10152d",
+        "9b1d813a9429b5b8aaccd128",
+        "59d8015f2452a5a16de11622",
+        "710efa6f7520a08e95169222",
+        "40f76b3a904110fb02b7fa3d"
+      ],
+      "a4_top5_grades": [
+        1,
+        1,
+        0,
+        2,
+        2
+      ],
+      "b4_top5_chunks": [
+        "8ea60af0e4c42f341594152f",
+        "bcc96300855f4c288e289719",
+        "41ed25a64ec5588f7abf14d0",
+        "7bbdfcb1113857a2a03d6663",
+        "cc93ebfc0c2ae03fcaa9dc6b"
+      ],
+      "b4_top5_grades": [
+        2,
+        1,
+        2,
+        0,
+        2
+      ],
+      "pattern_tags": [
+        "adaptive_better_rerank",
+        "bm25_better_than_dense"
+      ],
+      "failure_modes": []
+    },
+    {
+      "query_id": "Q014",
+      "query": "Trong hàm insert_case5 của cây Đỏ-Đen (Red-Black Tree), khi nút cha P là đỏ, nút bác U là đen và nút mới N nằm cùng phía với P so với nút ông G, hàm thực hiện đổi màu và phép quay nào?",
+      "topic": "Tree, BST & AVL",
+      "language": "vi",
+      "difficulty": "medium",
+      "question_type": "code_interpretation",
+      "source_references": [
+        "pdf_Files/vie_pdf/004_train_file_Vie.pdf (p.121)"
+      ],
+      "ndcg_at_5": {
+        "A1": 0.2192,
+        "A2": 0.1944,
+        "A3": 0.2192,
+        "A4": 0.304,
+        "B1": 0.2421,
+        "B2": 0.2421,
+        "B3": 0.2421,
+        "B4": 0.523
+      },
+      "evidence_recall_at_5": {
+        "A1": 0.0,
+        "A2": 0.0,
+        "A3": 0.0,
+        "A4": 0.0,
+        "B1": 0.0,
+        "B2": 0.0,
+        "B3": 0.0,
+        "B4": 1.0
+      },
+      "evidence_recall_at_60": {
+        "A1": 0.5,
+        "A2": 1.0,
+        "A3": 1.0,
+        "A4": 1.0,
+        "B1": 0.0,
+        "B2": 1.0,
+        "B3": 0.0,
+        "B4": 1.0
+      },
+      "a4_top5_chunks": [
+        "02992c730a89c9652f4346b5",
+        "51952f0fdc733c1ecb2e07bb",
+        "b71dae6456ebb8eeb5939867",
+        "c8b2c6f66c066ab41a907185",
+        "2c296408565850cb250576a0"
+      ],
+      "a4_top5_grades": [
+        1,
+        0,
+        0,
+        0,
+        1
+      ],
+      "b4_top5_chunks": [
+        "41f4750ca108a565c511affc",
+        "0439e35e74f482f118bd9b9c",
+        "a2d90f25411803a1105a6f59",
+        "44584bcd3f58cab4285092e6",
+        "13d8c0de212f387e14e958da"
+      ],
+      "b4_top5_grades": [
+        1,
+        0,
+        0,
+        0,
+        2
+      ],
+      "pattern_tags": [
+        "adaptive_better_rerank"
+      ],
+      "failure_modes": [
+        {
+          "combo": "A4",
+          "category": "2_relevant_evidence_ranked_too_low",
+          "certainty": "verified"
+        }
+      ]
+    },
+    {
+      "query_id": "Q015",
+      "query": "In a binary tree, how do you find the traversal-order successor of a node X, and how is a non-leaf node X deleted without violating traversal order?",
+      "topic": "Tree, BST & AVL",
+      "language": "en",
+      "difficulty": "medium",
+      "question_type": "concept_explanation",
+      "source_references": [
+        "pdf_Files/eng_pdf/010_train_file_Eng.pdf (p.2)",
+        "pdf_Files/eng_pdf/010_train_file_Eng.pdf (p.3)"
+      ],
+      "ndcg_at_5": {
+        "A1": 0.0693,
+        "A2": 0.0693,
+        "A3": 0.1499,
+        "A4": 0.5524,
+        "B1": 0.3508,
+        "B2": 0.2415,
+        "B3": 0.2515,
+        "B4": 0.6086
+      },
+      "evidence_recall_at_5": {
+        "A1": 0.5,
+        "A2": 0.5,
+        "A3": 0.5,
+        "A4": 0.5,
+        "B1": 0.5,
+        "B2": 0.0,
+        "B3": 0.0,
+        "B4": 0.5
+      },
+      "evidence_recall_at_60": {
+        "A1": 1.0,
+        "A2": 0.5,
+        "A3": 1.0,
+        "A4": 1.0,
+        "B1": 1.0,
+        "B2": 0.5,
+        "B3": 1.0,
+        "B4": 1.0
+      },
+      "a4_top5_chunks": [
+        "1de38c5f19e170b8eea8169c",
+        "caa05ff505e1d75985ef5c14",
+        "5314a7ff8f0050833cd66466",
+        "7bcf3727c42cb0d76428e313",
+        "b261889ce3dbd110ab3a9853"
+      ],
+      "a4_top5_grades": [
+        2,
+        0,
+        0,
+        1,
+        0
+      ],
+      "b4_top5_chunks": [
+        "06d5820790a78687af644523",
+        "d517d2c96d6d5f886a0c8005",
+        "733e5cf63ac116900757e30a",
+        "bfda887babcfcdfcbc1c6809",
+        "8ee1943045d83dd18823feb4"
+      ],
+      "b4_top5_grades": [
+        1,
+        2,
+        1,
+        0,
+        1
+      ],
+      "pattern_tags": [
+        "adaptive_better_rerank",
+        "bm25_better_than_dense",
+        "hybrid_improves_over_singles"
+      ],
+      "failure_modes": [
+        {
+          "combo": "A4",
+          "category": "2_relevant_evidence_ranked_too_low",
+          "certainty": "verified"
+        },
+        {
+          "combo": "A4",
+          "category": "8_duplicate_context",
+          "certainty": "verified"
+        },
+        {
+          "combo": "B4",
+          "category": "2_relevant_evidence_ranked_too_low",
+          "certainty": "verified"
+        }
+      ]
+    }
+  ],
+  "bm25_better_than_dense": [
+    {
+      "query_id": "Q002",
+      "query": "So sánh ưu điểm và nhược điểm giữa mảng và danh sách liên kết về tổ chức bộ nhớ, truy cập ngẫu nhiên và chèn xóa phần tử.",
+      "topic": "Array & Linked List",
+      "language": "vi",
+      "difficulty": "medium",
+      "question_type": "comparison",
+      "source_references": [
+        "docx_Files/vie_docx/003_train_file_Vie.docx (p.2)",
+        "docx_Files/vie_docx/003_train_file_Vie.docx (p.3)"
+      ],
+      "ndcg_at_5": {
+        "A1": 0.3392,
+        "A2": 0.0,
+        "A3": 0.3008,
+        "A4": 0.5531,
+        "B1": 0.3392,
+        "B2": 0.0,
+        "B3": 0.5531,
+        "B4": 0.5531
+      },
+      "evidence_recall_at_5": {
+        "A1": 0.0,
+        "A2": 0.0,
+        "A3": 0.5,
+        "A4": 0.0,
+        "B1": 0.0,
+        "B2": 0.0,
+        "B3": 0.5,
+        "B4": 0.0
+      },
+      "evidence_recall_at_60": {
+        "A1": 1.0,
+        "A2": 0.5,
+        "A3": 1.0,
+        "A4": 1.0,
+        "B1": 1.0,
+        "B2": 0.5,
+        "B3": 1.0,
+        "B4": 1.0
+      },
+      "a4_top5_chunks": [
+        "754a0ff6a874bde112f94407",
+        "0d1084d6cf0c7483bd4b56b5",
+        "4288519eec095a3012bd6108",
+        "5299546399ab1ae85e5353b6",
+        "2871e3d53645ab8034df32df"
+      ],
+      "a4_top5_grades": [
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "b4_top5_chunks": [
+        "e85912abb94203c2b744a1d1",
+        "30f62e6403cbf91b9980c68a",
+        "4cc7ce1f59e2cb269808e639",
+        "92bf1d949cd0a6fbae5ebcfa",
+        "f3382358a826d7c53f3d6910"
+      ],
+      "b4_top5_grades": [
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "pattern_tags": [
+        "bm25_better_than_dense",
+        "hybrid_improves_over_singles"
+      ],
+      "failure_modes": [
+        {
+          "combo": "A4",
+          "category": "2_relevant_evidence_ranked_too_low",
+          "certainty": "verified"
+        },
+        {
+          "combo": "B4",
+          "category": "2_relevant_evidence_ranked_too_low",
+          "certainty": "verified"
+        }
+      ]
+    },
+    {
+      "query_id": "Q003",
+      "query": "Trong C++, cấu trúc một Node của danh sách liên kết đơn được khai báo như thế nào và cần lưu ý gì về quản lý bộ nhớ khi tạo node bằng toán tử new?",
+      "topic": "Array & Linked List",
+      "language": "vi",
+      "difficulty": "easy",
+      "question_type": "code_interpretation",
+      "source_references": [
+        "docx_Files/vie_docx/005_train_file_Vie.docx (p.3)"
+      ],
+      "ndcg_at_5": {
+        "A1": 0.5594,
+        "A2": 0.476,
+        "A3": 0.5108,
+        "A4": 0.7995,
+        "B1": 0.1617,
+        "B2": 0.0437,
+        "B3": 0.12,
+        "B4": 0.4208
+      },
+      "evidence_recall_at_5": {
+        "A1": 1.0,
+        "A2": 1.0,
+        "A3": 1.0,
+        "A4": 1.0,
+        "B1": 0.0,
+        "B2": 0.0,
+        "B3": 0.0,
+        "B4": 0.0
+      },
+      "evidence_recall_at_60": {
+        "A1": 1.0,
+        "A2": 1.0,
+        "A3": 1.0,
+        "A4": 1.0,
+        "B1": 1.0,
+        "B2": 1.0,
+        "B3": 1.0,
+        "B4": 1.0
+      },
+      "a4_top5_chunks": [
+        "42bbbe2992172acc9994781f",
+        "d662755c1854b02ea5729bb8",
+        "4a791f76ae85c38e2d964ea9",
+        "09b0f69f2595399ed52088e3",
+        "acc12b031fbea2d48d02d3ea"
+      ],
+      "a4_top5_grades": [
+        2,
+        2,
+        1,
+        2,
+        1
+      ],
+      "b4_top5_chunks": [
+        "6a384977569efa1181e01e6d",
+        "1e0da9a9c677035c57cf7d7f",
+        "9690c61ae785d8e674dd72e6",
+        "0c32801dfd7664f9cae03186",
+        "247ce19bd90a3e21267b75e2"
+      ],
+      "b4_top5_grades": [
+        1,
+        1,
+        1,
+        1,
+        2
+      ],
+      "pattern_tags": [
+        "recursive_better_rerank",
+        "bm25_better_than_dense"
+      ],
+      "failure_modes": [
+        {
+          "combo": "B4",
+          "category": "2_relevant_evidence_ranked_too_low",
+          "certainty": "verified"
+        }
+      ]
+    },
+    {
+      "query_id": "Q004",
+      "query": "How does a Doubly Linked List differ structurally from a Singly Linked List, and what traversal capability does it enable?",
+      "topic": "Array & Linked List",
+      "language": "en",
+      "difficulty": "medium",
+      "question_type": "concept_explanation",
+      "source_references": [
+        "docx_Files/end_docx/005_train_file_Eng.docx (p.3)"
+      ],
+      "ndcg_at_5": {
+        "A1": 0.5531,
+        "A2": 0.6534,
+        "A3": 0.7409,
+        "A4": 0.9125,
+        "B1": 0.5575,
+        "B2": 0.2879,
+        "B3": 0.5317,
+        "B4": 0.8454
+      },
+      "evidence_recall_at_5": {
+        "A1": 1.0,
+        "A2": 1.0,
+        "A3": 1.0,
+        "A4": 1.0,
+        "B1": 1.0,
+        "B2": 1.0,
+        "B3": 1.0,
+        "B4": 1.0
+      },
+      "evidence_recall_at_60": {
+        "A1": 1.0,
+        "A2": 1.0,
+        "A3": 1.0,
+        "A4": 1.0,
+        "B1": 1.0,
+        "B2": 1.0,
+        "B3": 1.0,
+        "B4": 1.0
+      },
+      "a4_top5_chunks": [
+        "0d1084d6cf0c7483bd4b56b5",
+        "98b84d4291f57f94eb31e205",
+        "acc12b031fbea2d48d02d3ea",
+        "914d6813d8e700a399303869",
+        "924892ffc1fa07044713b7a0"
+      ],
+      "a4_top5_grades": [
+        2,
+        2,
+        2,
+        2,
+        1
+      ],
+      "b4_top5_chunks": [
+        "ed03242de1eef148fd64f44e",
+        "c75701dcd948755ce7f305ec",
+        "1e0da9a9c677035c57cf7d7f",
+        "dc07f17702fc40d3218baaae",
+        "598d877c1d4a0a4bd9e45554"
+      ],
+      "b4_top5_grades": [
+        2,
+        2,
+        2,
+        1,
+        0
+      ],
+      "pattern_tags": [
+        "recursive_better_rerank",
+        "bm25_better_than_dense",
+        "dense_better_than_bm25",
+        "hybrid_improves_over_singles"
+      ],
+      "failure_modes": []
+    }
+  ],
+  "dense_better_than_bm25": [
+    {
+      "query_id": "Q001",
+      "query": "Mảng động (Dynamic Array) lưu trữ dữ liệu trong bộ nhớ như thế nào và cơ chế mở rộng dung lượng hoạt động ra sao?",
+      "topic": "Array & Linked List",
+      "language": "vi",
+      "difficulty": "easy",
+      "question_type": "definition",
+      "source_references": [
+        "docx_Files/vie_docx/003_train_file_Vie.docx (p.2)",
+        "pdf_Files/vie_pdf/020_train_file_Vie.pdf (p.3)"
+      ],
+      "ndcg_at_5": {
+        "A1": 0.4161,
+        "A2": 0.4705,
+        "A3": 0.2625,
+        "A4": 0.8866,
+        "B1": 0.4161,
+        "B2": 0.4758,
+        "B3": 0.4161,
+        "B4": 0.7479
+      },
+      "evidence_recall_at_5": {
+        "A1": 1.0,
+        "A2": 1.0,
+        "A3": 1.0,
+        "A4": 1.0,
+        "B1": 0.5,
+        "B2": 0.5,
+        "B3": 0.5,
+        "B4": 1.0
+      },
+      "evidence_recall_at_60": {
+        "A1": 1.0,
+        "A2": 1.0,
+        "A3": 1.0,
+        "A4": 1.0,
+        "B1": 1.0,
+        "B2": 0.5,
+        "B3": 1.0,
+        "B4": 1.0
+      },
+      "a4_top5_chunks": [
+        "e2340caceb766e186b7c0063",
+        "e140eaa98dbec45a9e756f21",
+        "68059c5d02feef0711266698",
+        "4af17f2ffff18d3f45203a2e",
+        "b27206530024c4ba0fe16ea8"
+      ],
+      "a4_top5_grades": [
+        2,
+        2,
+        2,
+        0,
+        0
+      ],
+      "b4_top5_chunks": [
+        "ac99b05a2faf07b0c8ca9875",
+        "7caa639e474751a3e69ab85f",
+        "80a790aeacc0f01d2d65e604",
+        "9d63fdab06f7ccb136b5ba65",
+        "311039887c767308b8d47bcb"
+      ],
+      "b4_top5_grades": [
+        2,
+        2,
+        1,
+        0,
+        0
+      ],
+      "pattern_tags": [
+        "recursive_better_rerank",
+        "dense_better_than_bm25"
+      ],
+      "failure_modes": []
+    },
+    {
+      "query_id": "Q004",
+      "query": "How does a Doubly Linked List differ structurally from a Singly Linked List, and what traversal capability does it enable?",
+      "topic": "Array & Linked List",
+      "language": "en",
+      "difficulty": "medium",
+      "question_type": "concept_explanation",
+      "source_references": [
+        "docx_Files/end_docx/005_train_file_Eng.docx (p.3)"
+      ],
+      "ndcg_at_5": {
+        "A1": 0.5531,
+        "A2": 0.6534,
+        "A3": 0.7409,
+        "A4": 0.9125,
+        "B1": 0.5575,
+        "B2": 0.2879,
+        "B3": 0.5317,
+        "B4": 0.8454
+      },
+      "evidence_recall_at_5": {
+        "A1": 1.0,
+        "A2": 1.0,
+        "A3": 1.0,
+        "A4": 1.0,
+        "B1": 1.0,
+        "B2": 1.0,
+        "B3": 1.0,
+        "B4": 1.0
+      },
+      "evidence_recall_at_60": {
+        "A1": 1.0,
+        "A2": 1.0,
+        "A3": 1.0,
+        "A4": 1.0,
+        "B1": 1.0,
+        "B2": 1.0,
+        "B3": 1.0,
+        "B4": 1.0
+      },
+      "a4_top5_chunks": [
+        "0d1084d6cf0c7483bd4b56b5",
+        "98b84d4291f57f94eb31e205",
+        "acc12b031fbea2d48d02d3ea",
+        "914d6813d8e700a399303869",
+        "924892ffc1fa07044713b7a0"
+      ],
+      "a4_top5_grades": [
+        2,
+        2,
+        2,
+        2,
+        1
+      ],
+      "b4_top5_chunks": [
+        "ed03242de1eef148fd64f44e",
+        "c75701dcd948755ce7f305ec",
+        "1e0da9a9c677035c57cf7d7f",
+        "dc07f17702fc40d3218baaae",
+        "598d877c1d4a0a4bd9e45554"
+      ],
+      "b4_top5_grades": [
+        2,
+        2,
+        2,
+        1,
+        0
+      ],
+      "pattern_tags": [
+        "recursive_better_rerank",
+        "bm25_better_than_dense",
+        "dense_better_than_bm25",
+        "hybrid_improves_over_singles"
+      ],
+      "failure_modes": []
+    },
+    {
+      "query_id": "Q007",
+      "query": "Trong mã giả cài đặt Queue bằng danh sách móc nối với hai con trỏ F (front) và R (rear), thao tác ENQUEUE và DEQUEUE xử lý trường hợp danh sách rỗng hoặc chỉ có một phần tử như thế nào?",
+      "topic": "Stack & Queue",
+      "language": "vi",
+      "difficulty": "medium",
+      "question_type": "pseudocode_interpretation",
+      "source_references": [
+        "pdf_Files/vie_pdf/008_train_file_Vie.pdf (p.16)"
+      ],
+      "ndcg_at_5": {
+        "A1": 0.2262,
+        "A2": 0.4954,
+        "A3": 0.2955,
+        "A4": 0.1568,
+        "B1": 0.0,
+        "B2": 0.0,
+        "B3": 0.101,
+        "B4": 0.1275
+      },
+      "evidence_recall_at_5": {
+        "A1": 0.0,
+        "A2": 1.0,
+        "A3": 0.5,
+        "A4": 0.0,
+        "B1": 0.0,
+        "B2": 0.0,
+        "B3": 0.0,
+        "B4": 0.0
+      },
+      "evidence_recall_at_60": {
+        "A1": 1.0,
+        "A2": 1.0,
+        "A3": 1.0,
+        "A4": 1.0,
+        "B1": 0.5,
+        "B2": 0.0,
+        "B3": 0.0,
+        "B4": 0.5
+      },
+      "a4_top5_chunks": [
+        "0cd66759365ea5b99a16937f",
+        "fb0a1decd4385d52591723a9",
+        "4e438ceb266cd0f271da9e94",
+        "bdd478f8e98105f3606bdfe2",
+        "98b8e12b6383e3941a883cf2"
+      ],
+      "a4_top5_grades": [
+        0,
+        1,
+        1,
+        0,
+        0
+      ],
+      "b4_top5_chunks": [
+        "e63ebfd67b18c3b9abccaeb5",
+        "353b35b1b483969f9d77c3af",
+        "328cddf7e92d1cb450d9a803",
+        "d840ec844fdccdc45e6e75ab",
+        "ae900a4ad17f2e416e390650"
+      ],
+      "b4_top5_grades": [
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "pattern_tags": [
+        "all_methods_weak",
+        "dense_better_than_bm25",
+        "hybrid_improves_over_singles",
+        "reranker_degrades_ndcg5"
+      ],
+      "failure_modes": [
+        {
+          "combo": "A4",
+          "category": "2_relevant_evidence_ranked_too_low",
+          "certainty": "verified"
+        },
+        {
+          "combo": "B4",
+          "category": "1_relevant_evidence_not_retrieved",
+          "certainty": "verified"
+        },
+        {
+          "combo": "B4",
+          "category": "9_missing_knowledge_unit",
+          "certainty": "verified"
+        }
+      ]
+    }
+  ],
+  "hybrid_improves_over_singles": [
+    {
+      "query_id": "Q002",
+      "query": "So sánh ưu điểm và nhược điểm giữa mảng và danh sách liên kết về tổ chức bộ nhớ, truy cập ngẫu nhiên và chèn xóa phần tử.",
+      "topic": "Array & Linked List",
+      "language": "vi",
+      "difficulty": "medium",
+      "question_type": "comparison",
+      "source_references": [
+        "docx_Files/vie_docx/003_train_file_Vie.docx (p.2)",
+        "docx_Files/vie_docx/003_train_file_Vie.docx (p.3)"
+      ],
+      "ndcg_at_5": {
+        "A1": 0.3392,
+        "A2": 0.0,
+        "A3": 0.3008,
+        "A4": 0.5531,
+        "B1": 0.3392,
+        "B2": 0.0,
+        "B3": 0.5531,
+        "B4": 0.5531
+      },
+      "evidence_recall_at_5": {
+        "A1": 0.0,
+        "A2": 0.0,
+        "A3": 0.5,
+        "A4": 0.0,
+        "B1": 0.0,
+        "B2": 0.0,
+        "B3": 0.5,
+        "B4": 0.0
+      },
+      "evidence_recall_at_60": {
+        "A1": 1.0,
+        "A2": 0.5,
+        "A3": 1.0,
+        "A4": 1.0,
+        "B1": 1.0,
+        "B2": 0.5,
+        "B3": 1.0,
+        "B4": 1.0
+      },
+      "a4_top5_chunks": [
+        "754a0ff6a874bde112f94407",
+        "0d1084d6cf0c7483bd4b56b5",
+        "4288519eec095a3012bd6108",
+        "5299546399ab1ae85e5353b6",
+        "2871e3d53645ab8034df32df"
+      ],
+      "a4_top5_grades": [
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "b4_top5_chunks": [
+        "e85912abb94203c2b744a1d1",
+        "30f62e6403cbf91b9980c68a",
+        "4cc7ce1f59e2cb269808e639",
+        "92bf1d949cd0a6fbae5ebcfa",
+        "f3382358a826d7c53f3d6910"
+      ],
+      "b4_top5_grades": [
+        2,
+        2,
+        0,
+        0,
+        0
+      ],
+      "pattern_tags": [
+        "bm25_better_than_dense",
+        "hybrid_improves_over_singles"
+      ],
+      "failure_modes": [
+        {
+          "combo": "A4",
+          "category": "2_relevant_evidence_ranked_too_low",
+          "certainty": "verified"
+        },
+        {
+          "combo": "B4",
+          "category": "2_relevant_evidence_ranked_too_low",
+          "certainty": "verified"
+        }
+      ]
+    },
+    {
+      "query_id": "Q004",
+      "query": "How does a Doubly Linked List differ structurally from a Singly Linked List, and what traversal capability does it enable?",
+      "topic": "Array & Linked List",
+      "language": "en",
+      "difficulty": "medium",
+      "question_type": "concept_explanation",
+      "source_references": [
+        "docx_Files/end_docx/005_train_file_Eng.docx (p.3)"
+      ],
+      "ndcg_at_5": {
+        "A1": 0.5531,
+        "A2": 0.6534,
+        "A3": 0.7409,
+        "A4": 0.9125,
+        "B1": 0.5575,
+        "B2": 0.2879,
+        "B3": 0.5317,
+        "B4": 0.8454
+      },
+      "evidence_recall_at_5": {
+        "A1": 1.0,
+        "A2": 1.0,
+        "A3": 1.0,
+        "A4": 1.0,
+        "B1": 1.0,
+        "B2": 1.0,
+        "B3": 1.0,
+        "B4": 1.0
+      },
+      "evidence_recall_at_60": {
+        "A1": 1.0,
+        "A2": 1.0,
+        "A3": 1.0,
+        "A4": 1.0,
+        "B1": 1.0,
+        "B2": 1.0,
+        "B3": 1.0,
+        "B4": 1.0
+      },
+      "a4_top5_chunks": [
+        "0d1084d6cf0c7483bd4b56b5",
+        "98b84d4291f57f94eb31e205",
+        "acc12b031fbea2d48d02d3ea",
+        "914d6813d8e700a399303869",
+        "924892ffc1fa07044713b7a0"
+      ],
+      "a4_top5_grades": [
+        2,
+        2,
+        2,
+        2,
+        1
+      ],
+      "b4_top5_chunks": [
+        "ed03242de1eef148fd64f44e",
+        "c75701dcd948755ce7f305ec",
+        "1e0da9a9c677035c57cf7d7f",
+        "dc07f17702fc40d3218baaae",
+        "598d877c1d4a0a4bd9e45554"
+      ],
+      "b4_top5_grades": [
+        2,
+        2,
+        2,
+        1,
+        0
+      ],
+      "pattern_tags": [
+        "recursive_better_rerank",
+        "bm25_better_than_dense",
+        "dense_better_than_bm25",
+        "hybrid_improves_over_singles"
+      ],
+      "failure_modes": []
+    },
+    {
+      "query_id": "Q005",
+      "query": "Why does shrinking a Dynamic Array immediately when fill ratio drops to r = 1/2 hurt alternating insertions and deletions, and what threshold policy achieves amortized O(1) time with Theta(n) space?",
+      "topic": "Array & Linked List",
+      "language": "en",
+      "difficulty": "hard",
+      "question_type": "time_complexity",
+      "source_references": [
+        "pdf_Files/eng_pdf/002_train_file_Eng.pdf (p.4)"
+      ],
+      "ndcg_at_5": {
+        "A1": 0.6358,
+        "A2": 0.6135,
+        "A3": 0.6358,
+        "A4": 0.9355,
+        "B1": 0.6358,
+        "B2": 0.6086,
+        "B3": 0.678,
+        "B4": 0.7345
+      },
+      "evidence_recall_at_5": {
+        "A1": 1.0,
+        "A2": 1.0,
+        "A3": 1.0,
+        "A4": 1.0,
+        "B1": 0.6667,
+        "B2": 0.6667,
+        "B3": 0.6667,
+        "B4": 0.6667
+      },
+      "evidence_recall_at_60": {
+        "A1": 1.0,
+        "A2": 1.0,
+        "A3": 1.0,
+        "A4": 1.0,
+        "B1": 0.6667,
+        "B2": 0.6667,
+        "B3": 0.6667,
+        "B4": 0.6667
+      },
+      "a4_top5_chunks": [
+        "e3394769b5f754e62c50e4f0",
+        "e140eaa98dbec45a9e756f21",
+        "3aa4120228fdf15942999a95",
+        "1ee204fa17b1ae475182747c",
+        "1acc793eca3b0b848058a296"
+      ],
+      "a4_top5_grades": [
+        2,
+        1,
+        1,
+        2,
+        1
+      ],
+      "b4_top5_chunks": [
+        "e94f7a44d55f528041379be2",
+        "994fa0a1e3b78d3093977f8d",
+        "8dd8c498342868da32ad5bd1",
+        "1cc578c474b84dafba98c42c",
+        "fb92f6422feeae77ca4f2322"
+      ],
+      "b4_top5_grades": [
+        2,
+        1,
+        1,
+        1,
+        0
+      ],
+      "pattern_tags": [
+        "recursive_better_rerank",
+        "hybrid_improves_over_singles"
+      ],
+      "failure_modes": [
+        {
+          "combo": "B4",
+          "category": "1_relevant_evidence_not_retrieved",
+          "certainty": "verified"
+        },
+        {
+          "combo": "B4",
+          "category": "9_missing_knowledge_unit",
+          "certainty": "verified"
+        },
+        {
+          "combo": "B4",
+          "category": "7_fragmented_evidence",
+          "certainty": "plausible"
+        }
+      ]
+    }
+  ],
+  "reranker_degrades_ndcg5": [
+    {
+      "query_id": "Q006",
+      "query": "Hàng đợi hai đầu (Deque) khác gì hàng đợi thông thường và hỗ trợ những thao tác cơ sở nào?",
+      "topic": "Stack & Queue",
+      "language": "vi",
+      "difficulty": "easy",
+      "question_type": "definition",
+      "source_references": [
+        "pdf_Files/vie_pdf/008_train_file_Vie.pdf (p.17)"
+      ],
+      "ndcg_at_5": {
+        "A1": 0.5524,
+        "A2": 0.1869,
+        "A3": 0.4831,
+        "A4": 0.5636,
+        "B1": 0.1854,
+        "B2": 0.1854,
+        "B3": 0.425,
+        "B4": 0.1854
+      },
+      "evidence_recall_at_5": {
+        "A1": 1.0,
+        "A2": 1.0,
+        "A3": 1.0,
+        "A4": 1.0,
+        "B1": 0.5,
+        "B2": 0.5,
+        "B3": 0.5,
+        "B4": 0.5
+      },
+      "evidence_recall_at_60": {
+        "A1": 1.0,
+        "A2": 1.0,
+        "A3": 1.0,
+        "A4": 1.0,
+        "B1": 0.5,
+        "B2": 0.5,
+        "B3": 0.5,
+        "B4": 0.5
+      },
+      "a4_top5_chunks": [
+        "0b6a3f4772b162c4e26fd718",
+        "1dec1c59a8cc01304cdc2990",
+        "fe896c2b68ed5a9652185a96",
+        "54476a0ce233e180d9c3f0fd",
+        "ba18e3fced17ff37b113569f"
+      ],
+      "a4_top5_grades": [
+        2,
+        0,
+        1,
+        0,
+        0
+      ],
+      "b4_top5_chunks": [
+        "3c4063b7b8d3fe984cc79328",
+        "9aeda32dc476eeec5800fb41",
+        "8294837d13f2a4874c7aefd5",
+        "7b990af7461c6b53d85b24a4",
+        "6155abd446970ea7a5a3fba4"
+      ],
+      "b4_top5_grades": [
+        1,
+        0,
+        0,
+        0,
+        0
+      ],
+      "pattern_tags": [
+        "recursive_better_rerank",
+        "bm25_better_than_dense",
+        "hybrid_improves_over_singles",
+        "reranker_degrades_ndcg5"
+      ],
+      "failure_modes": [
+        {
+          "combo": "B4",
+          "category": "1_relevant_evidence_not_retrieved",
+          "certainty": "verified"
+        },
+        {
+          "combo": "B4",
+          "category": "9_missing_knowledge_unit",
+          "certainty": "verified"
+        },
+        {
+          "combo": "B4",
+          "category": "10_irrelevant_context_overload",
+          "certainty": "verified"
+        },
+        {
+          "combo": "A2",
+          "category": "4_semantic_mismatch",
+          "certainty": "plausible"
+        }
+      ]
+    },
+    {
+      "query_id": "Q007",
+      "query": "Trong mã giả cài đặt Queue bằng danh sách móc nối với hai con trỏ F (front) và R (rear), thao tác ENQUEUE và DEQUEUE xử lý trường hợp danh sách rỗng hoặc chỉ có một phần tử như thế nào?",
+      "topic": "Stack & Queue",
+      "language": "vi",
+      "difficulty": "medium",
+      "question_type": "pseudocode_interpretation",
+      "source_references": [
+        "pdf_Files/vie_pdf/008_train_file_Vie.pdf (p.16)"
+      ],
+      "ndcg_at_5": {
+        "A1": 0.2262,
+        "A2": 0.4954,
+        "A3": 0.2955,
+        "A4": 0.1568,
+        "B1": 0.0,
+        "B2": 0.0,
+        "B3": 0.101,
+        "B4": 0.1275
+      },
+      "evidence_recall_at_5": {
+        "A1": 0.0,
+        "A2": 1.0,
+        "A3": 0.5,
+        "A4": 0.0,
+        "B1": 0.0,
+        "B2": 0.0,
+        "B3": 0.0,
+        "B4": 0.0
+      },
+      "evidence_recall_at_60": {
+        "A1": 1.0,
+        "A2": 1.0,
+        "A3": 1.0,
+        "A4": 1.0,
+        "B1": 0.5,
+        "B2": 0.0,
+        "B3": 0.0,
+        "B4": 0.5
+      },
+      "a4_top5_chunks": [
+        "0cd66759365ea5b99a16937f",
+        "fb0a1decd4385d52591723a9",
+        "4e438ceb266cd0f271da9e94",
+        "bdd478f8e98105f3606bdfe2",
+        "98b8e12b6383e3941a883cf2"
+      ],
+      "a4_top5_grades": [
+        0,
+        1,
+        1,
+        0,
+        0
+      ],
+      "b4_top5_chunks": [
+        "e63ebfd67b18c3b9abccaeb5",
+        "353b35b1b483969f9d77c3af",
+        "328cddf7e92d1cb450d9a803",
+        "d840ec844fdccdc45e6e75ab",
+        "ae900a4ad17f2e416e390650"
+      ],
+      "b4_top5_grades": [
+        0,
+        1,
+        0,
+        0,
+        0
+      ],
+      "pattern_tags": [
+        "all_methods_weak",
+        "dense_better_than_bm25",
+        "hybrid_improves_over_singles",
+        "reranker_degrades_ndcg5"
+      ],
+      "failure_modes": [
+        {
+          "combo": "A4",
+          "category": "2_relevant_evidence_ranked_too_low",
+          "certainty": "verified"
+        },
+        {
+          "combo": "B4",
+          "category": "1_relevant_evidence_not_retrieved",
+          "certainty": "verified"
+        },
+        {
+          "combo": "B4",
+          "category": "9_missing_knowledge_unit",
+          "certainty": "verified"
+        }
+      ]
+    },
+    {
+      "query_id": "Q008",
+      "query": "Tại sao khi cài đặt Queue (FIFO) trong Python nên dùng collections.deque thay vì list, và trong C++ cần cấu hình std::priority_queue như thế nào để tạo Min-Heap?",
+      "topic": "Stack & Queue",
+      "language": "vi",
+      "difficulty": "medium",
+      "question_type": "code_interpretation",
+      "source_references": [
+        "docx_Files/vie_docx/005_train_file_Vie.docx (p.4)",
+        "docx_Files/vie_docx/007_train_file_Vie.docx (p.4)"
+      ],
+      "ndcg_at_5": {
+        "A1": 0.7739,
+        "A2": 0.6427,
+        "A3": 0.7739,
+        "A4": 0.7429,
+        "B1": 0.4241,
+        "B2": 0.2021,
+        "B3": 0.2021,
+        "B4": 0.3977
+      },
+      "evidence_recall_at_5": {
+        "A1": 1.0,
+        "A2": 0.5,
+        "A3": 1.0,
+        "A4": 0.5,
+        "B1": 1.0,
+        "B2": 0.0,
+        "B3": 0.0,
+        "B4": 0.5
+      },
+      "evidence_recall_at_60": {
+        "A1": 1.0,
+        "A2": 1.0,
+        "A3": 1.0,
+        "A4": 1.0,
+        "B1": 1.0,
+        "B2": 1.0,
+        "B3": 1.0,
+        "B4": 1.0
+      },
+      "a4_top5_chunks": [
+        "c9f2ae34ad57a1f08ff8dfb8",
+        "fd892993ec6539c92e5c5c86",
+        "b6a97010ac3f23deb5e2de85",
+        "8b44668be12d2216b9023e5e",
+        "05530cf965c1877726494293"
+      ],
+      "a4_top5_grades": [
+        2,
+        2,
+        0,
+        2,
+        1
+      ],
+      "b4_top5_chunks": [
+        "87fcd848073812c59a94cb13",
+        "8c28a50075a832a2acea1429",
+        "2e2a301168974aa4278fbd36",
+        "e2e4dcde717fce8a5b7b1d8e",
+        "28d8ca8204ab33379381b451"
+      ],
+      "b4_top5_grades": [
+        0,
+        2,
+        1,
+        1,
+        1
+      ],
+      "pattern_tags": [
+        "recursive_better_rerank",
+        "bm25_better_than_dense",
+        "reranker_degrades_ndcg5"
+      ],
+      "failure_modes": [
+        {
+          "combo": "A4",
+          "category": "2_relevant_evidence_ranked_too_low",
+          "certainty": "verified"
+        },
+        {
+          "combo": "B4",
+          "category": "2_relevant_evidence_ranked_too_low",
+          "certainty": "verified"
+        }
+      ]
+    }
+  ]
+}

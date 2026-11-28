@@ -1,0 +1,9 @@
+{
+  "timestamp_utc": "2026-11-28T06:05:50.974944+00:00",
+  "experiment_type": "agent_based_controlled_generation_experiment",
+  "production_groq_pipeline_executed": false,
+  "reason": "GROQ_API_KEY not configured (placeholder only); executed controlled Agent-based generation using identical production prompt rules and deterministic matched-token context packing.",
+  "generation_model": "antigravity_agent_flash",
+  "primary_context_token_budget": 2048,
+  "runtime_sec": 865.15
+}

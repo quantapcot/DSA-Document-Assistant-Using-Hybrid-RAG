@@ -1,0 +1,8 @@
+failure_category,occurrence_count
+10_irrelevant_context_overload,7
+1_relevant_evidence_not_retrieved,17
+2_relevant_evidence_ranked_too_low,29
+4_semantic_mismatch,5
+7_fragmented_evidence,6
+8_duplicate_context,4
+9_missing_knowledge_unit,17

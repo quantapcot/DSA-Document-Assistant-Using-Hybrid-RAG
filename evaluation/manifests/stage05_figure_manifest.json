@@ -1,0 +1,750 @@
+{
+  "generated_utc": "2026-11-28T16:24:00.900122+00:00",
+  "total_logical_figures": 28,
+  "total_png_files": 28,
+  "total_svg_files": 28,
+  "style": {
+    "primary_font": "Arial",
+    "fallback_chain": [
+      "Arial",
+      "DejaVu Sans",
+      "Liberation Sans",
+      "sans-serif"
+    ],
+    "dpi": 300
+  },
+  "figures": [
+    {
+      "figure_number": 1,
+      "figure_id": "fig01_chunk_count_and_storage",
+      "data_contract_id": 1,
+      "data_contract_name": "Chunk Count Comparison",
+      "group": "A",
+      "title": "Chunk Count, Structural Typing, and Storage Footprint Comparison",
+      "protocol": "Frozen Stage 02 benchmark corpora (Profile A: 6,366 chunks; Profile B: 13,390 chunks; combined QdrantLocal: 19,756 points).",
+      "metrics": [
+        "total_chunks",
+        "code_pseudocode_chunks",
+        "formula_chunks",
+        "table_chunks",
+        "corpus_jsonl_bytes",
+        "theoretical_vector_bytes_f32_384d",
+        "combined_qdrant_eval_bytes"
+      ],
+      "source_artifacts": [
+        "evaluation/artifacts/stage04/chunking/chunking_metrics.csv",
+        "evaluation/artifacts/stage04/chunking/chunking_diagnostics.json"
+      ],
+      "caption_vi": "Hình 1: So sánh tổng số lượng chunk, phân loại cấu trúc (code/pseudocode, công thức, bảng) và dung lượng lưu trữ giữa Profile A (recursive_512_100: 6.366 chunks) và Profile B (structure_adaptive: 13.390 chunks, gấp 2,10×). Dung lượng vector từng profile là ước lượng lý thuyết (float32 384 chiều), tách biệt với dung lượng vật lý QdrantLocal SQLite dùng chung (100,82 MiB).",
+      "png_path": "evaluation/artifacts/stage05/figures/png/fig01_chunk_count_and_storage.png",
+      "svg_path": "evaluation/artifacts/stage05/figures/svg/fig01_chunk_count_and_storage.svg",
+      "png_bytes": 279552,
+      "svg_bytes": 28444,
+      "png_sha256": "2f4e9c4faf0cbc41368c5cf179a9f8b6022a862c9d78ea5a9ee3e9760f3fe787",
+      "svg_sha256": "24cacef7e82254e479e57fff4cc0d8adcabe391c24dce9079f852d38876f808b"
+    },
+    {
+      "figure_number": 2,
+      "figure_id": "fig02_chunk_length_distribution",
+      "data_contract_id": 2,
+      "data_contract_name": "Chunk Length Distribution",
+      "group": "A",
+      "title": "Chunk Character Length Distribution and Summary Statistics",
+      "protocol": "All indexed chunks across frozen corpora (n=6,366 for Profile A; n=13,390 for Profile B).",
+      "metrics": [
+        "char_length_buckets",
+        "char_min",
+        "char_median",
+        "char_mean",
+        "char_p95",
+        "char_max"
+      ],
+      "source_artifacts": [
+        "evaluation/artifacts/stage04/chunking/chunking_diagnostics.json",
+        "evaluation/artifacts/stage04/chunking/chunking_metrics.csv"
+      ],
+      "caption_vi": "Hình 2: Phân bố độ dài ký tự và các thống kê mô tả (Min, Median, Mean, P95, Max) của hai chiến lược phân đoạn. Profile A tập trung vào nhóm 400–512 ký tự (52,8%, trung vị 421), trong khi 46,8% chunk của Profile B ngắn dưới 100 ký tự (trung vị 112), nhưng bảo toàn nguyên vẹn các khối code/bảng dài tới 1.871 ký tự.",
+      "png_path": "evaluation/artifacts/stage05/figures/png/fig02_chunk_length_distribution.png",
+      "svg_path": "evaluation/artifacts/stage05/figures/svg/fig02_chunk_length_distribution.svg",
+      "png_bytes": 265763,
+      "svg_bytes": 34791,
+      "png_sha256": "21a0d11545e4bad460a6d7ba962c0cc8fc4b499de4f85e22cc7dcefa82d2c02b",
+      "svg_sha256": "eee6cec5c49154ee4711c19338aa85357aa5c943554dfe4c4ee85bbcba29afe9"
+    },
+    {
+      "figure_number": 3,
+      "figure_id": "fig03_token_distribution_and_context_volume",
+      "data_contract_id": 3,
+      "data_contract_name": "Token Distribution",
+      "group": "A",
+      "title": "Dual-Tokenizer Token Distribution, Reranker Pair Diagnostics, and Context Volume",
+      "protocol": "Dual-tokenizer diagnostics (MiniLM max=128; BGE reranker max=512 on evaluated query-chunk pairs) and mean retrieved tokens at K=5, 15, 60.",
+      "metrics": [
+        "emb_token_buckets",
+        "rer_pair_tok_mean",
+        "rer_pair_tok_p95",
+        "rer_pair_tok_max",
+        "retrieved_emb_tokens_k5_mean",
+        "retrieved_emb_tokens_k15_mean",
+        "retrieved_emb_tokens_k60_mean"
+      ],
+      "source_artifacts": [
+        "evaluation/artifacts/stage04/chunking/chunking_diagnostics.json",
+        "evaluation/artifacts/stage04/chunking/chunking_metrics.csv"
+      ],
+      "caption_vi": "Hình 3: Phân bố số token theo hai tokenizer độc lập và dung lượng ngữ cảnh truy xuất. (A) Với MiniLM (giới hạn 128 tokens), 43,2% chunk của Profile A vượt ngưỡng trong khi Profile B = 0%; (B) Với BGE Reranker (giới hạn 512 tokens), cả hai profile đều đạt 0% cắt cụt cặp câu hỏi–chunk (max 363 vs 190 tokens); (C) Tại cùng K, Profile A mang lượng token ngữ cảnh gấp ~2,1–2,3× Profile B.",
+      "png_path": "evaluation/artifacts/stage05/figures/png/fig03_token_distribution_and_context_volume.png",
+      "svg_path": "evaluation/artifacts/stage05/figures/svg/fig03_token_distribution_and_context_volume.svg",
+      "png_bytes": 331767,
+      "svg_bytes": 44735,
+      "png_sha256": "7a0f6187883a0e64153b70072ead889d3049a85da855cf0000d78e8e2e6ca82d",
+      "svg_sha256": "50d4f3741cd824a4555390dd49979dc6c0ab7e501d5c922e6e0ece18186bf600"
+    },
+    {
+      "figure_number": 4,
+      "figure_id": "fig04_truncation_rate_and_discarded_tokens",
+      "data_contract_id": 4,
+      "data_contract_name": "Truncation Rate",
+      "group": "A",
+      "title": "Tokenizer Truncation Rates and Discarded Embedding Token Volume",
+      "protocol": "Exact token counts under MiniLM-L12-v2 (128 limit) and BGE-reranker-v2-m3 (512 limit).",
+      "metrics": [
+        "emb_truncation_rate_pct",
+        "emb_discarded_tokens",
+        "emb_discarded_token_rate_pct",
+        "rer_pair_truncation_rate_pct"
+      ],
+      "source_artifacts": [
+        "evaluation/artifacts/stage04/chunking/chunking_metrics.csv"
+      ],
+      "caption_vi": "Hình 4: Tỷ lệ cắt cụt (truncation) và lượng token bị loại bỏ ở giai đoạn Embedding so với Reranking. Profile B loại bỏ hoàn toàn cắt cụt embedding (0,00% so với 43,20% và 114.961 token bị bỏ của Profile A), giải thích ưu thế cấu trúc của Adaptive ở lớp mã hóa, trong khi BGE Reranker xử lý trọn vẹn cả hai profile (0,00% cắt cụt).",
+      "png_path": "evaluation/artifacts/stage05/figures/png/fig04_truncation_rate_and_discarded_tokens.png",
+      "svg_path": "evaluation/artifacts/stage05/figures/svg/fig04_truncation_rate_and_discarded_tokens.svg",
+      "png_bytes": 256120,
+      "svg_bytes": 25154,
+      "png_sha256": "0d0e426c698e0673e8c69f505eefc195b202270bb22c32eff8816302c7a4b058",
+      "svg_sha256": "74b4794b129047b3c0e597a1d0b54a8176fb32af9e7c75535627ee4a942712ec"
+    },
+    {
+      "figure_number": 5,
+      "figure_id": "fig05_source_coverage_ku_and_redundancy",
+      "data_contract_id": 5,
+      "data_contract_name": "Source Coverage",
+      "group": "A",
+      "title": "Source Coverage, Knowledge Unit Retention, and Redundancy Profile",
+      "protocol": "Provenance-verified character coverage across 1,733 canonical pages and 91 benchmark Knowledge Units.",
+      "metrics": [
+        "source_coverage_pct",
+        "effective_source_coverage_pct",
+        "ku_retained",
+        "overlap_redundancy_pct",
+        "synthetic_prefix_pct",
+        "duplicate_text_excess_chunks"
+      ],
+      "source_artifacts": [
+        "evaluation/artifacts/stage04/chunking/chunking_metrics.csv",
+        "evaluation/artifacts/stage04/chunking/chunking_diagnostics.json"
+      ],
+      "caption_vi": "Hình 5: Độ phủ văn bản nguồn, tỷ lệ bảo toàn đơn vị kiến thức (91/91 KU = 100% ở cả hai profile) và đặc trưng dư thừa. Profile A có độ phủ nguồn hiệu dụng cao hơn (91,36% vs 88,93%) nhưng dư thừa chồng lấn lớn (20,33%); ngược lại Profile B giảm chồng lấn xuống 1,06% song có tỷ lệ nhóm văn bản ngắn lặp lại cao hơn (15,03% vs 3,25% số chunk).",
+      "png_path": "evaluation/artifacts/stage05/figures/png/fig05_source_coverage_ku_and_redundancy.png",
+      "svg_path": "evaluation/artifacts/stage05/figures/svg/fig05_source_coverage_ku_and_redundancy.svg",
+      "png_bytes": 274490,
+      "svg_bytes": 27098,
+      "png_sha256": "851d501a387427fa9bcb99e7703ad74ff6f48f925c712de9c49a10b3e55df3e9",
+      "svg_sha256": "83645a01d46ae23bc2f8387ea68548ab2318cab0f9ce2572defec3f0ac672440"
+    },
+    {
+      "figure_number": 6,
+      "figure_id": "fig06_precision_at_k",
+      "data_contract_id": 6,
+      "data_contract_name": "Precision@K",
+      "group": "B",
+      "title": "Retrieval Precision@K Across All Eight Combinations (K=1..60)",
+      "protocol": "Official Top-60 / candidate_top_k=120 retrieval on 40 shared DSA questions (Judged@K = 1.0, 0 ranking drift).",
+      "metrics": [
+        "precision_at_k"
+      ],
+      "source_artifacts": [
+        "evaluation/artifacts/stage04/retrieval/retrieval_metrics_summary.csv"
+      ],
+      "caption_vi": "Hình 6: So sánh Precision@K của 8 tổ hợp thực nghiệm qua 9 mốc K (1..60) và đối chiếu tại K=5, K=15. Precision giảm đơn điệu khi K tăng; A4 đạt cao nhất tại K=5 (0,7000) trong khi BM25 (A1=0,6000) vượt Dense thuần (A2=0,4700).",
+      "png_path": "evaluation/artifacts/stage05/figures/png/fig06_precision_at_k.png",
+      "svg_path": "evaluation/artifacts/stage05/figures/svg/fig06_precision_at_k.svg",
+      "png_bytes": 481748,
+      "svg_bytes": 58460,
+      "png_sha256": "dca4bef1e51f3d195aeb7d00882bed371d6ddf7c6995d1102b664de4601ce3b8",
+      "svg_sha256": "e6cc0bcb6b24f493ccf4cd2e3b28734be14c320cb212bc1f924bdb32c31692c3"
+    },
+    {
+      "figure_number": 7,
+      "figure_id": "fig07_pooled_recall_at_k",
+      "data_contract_id": 7,
+      "data_contract_name": "Pooled Recall@K",
+      "group": "B",
+      "title": "Pooled Chunk Recall@K Across All Eight Combinations (K=1..60)",
+      "protocol": "Official Top-60 / candidate_top_k=120 retrieval on 40 shared DSA questions (Judged@K = 1.0, 0 ranking drift).",
+      "metrics": [
+        "pooled_recall_at_k"
+      ],
+      "source_artifacts": [
+        "evaluation/artifacts/stage04/retrieval/retrieval_metrics_summary.csv"
+      ],
+      "caption_vi": "Hình 7: Pooled Recall@K (tính trên mẫu số pool ứng viên đã gán nhãn Stage 03, không phải toàn bộ corpus). Tại K=5, B4 (0,3509) nhỉnh hơn nhẹ A4 (0,3474); ở K lớn hơn (K=15..60), A4 dẫn đầu (0,6745 tại K=15; 0,9447 tại K=60).",
+      "png_path": "evaluation/artifacts/stage05/figures/png/fig07_pooled_recall_at_k.png",
+      "svg_path": "evaluation/artifacts/stage05/figures/svg/fig07_pooled_recall_at_k.svg",
+      "png_bytes": 499742,
+      "svg_bytes": 58436,
+      "png_sha256": "186d7f88bb574f7f53587b5b5b6c19ff46021e5efaf4489de1b35e9d32d2b36b",
+      "svg_sha256": "4119272ab49f63fec0774d8f0b8cb285acd2271e0a451973461aff9d089aaff8"
+    },
+    {
+      "figure_number": 8,
+      "figure_id": "fig08_mrr_at_k",
+      "data_contract_id": 8,
+      "data_contract_name": "MRR@K",
+      "group": "B",
+      "title": "Mean Reciprocal Rank (MRR@K) Across All Eight Combinations (K=1..60)",
+      "protocol": "Official Top-60 / candidate_top_k=120 retrieval on 40 shared DSA questions (Judged@K = 1.0, 0 ranking drift).",
+      "metrics": [
+        "mrr_at_k"
+      ],
+      "source_artifacts": [
+        "evaluation/artifacts/stage04/retrieval/retrieval_metrics_summary.csv"
+      ],
+      "caption_vi": "Hình 8: Mean Reciprocal Rank (MRR@K) qua 9 mốc K. Reranking đẩy tài liệu phù hợp đầu tiên lên sát vị trí top-1 (A4 MRR@5 = 0,9875; B4 = 0,9008), vượt rõ rệt so với Dense đơn lẻ (A2 = 0,7079; B2 = 0,6246).",
+      "png_path": "evaluation/artifacts/stage05/figures/png/fig08_mrr_at_k.png",
+      "svg_path": "evaluation/artifacts/stage05/figures/svg/fig08_mrr_at_k.svg",
+      "png_bytes": 379849,
+      "svg_bytes": 58378,
+      "png_sha256": "9b64b1952c00f267cbd2901060ab9ba125c9a2a7587b0b1e7a552fe289e5f0f9",
+      "svg_sha256": "b0a61f8334d3ed5d3f0dd3e31239975f0f5c5f3b7139a4ae7d94c0c30b292ec9"
+    },
+    {
+      "figure_number": 9,
+      "figure_id": "fig09_ndcg_at_k",
+      "data_contract_id": 9,
+      "data_contract_name": "nDCG@K",
+      "group": "B",
+      "title": "Normalized Discounted Cumulative Gain (nDCG@K) Across All Eight Combinations",
+      "protocol": "Official Top-60 / candidate_top_k=120 retrieval on 40 shared DSA questions (Judged@K = 1.0, 0 ranking drift).",
+      "metrics": [
+        "ndcg_at_k"
+      ],
+      "source_artifacts": [
+        "evaluation/artifacts/stage04/retrieval/retrieval_metrics_summary.csv",
+        "evaluation/artifacts/stage04/retrieval/strict_relevance_metrics.csv"
+      ],
+      "caption_vi": "Hình 9: nDCG@K (đánh giá phân bậc độ liên quan 0/1/2) qua 9 mốc K. A4 đạt cao nhất (0,7053 tại K=5; 0,7335 tại K=15; 0,8097 tại K=60), tiếp theo là B4 (0,5591) và A1 (0,5584). Hybrid RRF (A3=0,5037) thấp hơn BM25 tại K=5 do tín hiệu Dense yếu hơn trên thuật ngữ DSA.",
+      "png_path": "evaluation/artifacts/stage05/figures/png/fig09_ndcg_at_k.png",
+      "svg_path": "evaluation/artifacts/stage05/figures/svg/fig09_ndcg_at_k.svg",
+      "png_bytes": 455667,
+      "svg_bytes": 57299,
+      "png_sha256": "15ee41f8eca1d1f96c384a97dab60e76666d36e006bcbb98beb48b0b896c4394",
+      "svg_sha256": "dd27e382c6dd8f070837f5b902993ded31f3a2266d574eeadd70eacf2fab9b3e"
+    },
+    {
+      "figure_number": 10,
+      "figure_id": "fig10_map_at_k",
+      "data_contract_id": 10,
+      "data_contract_name": "MAP@K",
+      "group": "B",
+      "title": "Mean Average Precision (MAP@K) Across All Eight Combinations (K=1..60)",
+      "protocol": "Official Top-60 / candidate_top_k=120 retrieval on 40 shared DSA questions (Judged@K = 1.0, 0 ranking drift).",
+      "metrics": [
+        "map_at_k"
+      ],
+      "source_artifacts": [
+        "evaluation/artifacts/stage04/retrieval/retrieval_metrics_summary.csv"
+      ],
+      "caption_vi": "Hình 10: Mean Average Precision (MAP@K) qua 9 mốc K. Hai tổ hợp sử dụng Reranker (A4 = 0,6638; B4 = 0,5638 tại K=5) cải thiện nhất quán mật độ tài liệu liên quan ở đầu danh sách so với BM25, Dense và Hybrid RRF.",
+      "png_path": "evaluation/artifacts/stage05/figures/png/fig10_map_at_k.png",
+      "svg_path": "evaluation/artifacts/stage05/figures/svg/fig10_map_at_k.svg",
+      "png_bytes": 441860,
+      "svg_bytes": 58449,
+      "png_sha256": "129f084d3483dd00b0f8d0d31d242f50a7ea94f65619a58fcf68e89eac008453",
+      "svg_sha256": "09198090cd988c2e5a2245232e16e059489490dca863f30ffe02c4f51b121676"
+    },
+    {
+      "figure_number": 11,
+      "figure_id": "fig11_f1_at_k",
+      "data_contract_id": 11,
+      "data_contract_name": "F1@K",
+      "group": "B",
+      "title": "Harmonic Mean F1@K (Precision & Pooled Recall) Across All Eight Combinations",
+      "protocol": "Official Top-60 / candidate_top_k=120 retrieval on 40 shared DSA questions (Judged@K = 1.0, 0 ranking drift).",
+      "metrics": [
+        "f1_at_k"
+      ],
+      "source_artifacts": [
+        "evaluation/artifacts/stage04/retrieval/retrieval_metrics_summary.csv"
+      ],
+      "caption_vi": "Hình 11: F1@K (trung bình điều hòa giữa Precision@K và Pooled Recall@K). Điểm cực đại xuất hiện quanh K=10–15 (A4 đạt đỉnh ~0,520 tại K=15; B4 ~0,414 tại K=5), phản ánh vùng cân bằng tự nhiên giữa độ chính xác và độ phủ chunk.",
+      "png_path": "evaluation/artifacts/stage05/figures/png/fig11_f1_at_k.png",
+      "svg_path": "evaluation/artifacts/stage05/figures/svg/fig11_f1_at_k.svg",
+      "png_bytes": 457069,
+      "svg_bytes": 59894,
+      "png_sha256": "9e23bb7c5aee618461d99f74cdb7f0ecbb45473869863424128098863ec6bf46",
+      "svg_sha256": "83f2cbc7d102b620d028481b95214b274d47d18d093d6c6c56841671294a3afd"
+    },
+    {
+      "figure_number": 12,
+      "figure_id": "fig12_hit_rate_and_judged_at_k",
+      "data_contract_id": 12,
+      "data_contract_name": "Hit Rate@K",
+      "group": "B",
+      "title": "Hit Rate@K and Complete Judgment Coverage Verification (Judged@K)",
+      "protocol": "Official Top-60 retrieval on 40 queries; judgment coverage verified across all 2,880 query-combo-K cells.",
+      "metrics": [
+        "hit_rate_at_k",
+        "judged_at_k",
+        "total_unjudged_slots"
+      ],
+      "source_artifacts": [
+        "evaluation/artifacts/stage04/retrieval/retrieval_metrics_summary.csv",
+        "evaluation/artifacts/stage04/retrieval/judgment_coverage.csv",
+        "evaluation/artifacts/stage04/retrieval/ranking_drift.json"
+      ],
+      "caption_vi": "Hình 12: (A) Hit Rate@K qua 9 mốc K — A1, A3, A4 và B4 đều đạt 100% (1,000) từ K=5 trở đi, trong khi Dense thuần (A2=0,900; B2=0,775) cần K lớn hơn; (B) Kiểm chứng độ phủ gán nhãn Judged@60 = 1,000 trên toàn bộ 8 tổ hợp (0 vị trí chưa gán nhãn, 320/320 khớp hoàn toàn thứ hạng với Stage 03).",
+      "png_path": "evaluation/artifacts/stage05/figures/png/fig12_hit_rate_and_judged_at_k.png",
+      "svg_path": "evaluation/artifacts/stage05/figures/svg/fig12_hit_rate_and_judged_at_k.svg",
+      "png_bytes": 352612,
+      "svg_bytes": 50016,
+      "png_sha256": "803c04dc9e0b6cb26d5dfc1117c6c2780c378808e113f675e6cabfdf57a9d062",
+      "svg_sha256": "6dcdae400b239ce776371c3c54c34b560629d03646186259fdaeb482fa300089"
+    },
+    {
+      "figure_number": 13,
+      "figure_id": "fig13_evidence_recall_and_semantic_ku_at_k",
+      "data_contract_id": 13,
+      "data_contract_name": "Evidence Recall@K",
+      "group": "C",
+      "title": "Source-Backed Evidence Recall@K vs Semantic Knowledge Unit Coverage",
+      "protocol": "Source-backed interval union over 91 KUs / 107 verified canonical spans (single, alternative, composite modes).",
+      "metrics": [
+        "evidence_recall_at_k",
+        "semantic_ku_recall_at_k"
+      ],
+      "source_artifacts": [
+        "evaluation/artifacts/stage04/evidence/evidence_metrics_summary.csv"
+      ],
+      "caption_vi": "Hình 13: (A) Evidence Recall@K dựa trên giao khoảng nguồn xác thực (source-backed interval union) tăng mạnh từ K=1 đến K=15 (A4: 0,475 → 0,721@5 → 0,908@15) và bão hòa sau K=30; (B) Đối chiếu Evidence Recall@5 với Semantic KU Coverage@5 (nhãn LLM Stage 03) — Semantic KU cao hơn vì corpus chứa các đoạn giải thích đúng cùng kiến thức ngoài vị trí span chuẩn đã đăng ký.",
+      "png_path": "evaluation/artifacts/stage05/figures/png/fig13_evidence_recall_and_semantic_ku_at_k.png",
+      "svg_path": "evaluation/artifacts/stage05/figures/svg/fig13_evidence_recall_and_semantic_ku_at_k.svg",
+      "png_bytes": 470341,
+      "svg_bytes": 53376,
+      "png_sha256": "ee4f590947a6c8c17e6dece4590eaa3dc45171c23e6b157db400ef5cf679cffd",
+      "svg_sha256": "ecd6639c3bca687efe1ce1ab4f5bba4f40509ce9d9aa24c7b3c773bf0bd6c12a"
+    },
+    {
+      "figure_number": 14,
+      "figure_id": "fig14_evidence_precision_and_redundancy_at_k",
+      "data_contract_id": 14,
+      "data_contract_name": "Evidence Precision@K",
+      "group": "C",
+      "title": "Source-Backed Evidence Precision@K and Evidence Redundancy",
+      "protocol": "Exact source-backed span matching across 40 queries; redundancy computed on matched evidence character intervals.",
+      "metrics": [
+        "evidence_precision_at_k",
+        "evidence_redundancy_at_k"
+      ],
+      "source_artifacts": [
+        "evaluation/artifacts/stage04/evidence/evidence_metrics_summary.csv",
+        "evaluation/artifacts/stage04/evidence/evidence_redundancy.csv"
+      ],
+      "caption_vi": "Hình 14: (A) Evidence Precision@K đo tỷ lệ chunk trả về thực sự chứa bằng chứng nguồn xác thực (A4 dẫn đầu ở K=5 với 0,3550, thấp hơn Precision@5 mức chunk vì nhiều chunk liên quan ngữ nghĩa không trùng span gốc); (B) Evidence Redundancy cho thấy Profile B gần như loại bỏ trùng lặp bằng chứng (0,0000–0,0075 tại K=5 so với 0,0380–0,0608 của Profile A).",
+      "png_path": "evaluation/artifacts/stage05/figures/png/fig14_evidence_precision_and_redundancy_at_k.png",
+      "svg_path": "evaluation/artifacts/stage05/figures/svg/fig14_evidence_precision_and_redundancy_at_k.svg",
+      "png_bytes": 404298,
+      "svg_bytes": 54315,
+      "png_sha256": "1801b307e08f51673e38033cab14e863a5730a53d7c0dbcac349bad44cfc2cdd",
+      "svg_sha256": "5ef32eb94465a39b0ad7aecd6400e34d6e2737714c174d906db1cc56914c102e"
+    },
+    {
+      "figure_number": 15,
+      "figure_id": "fig15_complete_vs_partial_evidence_coverage",
+      "data_contract_id": 15,
+      "data_contract_name": "Complete Evidence Rate",
+      "group": "C",
+      "title": "Complete Evidence Rate@K and Partial vs Complete Coverage Hierarchy",
+      "protocol": "Exact implementation distinction in evidence_metrics.py across 40 multi-KU questions (K=1..60).",
+      "metrics": [
+        "complete_evidence_rate_at_k",
+        "evidence_recall_at_k",
+        "partial_evidence_coverage_at_k",
+        "ku_coverage_at_k"
+      ],
+      "source_artifacts": [
+        "evaluation/artifacts/stage04/evidence/evidence_metrics_summary.csv"
+      ],
+      "caption_vi": "Hình 15: (A) Tỷ lệ câu hỏi đạt đủ 100% bằng chứng bắt buộc (Complete Evidence Rate@K) — A4 đạt 55,0% ở K=5 và 80,0% ở K=15, vượt xa B4 (30,0% và 47,5%) do chunk ngắn làm phân mảnh ngữ cảnh; (B) Phân tầng bốn thước đo phủ nguồn tại K=5, xác minh bất biến Complete ≤ EvRecall ≤ Partial ≤ KU_Any và tránh đánh đồng giao ký tự tối thiểu với phủ bằng chứng hoàn chỉnh.",
+      "png_path": "evaluation/artifacts/stage05/figures/png/fig15_complete_vs_partial_evidence_coverage.png",
+      "svg_path": "evaluation/artifacts/stage05/figures/svg/fig15_complete_vs_partial_evidence_coverage.svg",
+      "png_bytes": 407508,
+      "svg_bytes": 53125,
+      "png_sha256": "d3e3dfd35a4df69bd6d69adde131bb38e58a266024ef668366a2da06f8aa72e2",
+      "svg_sha256": "ca077762d50c2fc9006e3404e1b6b24ed0cd8d562e12b30162904c3514ceed52"
+    },
+    {
+      "figure_number": 16,
+      "figure_id": "fig16_mean_latency_at_k",
+      "data_contract_id": 16,
+      "data_contract_name": "Mean Latency@K",
+      "group": "D",
+      "title": "Main Warm Benchmark Mean and P50 Retrieval Latency Across K=1..60",
+      "protocol": "Protocol 1 — Main Warm Latency: 14,400 calls, 5 interleaved repeats, seed=42, candidate_top_k=120.",
+      "metrics": [
+        "mean_ms",
+        "p50_ms"
+      ],
+      "source_artifacts": [
+        "evaluation/artifacts/stage04/performance/latency_summary.csv",
+        "evaluation/artifacts/stage04/performance/performance_run_manifest.json"
+      ],
+      "caption_vi": "Hình 16: Độ trễ trung bình (Mean) và trung vị (P50) của bài đo Main Warm Latency (14.400 lượt gọi, 5 lượt lặp xen kẽ, pool=120). Độ trễ gần như phẳng theo K vì toàn bộ pool=120 được chấm điểm trước khi cắt Top-K; 115 lần tái tạo cache BM25 (TTL 300s) làm giá trị Mean nhỉnh hơn P50 ở các tổ hợp dùng BM25.",
+      "png_path": "evaluation/artifacts/stage05/figures/png/fig16_mean_latency_at_k.png",
+      "svg_path": "evaluation/artifacts/stage05/figures/svg/fig16_mean_latency_at_k.svg",
+      "png_bytes": 409936,
+      "svg_bytes": 66747,
+      "png_sha256": "ae3c06471b45a7d3c684c0b60766eaa4b9c84fac2c7d217b1a2f5f32d8d8c904",
+      "svg_sha256": "71f417b87a1a51ad6838e42b48404efc02b3f4a6dc97b161b32b0eb13b060693"
+    },
+    {
+      "figure_number": 17,
+      "figure_id": "fig17_p95_latency_at_k",
+      "data_contract_id": 17,
+      "data_contract_name": "P95 Latency@K",
+      "group": "D",
+      "title": "Main Warm P95 Latency@K and Tail-Latency Distribution (K=5)",
+      "protocol": "Protocol 1 — Main Warm Latency: 14,400 calls, 5 interleaved repeats, candidate_top_k=120.",
+      "metrics": [
+        "p50_ms",
+        "mean_ms",
+        "p95_ms",
+        "p99_ms"
+      ],
+      "source_artifacts": [
+        "evaluation/artifacts/stage04/performance/latency_summary.csv"
+      ],
+      "caption_vi": "Hình 17: Độ trễ P95 trên 9 mốc K và phân vị đuôi (P50/Mean/P95/P99) tại K=5 (pool=120). A1 nhanh nhất (P95 = 607,5 ms); ở tổng độ trễ warm retrieval, B4 nhanh hơn A4 khoảng 13,0% tại P95 K=5 (3.214,3 vs 3.693,1 ms) và 23,6% tại P50. Lưu ý: đây là độ trễ bộ truy xuất nội bộ, không phải độ trễ HTTP API đầu-cuối.",
+      "png_path": "evaluation/artifacts/stage05/figures/png/fig17_p95_latency_at_k.png",
+      "svg_path": "evaluation/artifacts/stage05/figures/svg/fig17_p95_latency_at_k.svg",
+      "png_bytes": 328866,
+      "svg_bytes": 56366,
+      "png_sha256": "86655d1345ec17c60eb24cb60fac66d1e33bd5a834b11b0475ce9d9db9adcd79",
+      "svg_sha256": "6822eab2aa0922a2d5388df6aca39fc3230068999d1212ff030f3118dfd9cd98"
+    },
+    {
+      "figure_number": 18,
+      "figure_id": "fig18_retrieval_latency_breakdown",
+      "data_contract_id": 18,
+      "data_contract_name": "Retrieval Latency Breakdown",
+      "group": "D",
+      "title": "Stage-Level Retrieval Latency Breakdown (Isolated Reranking & QdrantLocal Overhead)",
+      "protocol": "Protocol 2 — Stage Breakdown: 640 calls (K=5 and K=60, candidate_top_k=120).",
+      "metrics": [
+        "query_embed_mean_ms",
+        "bm25_search_mean_ms",
+        "qdrant_dense_search_mean_ms",
+        "rrf_fusion_mean_ms",
+        "rerank_mean_ms",
+        "wall_clock_total_mean_ms"
+      ],
+      "source_artifacts": [
+        "evaluation/artifacts/stage04/performance/stage_latency.csv"
+      ],
+      "caption_vi": "Hình 18: Phân rã độ trễ theo từng công đoạn (640 lượt đo, pool=120). Ở riêng giai đoạn BGE Reranking (K=5), B4 nhanh hơn A4 41,2% (1.364,8 ms vs 2.320,4 ms) nhờ chunk ngắn hơn; tuy nhiên chi phí QdrantLocal SQLite (~461–645 ms mỗi nhánh BM25/Dense) khiến mức giảm trên tổng độ trễ warm retrieval nhỏ hơn (~13–24%).",
+      "png_path": "evaluation/artifacts/stage05/figures/png/fig18_retrieval_latency_breakdown.png",
+      "svg_path": "evaluation/artifacts/stage05/figures/svg/fig18_retrieval_latency_breakdown.svg",
+      "png_bytes": 307445,
+      "svg_bytes": 51014,
+      "png_sha256": "8eba2b14637855a2c41dc06708c24b1dcce5c29427b5c0af4a059062a9dd859b",
+      "svg_sha256": "f4c600a511e58053e3a01b6be9bd2c9f57cb79c99d6ddf1b314de7b5ef4c9600"
+    },
+    {
+      "figure_number": 19,
+      "figure_id": "fig19_cold_vs_warm_and_prod_profile_latency",
+      "data_contract_id": 19,
+      "data_contract_name": "Cold vs Warm Latency",
+      "group": "D",
+      "title": "Cold-Start Latency (Seconds) vs Warm & Production-Parameter Retrieval Latency (ms)",
+      "protocol": "Protocol 4 (Cold-Start, 24 trials, seconds) strictly separated from Protocol 1 (Warm pool=120, ms) & Protocol 3 (Prod-Param K=5/pool=10, 1,600 calls, ms).",
+      "metrics": [
+        "model_load_ms",
+        "bm25_build_ms",
+        "first_retrieval_ms",
+        "total_cold_start_ms",
+        "p50_ms",
+        "p95_ms"
+      ],
+      "source_artifacts": [
+        "evaluation/artifacts/stage04/performance/cold_start_latency.csv",
+        "evaluation/artifacts/stage04/performance/latency_summary.csv",
+        "evaluation/artifacts/stage04/performance/production_profile_latency.csv"
+      ],
+      "caption_vi": "Hình 19: Tách biệt rõ đơn vị và giao thức đo: (A) Độ trễ khởi động nguội (Cold-Start, 24 lần chạy tiến trình độc lập, đơn vị giây) — xây dựng BM25 Profile B tốn 15,2–16,0s so với 9,6–10,9s của Profile A; (B) Đối chiếu Main Warm (pool=120, ms) với cấu hình tham số production trên evaluation index (K=5, pool=10, 1.600 lượt gọi: A4 P95 giảm từ 3.693 ms xuống 1.231 ms).",
+      "png_path": "evaluation/artifacts/stage05/figures/png/fig19_cold_vs_warm_and_prod_profile_latency.png",
+      "svg_path": "evaluation/artifacts/stage05/figures/svg/fig19_cold_vs_warm_and_prod_profile_latency.svg",
+      "png_bytes": 286238,
+      "svg_bytes": 43876,
+      "png_sha256": "1a6c74628a38ef576d131d4074837591e6de14170f80adb1d129fe66a2421564",
+      "svg_sha256": "c0ad6c9c927d5bbaaffe9544fbc9354c63ac272710a10353151881c59256fc77"
+    },
+    {
+      "figure_number": 20,
+      "figure_id": "fig20_resource_usage",
+      "data_contract_id": 20,
+      "data_contract_name": "Resource Usage",
+      "group": "D",
+      "title": "GPU VRAM and Host Process RAM Resource Utilization",
+      "protocol": "Cold-start isolated process peaks (3 trials/combo) alongside warm benchmark 5-repeat snapshots on RTX 5060 (7.96 GB VRAM) / 15.71 GB RAM.",
+      "metrics": [
+        "peak_gpu_allocated_max_mb",
+        "peak_gpu_reserved_max_mb",
+        "process_rss_mean_mb",
+        "cuda_oom_count"
+      ],
+      "source_artifacts": [
+        "evaluation/artifacts/stage04/performance/resource_usage.csv",
+        "evaluation/artifacts/stage04/performance/performance_run_manifest.json"
+      ],
+      "caption_vi": "Hình 20: Mức tiêu thụ GPU VRAM và RAM tiến trình (RSS). BM25 thuần (A1, B1) tiêu thụ 0 MB VRAM; Dense/RRF dùng 458,5 MB VRAM; tổ hợp Reranker (A4, B4) đạt đỉnh ~2,65–2,69 GB VRAM (chỉ ~34% dung lượng RTX 5060 8 GB, 0 lỗi OOM). RAM tiến trình trong phiên warm duy trì ổn định 965–993 MB qua cả 5 lượt lặp.",
+      "png_path": "evaluation/artifacts/stage05/figures/png/fig20_resource_usage.png",
+      "svg_path": "evaluation/artifacts/stage05/figures/svg/fig20_resource_usage.svg",
+      "png_bytes": 266258,
+      "svg_bytes": 39959,
+      "png_sha256": "13c3759bed74045640040f4220d147e462673afc7094a5dd484f87164509e89f",
+      "svg_sha256": "06bdaf2b7b235a5a6a7c240a72b9603164e1324b7d11d1c744def82cbee246ef"
+    },
+    {
+      "figure_number": 21,
+      "figure_id": "fig21_answer_quality_comparison",
+      "data_contract_id": 21,
+      "data_contract_name": "Answer Quality Comparison",
+      "group": "E",
+      "title": "Controlled Agent Answer Generation Quality (All 10 Metrics; NO_RAG N/A Preserved)",
+      "protocol": "Controlled Agent Generation (antigravity_agent_flash + blind antigravity_agent_pro judge, 2,048 token budget, 40 queries x 9 configs = 360 main answers). Production Groq API BLOCKED.",
+      "metrics": [
+        "answer_correctness_norm",
+        "answer_relevancy_norm",
+        "faithfulness_norm",
+        "answer_completeness_norm",
+        "citation_accuracy_norm",
+        "citation_validity",
+        "unsupported_claim_rate",
+        "contradiction_rate",
+        "complexity_correctness_norm",
+        "code_correctness_norm"
+      ],
+      "source_artifacts": [
+        "evaluation/artifacts/stage04/generation/answer_metrics_summary.csv",
+        "evaluation/artifacts/stage04/generation/answer_quality_audit.json"
+      ],
+      "caption_vi": "Hình 21: So sánh toàn bộ 10 thước đo chất lượng sinh câu trả lời trong thí nghiệm Controlled Agent (không đại diện hiệu năng Groq production). Bảo toàn nguyên giá trị N/A của NO_RAG ở các thước đo gắn với ngữ cảnh. Công bố rõ: NO_RAG đạt Correctness (0,969) và Relevancy (1,000) cao hơn A4 (0,925 và 0,956); A1 nhỉnh hơn A4 về Faithfulness (0,925 vs 0,919) và Citation Accuracy (0,850 vs 0,819); 100% Citation Validity không đồng nghĩa với 100% Citation Accuracy.",
+      "png_path": "evaluation/artifacts/stage05/figures/png/fig21_answer_quality_comparison.png",
+      "svg_path": "evaluation/artifacts/stage05/figures/svg/fig21_answer_quality_comparison.svg",
+      "png_bytes": 399218,
+      "svg_bytes": 60730,
+      "png_sha256": "6373cc18c4b692017a0033e767cc665941dfeea1d612cd2f90e9720462797ef1",
+      "svg_sha256": "ba2b8a7fd2f9fdc8150bad78348068745bb864cf39385e2994a4000040d25f6d"
+    },
+    {
+      "figure_number": 22,
+      "figure_id": "fig22_rag_vs_norag_and_ablation_study",
+      "data_contract_id": 22,
+      "data_contract_name": "RAG vs Without-RAG",
+      "group": "E, F",
+      "title": "RAG vs Without-RAG Contribution and Retrieval/Chunking Ablation Study",
+      "protocol": "Paired bootstrap differences (10,000 resamples, seed=42, Holm-Bonferroni correction across ablation families).",
+      "metrics": [
+        "abs_diff",
+        "abs_improvement",
+        "rel_improvement",
+        "ci_95_low",
+        "ci_95_high",
+        "p_value_holm"
+      ],
+      "source_artifacts": [
+        "evaluation/artifacts/stage04/ablation/rag_contribution.csv",
+        "evaluation/artifacts/stage04/ablation/ablation_results.csv",
+        "evaluation/artifacts/stage04/retrieval/retrieval_metrics_per_query.csv"
+      ],
+      "caption_vi": "Hình 22: (A) Chênh lệch ghép cặp Answer Correctness giữa từng cấu hình RAG và NO_RAG kèm khoảng tin cậy 95% — A4 thấp hơn NO_RAG -0,044 (p=0,238, chưa có ý nghĩa thống kê ở α=0,05, không chứng minh tương đương) nhưng giảm Contradiction xuống 0,000; (B) Nghiên cứu Ablation trên nDCG@5 cho thấy Reranker là nguồn tăng lớn nhất (+0,202 / +40,0% ở Profile A, Holm p=0,001), BM25 vượt mạnh Dense, còn Adaptive giảm nDCG@5 có ý nghĩa ở BM25 và Rerank.",
+      "png_path": "evaluation/artifacts/stage05/figures/png/fig22_rag_vs_norag_and_ablation_study.png",
+      "svg_path": "evaluation/artifacts/stage05/figures/svg/fig22_rag_vs_norag_and_ablation_study.svg",
+      "png_bytes": 407170,
+      "svg_bytes": 45008,
+      "png_sha256": "2fd940b4a1c59735356b5014ef9e713f14e6099e580a5bb3d924b56d8d428ff6",
+      "svg_sha256": "ce9fec862eade105a01fcf78a9df1ff2330e9cef7722e730cb531630f4a074af"
+    },
+    {
+      "figure_number": 23,
+      "figure_id": "fig23_candidate_pool_and_topk_sensitivity",
+      "data_contract_id": 23,
+      "data_contract_name": "Candidate Pool Sensitivity",
+      "group": "G",
+      "title": "Candidate Pool Sensitivity (Single-Pass) and Top-K Operating Sensitivity",
+      "protocol": "Protocol 5 — Candidate Pool Sensitivity (640 single-pass calls, pool=10,30,60,120, K=5) + Top-K sensitivity across K=1..60.",
+      "metrics": [
+        "ndcg_at_5",
+        "evidence_recall_at_5",
+        "mean_latency_ms",
+        "p95_latency_ms",
+        "precision_at_k",
+        "complete_evidence_rate_at_k"
+      ],
+      "source_artifacts": [
+        "evaluation/artifacts/stage04/sensitivity/candidate_pool_sensitivity.csv",
+        "evaluation/artifacts/stage04/sensitivity/top_k_sensitivity.csv"
+      ],
+      "caption_vi": "Hình 23: (A) Phân tích độ nhạy kích thước Candidate Pool (đo single-pass độc lập, không trộn với Main Warm Latency): A4 tại pool=30 giữ 99,8% nDCG@5 so với pool=120 (0,7039 vs 0,7053) nhưng giảm độ trễ trung bình từ 3.486 ms xuống 1.628 ms; (B) Độ nhạy Top-K cho thấy vùng K=5–10 tối ưu cho chat ngắn gọn, còn K=15 đạt 80,0% Complete Evidence ở A4 trước khi bão hòa sau K=30.",
+      "png_path": "evaluation/artifacts/stage05/figures/png/fig23_candidate_pool_and_topk_sensitivity.png",
+      "svg_path": "evaluation/artifacts/stage05/figures/svg/fig23_candidate_pool_and_topk_sensitivity.svg",
+      "png_bytes": 437626,
+      "svg_bytes": 52129,
+      "png_sha256": "e8d9474aaaa0925becd9d424c408bbf8942eb616801a920aecc6703a9153694e",
+      "svg_sha256": "bb6f1e74bed07e8f30ce6926299019c259241db5c8cbb5ef7b4d454fada6f480"
+    },
+    {
+      "figure_number": 24,
+      "figure_id": "fig24_context_budget_sensitivity",
+      "data_contract_id": 24,
+      "data_contract_name": "Context Budget Sensitivity",
+      "group": "G",
+      "title": "Exploratory Context Budget Sensitivity (1024 / 2048 / 4096 Tokens, n=10 Queries)",
+      "protocol": "Exploratory Controlled Agent subset (10 queries x {A4, B4} x {1024, 2048, 4096} tokens = 40 budget answers + 20 main answers).",
+      "metrics": [
+        "mean_actual_context_tokens",
+        "answer_correctness_norm",
+        "faithfulness_norm",
+        "answer_completeness_norm",
+        "citation_accuracy_norm"
+      ],
+      "source_artifacts": [
+        "evaluation/artifacts/stage04/sensitivity/context_budget_sensitivity.csv"
+      ],
+      "caption_vi": "Hình 24: Phân tích độ nhạy ngân sách ngữ cảnh (Context Budget: 1.024 / 2.048 / 4.096 tokens) trên mẫu thăm dò 10 câu hỏi cho A4 và B4. Mức 2.048 tokens mang lại cân bằng tốt nhất cho A4 (Correctness = 0,950, Faithfulness = 0,925); tăng lên 4.096 tokens đưa thêm ngữ cảnh nhiễu khiến Faithfulness (0,825) và Citation Accuracy (0,700) suy giảm.",
+      "png_path": "evaluation/artifacts/stage05/figures/png/fig24_context_budget_sensitivity.png",
+      "svg_path": "evaluation/artifacts/stage05/figures/svg/fig24_context_budget_sensitivity.svg",
+      "png_bytes": 371945,
+      "svg_bytes": 38359,
+      "png_sha256": "d6ae6bcf9dc6270f4d18f1bbf53ee43657ff4ea9f7bd4095463a0b7edb9f3b77",
+      "svg_sha256": "2a3f3c5a6f5f72d9d54e9108e65979218c05ef877a39921714be1de62f02d5c6"
+    },
+    {
+      "figure_number": 25,
+      "figure_id": "fig25_quality_latency_pareto_tradeoff",
+      "data_contract_id": 25,
+      "data_contract_name": "Quality-Latency Trade-off",
+      "group": "K",
+      "title": "Quality–Latency–GPU Resource Pareto Frontier (Matched Main Warm Protocol)",
+      "protocol": "Comparable Protocol 1 Main Warm Latency (pool=120) vs Official Retrieval/Evidence quality at K=5 and K=15; no arbitrary composite weights.",
+      "metrics": [
+        "ndcg_at_k",
+        "evidence_recall_at_k",
+        "p95_latency_ms",
+        "peak_gpu_allocated_max_mb",
+        "is_pareto_optimal"
+      ],
+      "source_artifacts": [
+        "evaluation/artifacts/stage04/tradeoff/pareto_frontier.csv",
+        "evaluation/artifacts/stage04/tradeoff/quality_latency_tradeoff.csv"
+      ],
+      "caption_vi": "Hình 25: Biên tối ưu Pareto đa tiêu chí Chất lượng – Độ trễ P95 – GPU VRAM trên cùng giao thức Main Warm (pool=120), không dùng trọng số chủ quan. Ba tổ hợp không bị trội là A1 (độ trễ thấp nhất 607,5 ms, 0 MB VRAM), B4 (trung gian, rerank nhanh hơn 41%, tổng P95 thấp hơn A4 13,0–16,8%) và A4 (dẫn đầu nDCG@5 = 0,705 và Evidence Recall@15 = 0,908).",
+      "png_path": "evaluation/artifacts/stage05/figures/png/fig25_quality_latency_pareto_tradeoff.png",
+      "svg_path": "evaluation/artifacts/stage05/figures/svg/fig25_quality_latency_pareto_tradeoff.svg",
+      "png_bytes": 414150,
+      "svg_bytes": 40677,
+      "png_sha256": "612005ded63d38b48fd111108fa6709908ee2ade9ade5a168e9e932c2a0563b7",
+      "svg_sha256": "e6978d0a414f27b4d7227d991c1a52fdc29f48b60c33b0f9f7a1e4fd823ced76"
+    },
+    {
+      "figure_number": 26,
+      "figure_id": "fig26_statistical_ci_subgroups_and_audit",
+      "data_contract_id": 26,
+      "data_contract_name": "Statistical Confidence Intervals",
+      "group": "H",
+      "title": "Statistical Uncertainty, Win–Tie–Loss, Annotation Sensitivity & Subgroups",
+      "protocol": "10,000-resample bootstrap (seed=42) on n=40 queries, paired Win-Tie-Loss (tol=1e-4), AI annotation adjudication sensitivity, and VI/EN + Easy/Med/Hard subgroups.",
+      "metrics": [
+        "ci_95_low",
+        "ci_95_high",
+        "wins",
+        "ties",
+        "losses",
+        "abs_shift_final_minus_primary",
+        "ndcg_at_k"
+      ],
+      "source_artifacts": [
+        "evaluation/artifacts/stage04/statistics/confidence_intervals.csv",
+        "evaluation/artifacts/stage04/statistics/win_tie_loss.csv",
+        "evaluation/artifacts/stage04/statistics/annotation_sensitivity.csv",
+        "evaluation/artifacts/stage04/statistics/subgroup_metrics.csv"
+      ],
+      "caption_vi": "Hình 26: Tổng hợp phân tích thống kê (10.000 mẫu bootstrap, seed=42). (A) Khoảng tin cậy 95% cho nDCG@5 và EvRecall@15; (B) Tỷ số Thắng–Hòa–Thua ghép cặp trên 40 câu hỏi (A4 thắng A3 ở 36/40 câu; B4 thua A4 ở 28/40 câu); (C) Độ nhạy gán nhãn AI (|Δ nDCG| ≤ 0,011, giữ nguyên xếp hạng nhưng không thay thế xác nhận con người); (D) Hiệu năng theo ngôn ngữ (VI/EN) và độ khó.",
+      "png_path": "evaluation/artifacts/stage05/figures/png/fig26_statistical_ci_subgroups_and_audit.png",
+      "svg_path": "evaluation/artifacts/stage05/figures/svg/fig26_statistical_ci_subgroups_and_audit.svg",
+      "png_bytes": 489555,
+      "svg_bytes": 89443,
+      "png_sha256": "159a4cee66022b4c689d2adfeba53e1092f639c8a631f9ec10af29da9b28ce9f",
+      "svg_sha256": "6875074df7559166fb093322f7e47516f9c1f0784d2f856d220410269fc623b5"
+    },
+    {
+      "figure_number": 27,
+      "figure_id": "fig27_robustness_and_study_features",
+      "data_contract_id": 27,
+      "data_contract_name": "Robustness Results",
+      "group": "I",
+      "title": "Robustness Evaluation (n=20) and Study Features Quality vs Contract Checks",
+      "protocol": "20 independent robustness cases (A4 real retrieval + Controlled Agent generation) and Study Features separating 11/11 real module contract checks from Controlled Agent Quiz (n=8) & Roadmap (n=4).",
+      "metrics": [
+        "correct_handling_rate",
+        "abstention_rate",
+        "mean_ev_recall_degradation",
+        "mean_answer_quality_norm",
+        "schema_valid_rate",
+        "content_correctness_norm",
+        "source_grounding_norm",
+        "pedagogical_quality_norm"
+      ],
+      "source_artifacts": [
+        "evaluation/artifacts/stage04/robustness/robustness_metrics.csv",
+        "evaluation/artifacts/stage04/study_features/study_features_summary.csv",
+        "evaluation/artifacts/stage04/study_features/functional_test_results.json"
+      ],
+      "caption_vi": "Hình 27: (A) Đánh giá độ bền vững trên 20 ca độc lập kèm cỡ mẫu từng nhóm — OOD (4/4), Unanswerable (4/4) và Prompt Injection (3/3 — cỡ mẫu nhỏ, không suy rộng thành an toàn toàn hệ thống) đạt 100%, nhưng tiếng Việt không dấu (n=3) thất bại hoàn toàn (0%, EvRecall@5 giảm -0,67) do accent_insensitive=false; (B) Tách bạch 11/11 kiểm thử hợp đồng module backend thật khỏi điểm chất lượng Quiz (n=8) và Roadmap (n=4) bằng Controlled Agent.",
+      "png_path": "evaluation/artifacts/stage05/figures/png/fig27_robustness_and_study_features.png",
+      "svg_path": "evaluation/artifacts/stage05/figures/svg/fig27_robustness_and_study_features.svg",
+      "png_bytes": 380825,
+      "svg_bytes": 37625,
+      "png_sha256": "9fa11c9c76f31cf2e6a734bc05b3b0fab8a4679d6cb22caf6a5caf94536f8848",
+      "svg_sha256": "c030a4928709c52b4f6f1f397f12f00957dc599718896b5a66d6a46a0b8a3bda"
+    },
+    {
+      "figure_number": 28,
+      "figure_id": "fig28_error_distribution_and_taxonomy",
+      "data_contract_id": 28,
+      "data_contract_name": "Error Distribution",
+      "group": "J",
+      "title": "Observed Failure Taxonomy and Per-Query Diagnostic Error Map",
+      "protocol": "Rule-verified failure taxonomy over 40 queries (A4 & B4 at K=5 vs K=60) linked to representative case studies.",
+      "metrics": [
+        "occurrence_count",
+        "ndcg_at_5",
+        "evidence_recall_at_5",
+        "evidence_recall_at_60"
+      ],
+      "source_artifacts": [
+        "evaluation/artifacts/stage04/error_analysis/failure_taxonomy_summary.csv",
+        "evaluation/artifacts/stage04/error_analysis/error_analysis.jsonl",
+        "evaluation/artifacts/stage04/error_analysis/representative_case_studies.json"
+      ],
+      "caption_vi": "Hình 28: (A) Phân bố 7 dạng lỗi thực đo trên 40 câu hỏi (A4/B4): phổ biến nhất là bằng chứng có tồn tại trong Top-60 nhưng xếp ngoài Top-5 (29 lượt), không truy xuất được trong Top-60 (17) và thiếu đơn vị kiến thức (17); (B) Biểu đồ phân tán nDCG@5 giữa A4 và B4 gắn nhãn các ca điển hình (cả hai yếu: Q007/Q022/Q029; Adaptive vượt Recursive: Q011/Q014/Q015).",
+      "png_path": "evaluation/artifacts/stage05/figures/png/fig28_error_distribution_and_taxonomy.png",
+      "svg_path": "evaluation/artifacts/stage05/figures/svg/fig28_error_distribution_and_taxonomy.svg",
+      "png_bytes": 382105,
+      "svg_bytes": 45042,
+      "png_sha256": "856922f5e9a20e4989ecfdfc505cf9697cf6998ca3fef9442c34458055ae642b",
+      "svg_sha256": "b1575bc6f86430573d2eb651bbaabcb170620d2ac2e7da40bb09947679ac266a"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "profile_filter": "all",
+  "model_tier": "flash",
+  "prompt_version": "stage03_llm_judge_v1",
+  "target_count": 9068,
+  "newly_written": 2,
+  "total_checkpointed": 9068,
+  "missing_count": 0,
+  "missing_sample": [],
+  "total_invalids": 0,
+  "total_retries": 0,
+  "runtime_sec": 5.54
+}

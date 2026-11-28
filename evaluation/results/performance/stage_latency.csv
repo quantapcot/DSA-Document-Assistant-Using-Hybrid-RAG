@@ -1,0 +1,17 @@
+combo_id,profile_id,method,k,candidate_top_k,queries,query_embed_mean_ms,bm25_search_mean_ms,qdrant_dense_search_mean_ms,rrf_fusion_mean_ms,rerank_mean_ms,wall_clock_total_mean_ms,wall_clock_total_p95_ms
+A1,recursive_512_100,bm25,5,120,40,0.0,461.326,0.0,0.0,0.0,461.424,514.076
+A2,recursive_512_100,dense,5,120,40,18.606,0.0,493.981,0.0,0.0,512.734,587.249
+A3,recursive_512_100,hybrid_rrf,5,120,40,17.743,467.696,478.44,0.384,0.0,964.415,1089.117
+A4,recursive_512_100,hybrid_rerank,5,120,40,12.84,463.465,504.457,0.405,2320.416,3301.843,3802.725
+B1,structure_adaptive,bm25,5,120,40,0.0,605.008,0.0,0.0,0.0,605.119,682.997
+B2,structure_adaptive,dense,5,120,40,17.253,0.0,555.844,0.0,0.0,573.209,630.374
+B3,structure_adaptive,hybrid_rrf,5,120,40,17.341,1094.237,574.947,0.376,0.0,1687.037,1315.669
+B4,structure_adaptive,hybrid_rerank,5,120,40,12.204,554.659,553.014,0.402,1364.821,2485.37,2979.661
+A1,recursive_512_100,bm25,60,120,40,0.0,803.369,0.0,0.0,0.0,803.477,578.584
+A2,recursive_512_100,dense,60,120,40,18.875,0.0,571.301,0.0,0.0,590.4,791.856
+A3,recursive_512_100,hybrid_rrf,60,120,40,19.314,560.685,599.985,0.541,0.0,1180.751,1447.276
+A4,recursive_512_100,hybrid_rerank,60,120,40,14.621,548.41,555.709,0.462,2331.904,3451.467,3902.052
+B1,structure_adaptive,bm25,60,120,40,0.0,826.487,0.0,0.0,0.0,826.58,486.89
+B2,structure_adaptive,dense,60,120,40,17.484,0.0,513.206,0.0,0.0,530.826,827.007
+B3,structure_adaptive,hybrid_rrf,60,120,40,17.531,613.281,616.051,0.417,0.0,1247.436,1456.873
+B4,structure_adaptive,hybrid_rerank,60,120,40,14.174,621.427,644.808,0.45,1379.978,2661.107,3163.004

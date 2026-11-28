@@ -1,0 +1,78 @@
+{
+  "environment": {
+    "timestamp_utc": "2026-11-28T16:40:45.789105+00:00",
+    "git": {
+      "branch": "feat/final-readiness",
+      "expected_branch": "feat/final-readiness",
+      "head": "139957c0d6974df273c86ac2029be1c8fb7d158e",
+      "expected_stage05_head": "139957c0d6974df273c86ac2029be1c8fb7d158e",
+      "main": "b84f09450f213b03ad57ef8b388f482ee0f0eaa2",
+      "expected_main": "b84f09450f213b03ad57ef8b388f482ee0f0eaa2",
+      "baseline_ok": true
+    },
+    "stage04_stage05_integrity_ok": true,
+    "secrets_safety": {
+      "backend_env_gitignored": true,
+      "groq_api_key_configured": true,
+      "groq_api_key_length": 56,
+      "groq_api_key_starts_gsk": true
+    },
+    "groq_config": {
+      "base_url": "https://api.groq.com/openai/v1",
+      "configured_model": "openai/gpt-oss-120b",
+      "llm_chat_timeout": 30.0,
+      "llm_quiz_generation_timeout": 90.0,
+      "llm_quiz_verification_timeout": 40.0,
+      "llm_revision_timeout": 45.0,
+      "chat_request_timeout": 90.0,
+      "quiz_request_timeout": 240.0,
+      "revision_request_timeout": 240.0
+    }
+  },
+  "isolated_qdrant_copy": {
+    "source_dir": "data/runtime/qdrant_eval",
+    "isolated_copy_dir": "data/runtime/ac04_eval_runtime/qdrant_eval_copy",
+    "files_verified": 3,
+    "checksums_identical": true,
+    "source_checksums": {
+      ".lock": {
+        "bytes": 13,
+        "sha256": "67a987c432005e3afcc13a871b3ddabaeee0f4504058da65b0769016d3083b44"
+      },
+      "collection/eval_dsa_chunks_v1/storage.sqlite": {
+        "bytes": 105721856,
+        "sha256": "997a04e442539671199f66d112d3bb78eee8aeef65ddcbcb492dea5ac640f2a2"
+      },
+      "meta.json": {
+        "bytes": 602,
+        "sha256": "336fd92adf909ec65cbec01284a178b1a62a38736b818a60af09707ba2a81825"
+      }
+    }
+  },
+  "groq_smoke_test": {
+    "timestamp_utc": "2026-11-28T16:40:47.169069+00:00",
+    "requested_model": "openai/gpt-oss-120b",
+    "base_url": "https://api.groq.com/openai/v1",
+    "connectivity_ok": true,
+    "http_status": 200,
+    "returned_model": "openai/gpt-oss-120b",
+    "elapsed_ms": 957.18,
+    "usage": {
+      "prompt_tokens": 97,
+      "completion_tokens": 32,
+      "total_tokens": 129
+    },
+    "rate_limit_headers": {
+      "x-groq-region": "bom",
+      "x-ratelimit-limit-requests": "1000",
+      "x-ratelimit-limit-tokens": "8000",
+      "x-ratelimit-remaining-requests": "999",
+      "x-ratelimit-remaining-tokens": "7839",
+      "x-ratelimit-reset-requests": "1m26.4s",
+      "x-ratelimit-reset-tokens": "1.207s"
+    },
+    "response_preview": "The average time complexity of binary search on a sorted array is O(log n).",
+    "error": null,
+    "finish_reason": "stop"
+  }
+}

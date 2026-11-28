@@ -1,0 +1,385 @@
+combo_id,profile_id,method,k,subgroup_dim,subgroup_value,group_n,precision_at_k,pooled_recall_at_k,mrr_at_k,ndcg_at_k,evidence_recall_at_k,complete_evidence_rate_at_k
+A1,recursive_512_100,bm25,5,language,en,16,0.575,0.269847,0.890625,0.540909,0.729167,0.5
+A1,recursive_512_100,bm25,5,language,vi,24,0.616667,0.303335,0.923611,0.569996,0.611111,0.416667
+A1,recursive_512_100,bm25,5,difficulty,easy,12,0.6,0.266391,0.958333,0.521594,0.763889,0.666667
+A1,recursive_512_100,bm25,5,difficulty,hard,10,0.76,0.265189,0.95,0.619471,0.6,0.2
+A1,recursive_512_100,bm25,5,difficulty,medium,18,0.511111,0.31939,0.856481,0.548923,0.62037,0.444444
+A1,recursive_512_100,bm25,5,topic,Algorithm Design Techniques,4,0.65,0.277083,1.0,0.576292,0.5,0.25
+A1,recursive_512_100,bm25,5,topic,Array & Linked List,5,0.56,0.186178,1.0,0.500721,0.8,0.8
+A1,recursive_512_100,bm25,5,topic,Graph Algorithms,6,0.566667,0.335755,0.805556,0.579613,0.666667,0.333333
+A1,recursive_512_100,bm25,5,topic,Hashing,4,0.85,0.351504,0.875,0.734441,0.75,0.5
+A1,recursive_512_100,bm25,5,topic,Searching & Sorting,6,0.6,0.394156,0.805556,0.626126,0.833333,0.666667
+A1,recursive_512_100,bm25,5,topic,Stack & Queue,5,0.56,0.29088,1.0,0.544587,0.8,0.8
+A1,recursive_512_100,bm25,5,topic,Time & Space Complexity,4,0.65,0.260317,1.0,0.574546,0.416667,0.0
+A1,recursive_512_100,bm25,5,topic,"Tree, BST & AVL",6,0.466667,0.212871,0.875,0.388727,0.444444,0.166667
+A1,recursive_512_100,bm25,5,question_type,algorithm_steps,5,0.72,0.273007,0.9,0.618101,0.8,0.6
+A1,recursive_512_100,bm25,5,question_type,application_scenario,3,0.466667,0.173578,1.0,0.610714,0.611111,0.333333
+A1,recursive_512_100,bm25,5,question_type,code_interpretation,4,0.75,0.301389,1.0,0.517553,0.625,0.5
+A1,recursive_512_100,bm25,5,question_type,comparison,4,0.6,0.365909,0.833333,0.627625,0.625,0.5
+A1,recursive_512_100,bm25,5,question_type,concept_explanation,5,0.52,0.254286,0.75,0.433064,0.6,0.4
+A1,recursive_512_100,bm25,5,question_type,definition,4,0.6,0.23882,1.0,0.577016,0.75,0.75
+A1,recursive_512_100,bm25,5,question_type,multi_evidence_reasoning,4,0.7,0.263706,1.0,0.662629,0.583333,0.25
+A1,recursive_512_100,bm25,5,question_type,pseudocode_interpretation,4,0.35,0.358929,0.875,0.474231,0.458333,0.25
+A1,recursive_512_100,bm25,5,question_type,space_complexity,3,0.666667,0.280423,1.0,0.536755,0.611111,0.0
+A1,recursive_512_100,bm25,5,question_type,time_complexity,4,0.6,0.371032,0.833333,0.550004,0.875,0.75
+A1,recursive_512_100,bm25,5,evidence_complexity,multi_evidence,40,0.6,0.28994,0.910417,0.558361,0.658333,0.45
+A2,recursive_512_100,dense,5,language,en,16,0.6,0.283033,0.890625,0.526921,0.65625,0.375
+A2,recursive_512_100,dense,5,language,vi,24,0.383333,0.201345,0.586111,0.302268,0.388889,0.208333
+A2,recursive_512_100,dense,5,difficulty,easy,12,0.533333,0.229644,0.7875,0.40104,0.638889,0.416667
+A2,recursive_512_100,dense,5,difficulty,hard,10,0.5,0.191886,0.725,0.41531,0.466667,0.2
+A2,recursive_512_100,dense,5,difficulty,medium,18,0.411111,0.260346,0.64537,0.37331,0.416667,0.222222
+A2,recursive_512_100,dense,5,topic,Algorithm Design Techniques,4,0.5,0.252083,1.0,0.437166,0.291667,0.0
+A2,recursive_512_100,dense,5,topic,Array & Linked List,5,0.6,0.199023,0.6,0.442682,0.8,0.8
+A2,recursive_512_100,dense,5,topic,Graph Algorithms,6,0.266667,0.213889,0.505556,0.247205,0.222222,0.0
+A2,recursive_512_100,dense,5,topic,Hashing,4,0.45,0.208333,0.75,0.356168,0.333333,0.0
+A2,recursive_512_100,dense,5,topic,Searching & Sorting,6,0.433333,0.245671,0.833333,0.478873,0.583333,0.5
+A2,recursive_512_100,dense,5,topic,Stack & Queue,5,0.64,0.322886,0.74,0.506493,0.8,0.6
+A2,recursive_512_100,dense,5,topic,Time & Space Complexity,4,0.55,0.218651,0.875,0.474536,0.666667,0.25
+A2,recursive_512_100,dense,5,topic,"Tree, BST & AVL",6,0.4,0.212938,0.513889,0.251889,0.305556,0.0
+A2,recursive_512_100,dense,5,question_type,algorithm_steps,5,0.4,0.184545,0.7,0.386314,0.566667,0.4
+A2,recursive_512_100,dense,5,question_type,application_scenario,3,0.333333,0.176768,0.416667,0.231259,0.333333,0.333333
+A2,recursive_512_100,dense,5,question_type,code_interpretation,4,0.6,0.286111,0.708333,0.444069,0.375,0.25
+A2,recursive_512_100,dense,5,question_type,comparison,4,0.4,0.218182,0.55,0.327876,0.25,0.0
+A2,recursive_512_100,dense,5,question_type,concept_explanation,5,0.56,0.249524,0.75,0.385547,0.7,0.4
+A2,recursive_512_100,dense,5,question_type,definition,4,0.5,0.182617,0.675,0.420232,0.625,0.5
+A2,recursive_512_100,dense,5,question_type,multi_evidence_reasoning,4,0.5,0.208882,0.8125,0.470695,0.5,0.0
+A2,recursive_512_100,dense,5,question_type,pseudocode_interpretation,4,0.35,0.344643,0.708333,0.316112,0.375,0.25
+A2,recursive_512_100,dense,5,question_type,space_complexity,3,0.533333,0.238095,1.0,0.497129,0.5,0.0
+A2,recursive_512_100,dense,5,question_type,time_complexity,4,0.5,0.246032,0.75,0.431188,0.625,0.5
+A2,recursive_512_100,dense,5,evidence_complexity,multi_evidence,40,0.47,0.23402,0.707917,0.392129,0.495833,0.275
+A3,recursive_512_100,hybrid_rrf,5,language,en,16,0.625,0.292651,0.895833,0.550376,0.645833,0.3125
+A3,recursive_512_100,hybrid_rrf,5,language,vi,24,0.533333,0.279083,0.813889,0.472505,0.576389,0.375
+A3,recursive_512_100,hybrid_rrf,5,difficulty,easy,12,0.533333,0.222115,0.958333,0.466782,0.680556,0.5
+A3,recursive_512_100,hybrid_rrf,5,difficulty,hard,10,0.72,0.26771,0.85,0.540915,0.55,0.2
+A3,recursive_512_100,hybrid_rrf,5,difficulty,medium,18,0.511111,0.335442,0.77037,0.507535,0.583333,0.333333
+A3,recursive_512_100,hybrid_rrf,5,topic,Algorithm Design Techniques,4,0.55,0.247917,1.0,0.49651,0.416667,0.25
+A3,recursive_512_100,hybrid_rrf,5,topic,Array & Linked List,5,0.64,0.223639,0.766667,0.490143,0.9,0.8
+A3,recursive_512_100,hybrid_rrf,5,topic,Graph Algorithms,6,0.533333,0.391453,0.75,0.497186,0.555556,0.333333
+A3,recursive_512_100,hybrid_rrf,5,topic,Hashing,4,0.7,0.288221,0.875,0.533135,0.416667,0.0
+A3,recursive_512_100,hybrid_rrf,5,topic,Searching & Sorting,6,0.566667,0.352489,0.866667,0.613239,0.833333,0.666667
+A3,recursive_512_100,hybrid_rrf,5,topic,Stack & Queue,5,0.52,0.249062,0.9,0.514923,0.8,0.6
+A3,recursive_512_100,hybrid_rrf,5,topic,Time & Space Complexity,4,0.65,0.260317,0.875,0.539243,0.416667,0.0
+A3,recursive_512_100,hybrid_rrf,5,topic,"Tree, BST & AVL",6,0.466667,0.227909,0.805556,0.363787,0.388889,0.0
+A3,recursive_512_100,hybrid_rrf,5,question_type,algorithm_steps,5,0.56,0.217622,0.9,0.534443,0.666667,0.6
+A3,recursive_512_100,hybrid_rrf,5,question_type,application_scenario,3,0.333333,0.151249,0.833333,0.417309,0.5,0.333333
+A3,recursive_512_100,hybrid_rrf,5,question_type,code_interpretation,4,0.7,0.2875,1.0,0.503167,0.75,0.75
+A3,recursive_512_100,hybrid_rrf,5,question_type,comparison,4,0.55,0.315909,0.708333,0.499143,0.5,0.0
+A3,recursive_512_100,hybrid_rrf,5,question_type,concept_explanation,5,0.6,0.278095,0.766667,0.394681,0.5,0.2
+A3,recursive_512_100,hybrid_rrf,5,question_type,definition,4,0.55,0.18882,0.875,0.496944,0.625,0.5
+A3,recursive_512_100,hybrid_rrf,5,question_type,multi_evidence_reasoning,4,0.65,0.271382,0.875,0.552064,0.5,0.0
+A3,recursive_512_100,hybrid_rrf,5,question_type,pseudocode_interpretation,4,0.4,0.483929,0.75,0.482271,0.5,0.25
+A3,recursive_512_100,hybrid_rrf,5,question_type,space_complexity,3,0.8,0.34127,1.0,0.707974,0.611111,0.0
+A3,recursive_512_100,hybrid_rrf,5,question_type,time_complexity,4,0.55,0.308532,0.8,0.497583,0.875,0.75
+A3,recursive_512_100,hybrid_rrf,5,evidence_complexity,multi_evidence,40,0.57,0.284511,0.846667,0.503654,0.604167,0.35
+A4,recursive_512_100,hybrid_rerank,5,language,en,16,0.75,0.360554,1.0,0.719974,0.75,0.5625
+A4,recursive_512_100,hybrid_rerank,5,language,vi,24,0.666667,0.338686,0.979167,0.695434,0.701389,0.541667
+A4,recursive_512_100,hybrid_rerank,5,difficulty,easy,12,0.75,0.34384,1.0,0.700927,0.916667,0.833333
+A4,recursive_512_100,hybrid_rerank,5,difficulty,hard,10,0.8,0.29964,1.0,0.699932,0.6,0.2
+A4,recursive_512_100,hybrid_rerank,5,difficulty,medium,18,0.611111,0.37638,0.972222,0.711086,0.657407,0.555556
+A4,recursive_512_100,hybrid_rerank,5,topic,Algorithm Design Techniques,4,0.75,0.339583,1.0,0.690007,0.5,0.25
+A4,recursive_512_100,hybrid_rerank,5,topic,Array & Linked List,5,0.8,0.279805,1.0,0.817456,0.8,0.8
+A4,recursive_512_100,hybrid_rerank,5,topic,Graph Algorithms,6,0.566667,0.35812,1.0,0.686475,0.694444,0.5
+A4,recursive_512_100,hybrid_rerank,5,topic,Hashing,4,0.9,0.39317,1.0,0.73735,0.75,0.5
+A4,recursive_512_100,hybrid_rerank,5,topic,Searching & Sorting,6,0.7,0.432792,1.0,0.784872,0.916667,0.833333
+A4,recursive_512_100,hybrid_rerank,5,topic,Stack & Queue,5,0.6,0.314315,0.9,0.601887,0.7,0.6
+A4,recursive_512_100,hybrid_rerank,5,topic,Time & Space Complexity,4,0.85,0.353373,1.0,0.776501,0.75,0.5
+A4,recursive_512_100,hybrid_rerank,5,topic,"Tree, BST & AVL",6,0.566667,0.306125,1.0,0.578294,0.611111,0.333333
+A4,recursive_512_100,hybrid_rerank,5,question_type,algorithm_steps,5,0.72,0.295804,1.0,0.66687,0.733333,0.6
+A4,recursive_512_100,hybrid_rerank,5,question_type,application_scenario,3,0.733333,0.320043,1.0,0.792072,0.611111,0.333333
+A4,recursive_512_100,hybrid_rerank,5,question_type,code_interpretation,4,0.8,0.375,1.0,0.610572,0.5,0.25
+A4,recursive_512_100,hybrid_rerank,5,question_type,comparison,4,0.65,0.388636,1.0,0.753961,0.625,0.5
+A4,recursive_512_100,hybrid_rerank,5,question_type,concept_explanation,5,0.76,0.372381,1.0,0.677518,0.7,0.4
+A4,recursive_512_100,hybrid_rerank,5,question_type,definition,4,0.65,0.259424,1.0,0.721333,1.0,1.0
+A4,recursive_512_100,hybrid_rerank,5,question_type,multi_evidence_reasoning,4,0.8,0.326206,1.0,0.767461,0.666667,0.25
+A4,recursive_512_100,hybrid_rerank,5,question_type,pseudocode_interpretation,4,0.4,0.408929,0.875,0.576963,0.5,0.5
+A4,recursive_512_100,hybrid_rerank,5,question_type,space_complexity,3,0.866667,0.369048,1.0,0.780119,0.888889,0.666667
+A4,recursive_512_100,hybrid_rerank,5,question_type,time_complexity,4,0.65,0.364087,1.0,0.762577,1.0,1.0
+A4,recursive_512_100,hybrid_rerank,5,evidence_complexity,multi_evidence,40,0.7,0.347433,0.9875,0.70525,0.720833,0.55
+B1,structure_adaptive,bm25,5,language,en,16,0.55,0.274856,0.911458,0.517285,0.447917,0.1875
+B1,structure_adaptive,bm25,5,language,vi,24,0.416667,0.262937,0.819444,0.390801,0.354167,0.166667
+B1,structure_adaptive,bm25,5,difficulty,easy,12,0.45,0.308186,0.916667,0.477581,0.555556,0.333333
+B1,structure_adaptive,bm25,5,difficulty,hard,10,0.58,0.240889,0.925,0.438125,0.3,0.0
+B1,structure_adaptive,bm25,5,difficulty,medium,18,0.422222,0.255615,0.777778,0.419087,0.333333,0.166667
+B1,structure_adaptive,bm25,5,topic,Algorithm Design Techniques,4,0.5,0.340476,1.0,0.462098,0.333333,0.25
+B1,structure_adaptive,bm25,5,topic,Array & Linked List,5,0.44,0.190144,1.0,0.422054,0.433333,0.2
+B1,structure_adaptive,bm25,5,topic,Graph Algorithms,6,0.333333,0.192593,0.791667,0.346381,0.388889,0.166667
+B1,structure_adaptive,bm25,5,topic,Hashing,4,0.65,0.256852,0.875,0.541272,0.5,0.5
+B1,structure_adaptive,bm25,5,topic,Searching & Sorting,6,0.5,0.400216,0.777778,0.526316,0.416667,0.166667
+B1,structure_adaptive,bm25,5,topic,Stack & Queue,5,0.36,0.193213,0.8,0.286133,0.4,0.2
+B1,structure_adaptive,bm25,5,topic,Time & Space Complexity,4,0.5,0.239583,0.75,0.470918,0.416667,0.0
+B1,structure_adaptive,bm25,5,topic,"Tree, BST & AVL",6,0.533333,0.314484,0.888889,0.496921,0.277778,0.0
+B1,structure_adaptive,bm25,5,question_type,algorithm_steps,5,0.52,0.371212,0.85,0.54027,0.466667,0.4
+B1,structure_adaptive,bm25,5,question_type,application_scenario,3,0.4,0.300654,0.833333,0.519396,0.333333,0.0
+B1,structure_adaptive,bm25,5,question_type,code_interpretation,4,0.45,0.218473,1.0,0.272626,0.375,0.25
+B1,structure_adaptive,bm25,5,question_type,comparison,4,0.45,0.270192,0.875,0.465447,0.125,0.0
+B1,structure_adaptive,bm25,5,question_type,concept_explanation,5,0.4,0.223333,0.666667,0.369199,0.6,0.4
+B1,structure_adaptive,bm25,5,question_type,definition,4,0.45,0.196158,1.0,0.41131,0.5,0.25
+B1,structure_adaptive,bm25,5,question_type,multi_evidence_reasoning,4,0.6,0.279762,1.0,0.551112,0.25,0.0
+B1,structure_adaptive,bm25,5,question_type,pseudocode_interpretation,4,0.15,0.160714,0.583333,0.196662,0.25,0.0
+B1,structure_adaptive,bm25,5,question_type,space_complexity,3,0.733333,0.291394,1.0,0.706888,0.555556,0.333333
+B1,structure_adaptive,bm25,5,question_type,time_complexity,4,0.6,0.364529,0.833333,0.460243,0.416667,0.0
+B1,structure_adaptive,bm25,5,evidence_complexity,multi_evidence,40,0.47,0.267705,0.85625,0.441395,0.391667,0.175
+B2,structure_adaptive,dense,5,language,en,16,0.475,0.232022,0.746875,0.44972,0.427083,0.1875
+B2,structure_adaptive,dense,5,language,vi,24,0.25,0.167268,0.543056,0.221576,0.215278,0.041667
+B2,structure_adaptive,dense,5,difficulty,easy,12,0.283333,0.191399,0.565278,0.244947,0.347222,0.166667
+B2,structure_adaptive,dense,5,difficulty,hard,10,0.5,0.216084,0.8,0.494863,0.333333,0.0
+B2,structure_adaptive,dense,5,difficulty,medium,18,0.288889,0.18162,0.566667,0.256964,0.25,0.111111
+B2,structure_adaptive,dense,5,topic,Algorithm Design Techniques,4,0.45,0.320238,0.875,0.464626,0.416667,0.25
+B2,structure_adaptive,dense,5,topic,Array & Linked List,5,0.36,0.159617,0.54,0.283199,0.433333,0.2
+B2,structure_adaptive,dense,5,topic,Graph Algorithms,6,0.3,0.160185,0.45,0.304311,0.305556,0.0
+B2,structure_adaptive,dense,5,topic,Hashing,4,0.35,0.144051,0.395833,0.210642,0.25,0.25
+B2,structure_adaptive,dense,5,topic,Searching & Sorting,6,0.366667,0.269264,0.75,0.392409,0.333333,0.0
+B2,structure_adaptive,dense,5,topic,Stack & Queue,5,0.24,0.13635,0.6,0.146123,0.1,0.0
+B2,structure_adaptive,dense,5,topic,Time & Space Complexity,4,0.45,0.239583,0.875,0.49089,0.541667,0.25
+B2,structure_adaptive,dense,5,topic,"Tree, BST & AVL",6,0.266667,0.14246,0.583333,0.253631,0.111111,0.0
+B2,structure_adaptive,dense,5,question_type,algorithm_steps,5,0.4,0.274545,0.8,0.46283,0.366667,0.2
+B2,structure_adaptive,dense,5,question_type,application_scenario,3,0.0,0.0,0.0,0.0,0.0,0.0
+B2,structure_adaptive,dense,5,question_type,code_interpretation,4,0.4,0.225903,0.8,0.294723,0.125,0.0
+B2,structure_adaptive,dense,5,question_type,comparison,4,0.35,0.182692,0.5,0.235177,0.125,0.0
+B2,structure_adaptive,dense,5,question_type,concept_explanation,5,0.36,0.206667,0.65,0.27731,0.5,0.4
+B2,structure_adaptive,dense,5,question_type,definition,4,0.3,0.169372,0.708333,0.233789,0.25,0.0
+B2,structure_adaptive,dense,5,question_type,multi_evidence_reasoning,4,0.4,0.19881,0.75,0.498514,0.333333,0.0
+B2,structure_adaptive,dense,5,question_type,pseudocode_interpretation,4,0.15,0.133929,0.25,0.140617,0.25,0.0
+B2,structure_adaptive,dense,5,question_type,space_complexity,3,0.533333,0.198802,0.733333,0.490987,0.388889,0.0
+B2,structure_adaptive,dense,5,question_type,time_complexity,4,0.45,0.270373,0.875,0.432105,0.541667,0.25
+B2,structure_adaptive,dense,5,evidence_complexity,multi_evidence,40,0.34,0.19317,0.624583,0.312834,0.3,0.1
+B3,structure_adaptive,hybrid_rrf,5,language,en,16,0.575,0.290707,0.9375,0.565057,0.46875,0.25
+B3,structure_adaptive,hybrid_rrf,5,language,vi,24,0.341667,0.244333,0.685417,0.317174,0.3125,0.083333
+B3,structure_adaptive,hybrid_rrf,5,difficulty,easy,12,0.433333,0.316321,0.836111,0.430177,0.513889,0.25
+B3,structure_adaptive,hybrid_rrf,5,difficulty,hard,10,0.52,0.21939,0.8,0.460682,0.333333,0.0
+B3,structure_adaptive,hybrid_rrf,5,difficulty,medium,18,0.388889,0.251419,0.74537,0.382452,0.305556,0.166667
+B3,structure_adaptive,hybrid_rrf,5,topic,Algorithm Design Techniques,4,0.5,0.341071,1.0,0.481123,0.416667,0.25
+B3,structure_adaptive,hybrid_rrf,5,topic,Array & Linked List,5,0.48,0.210144,0.9,0.459786,0.533333,0.2
+B3,structure_adaptive,hybrid_rrf,5,topic,Graph Algorithms,6,0.266667,0.175926,0.583333,0.333573,0.472222,0.333333
+B3,structure_adaptive,hybrid_rrf,5,topic,Hashing,4,0.55,0.22744,0.666667,0.364095,0.375,0.25
+B3,structure_adaptive,hybrid_rrf,5,topic,Searching & Sorting,6,0.433333,0.33474,0.791667,0.475549,0.333333,0.0
+B3,structure_adaptive,hybrid_rrf,5,topic,Stack & Queue,5,0.44,0.318401,0.866667,0.357972,0.3,0.2
+B3,structure_adaptive,hybrid_rrf,5,topic,Time & Space Complexity,4,0.45,0.229167,0.8,0.475899,0.416667,0.0
+B3,structure_adaptive,hybrid_rrf,5,topic,"Tree, BST & AVL",6,0.433333,0.269643,0.75,0.404183,0.194444,0.0
+B3,structure_adaptive,hybrid_rrf,5,question_type,algorithm_steps,5,0.36,0.261212,0.8,0.472184,0.366667,0.2
+B3,structure_adaptive,hybrid_rrf,5,question_type,application_scenario,3,0.266667,0.297386,0.777778,0.400471,0.5,0.333333
+B3,structure_adaptive,hybrid_rrf,5,question_type,code_interpretation,4,0.35,0.189061,0.875,0.206692,0.125,0.0
+B3,structure_adaptive,hybrid_rrf,5,question_type,comparison,4,0.5,0.251923,0.75,0.469723,0.25,0.0
+B3,structure_adaptive,hybrid_rrf,5,question_type,concept_explanation,5,0.44,0.256667,0.74,0.396679,0.5,0.4
+B3,structure_adaptive,hybrid_rrf,5,question_type,definition,4,0.45,0.270563,0.833333,0.362071,0.375,0.0
+B3,structure_adaptive,hybrid_rrf,5,question_type,multi_evidence_reasoning,4,0.5,0.23631,0.75,0.5145,0.333333,0.0
+B3,structure_adaptive,hybrid_rrf,5,question_type,pseudocode_interpretation,4,0.3,0.300595,0.520833,0.266012,0.375,0.25
+B3,structure_adaptive,hybrid_rrf,5,question_type,space_complexity,3,0.733333,0.283224,1.0,0.688202,0.555556,0.333333
+B3,structure_adaptive,hybrid_rrf,5,question_type,time_complexity,4,0.5,0.297565,0.875,0.441691,0.416667,0.0
+B3,structure_adaptive,hybrid_rrf,5,evidence_complexity,multi_evidence,40,0.435,0.262882,0.78625,0.416327,0.375,0.15
+B4,structure_adaptive,hybrid_rerank,5,language,en,16,0.7,0.37387,0.96875,0.634765,0.53125,0.3125
+B4,structure_adaptive,hybrid_rerank,5,language,vi,24,0.533333,0.335589,0.855556,0.508713,0.5,0.291667
+B4,structure_adaptive,hybrid_rerank,5,difficulty,easy,12,0.616667,0.400754,0.958333,0.616092,0.75,0.666667
+B4,structure_adaptive,hybrid_rerank,5,difficulty,hard,10,0.66,0.288605,0.92,0.532577,0.366667,0.0
+B4,structure_adaptive,hybrid_rerank,5,difficulty,medium,18,0.555556,0.352276,0.851852,0.535915,0.435185,0.222222
+B4,structure_adaptive,hybrid_rerank,5,topic,Algorithm Design Techniques,4,0.65,0.447619,1.0,0.615537,0.583333,0.25
+B4,structure_adaptive,hybrid_rerank,5,topic,Array & Linked List,5,0.72,0.299904,1.0,0.660351,0.533333,0.4
+B4,structure_adaptive,hybrid_rerank,5,topic,Graph Algorithms,6,0.6,0.325,0.916667,0.521823,0.388889,0.0
+B4,structure_adaptive,hybrid_rerank,5,topic,Hashing,4,0.65,0.289439,0.875,0.551814,0.5,0.5
+B4,structure_adaptive,hybrid_rerank,5,topic,Searching & Sorting,6,0.533333,0.415368,0.805556,0.579509,0.333333,0.166667
+B4,structure_adaptive,hybrid_rerank,5,topic,Stack & Queue,5,0.56,0.323982,0.8,0.46104,0.6,0.4
+B4,structure_adaptive,hybrid_rerank,5,topic,Time & Space Complexity,4,0.7,0.354167,1.0,0.590544,0.625,0.5
+B4,structure_adaptive,hybrid_rerank,5,topic,"Tree, BST & AVL",6,0.466667,0.351587,0.866667,0.519801,0.611111,0.333333
+B4,structure_adaptive,hybrid_rerank,5,question_type,algorithm_steps,5,0.72,0.436061,1.0,0.753304,0.466667,0.4
+B4,structure_adaptive,hybrid_rerank,5,question_type,application_scenario,3,0.466667,0.392157,1.0,0.648969,0.5,0.333333
+B4,structure_adaptive,hybrid_rerank,5,question_type,code_interpretation,4,0.75,0.39128,0.875,0.438506,0.5,0.25
+B4,structure_adaptive,hybrid_rerank,5,question_type,comparison,4,0.65,0.396154,1.0,0.702729,0.5,0.25
+B4,structure_adaptive,hybrid_rerank,5,question_type,concept_explanation,5,0.68,0.38,1.0,0.584501,0.6,0.4
+B4,structure_adaptive,hybrid_rerank,5,question_type,definition,4,0.6,0.278139,0.875,0.548105,0.875,0.75
+B4,structure_adaptive,hybrid_rerank,5,question_type,multi_evidence_reasoning,4,0.55,0.30119,0.8,0.458931,0.416667,0.0
+B4,structure_adaptive,hybrid_rerank,5,question_type,pseudocode_interpretation,4,0.25,0.238095,0.708333,0.36351,0.333333,0.0
+B4,structure_adaptive,hybrid_rerank,5,question_type,space_complexity,3,0.666667,0.289216,0.833333,0.567468,0.5,0.333333
+B4,structure_adaptive,hybrid_rerank,5,question_type,time_complexity,4,0.6,0.373052,0.875,0.494968,0.416667,0.25
+B4,structure_adaptive,hybrid_rerank,5,evidence_complexity,multi_evidence,40,0.6,0.350901,0.900833,0.559133,0.5125,0.3
+A1,recursive_512_100,bm25,15,language,en,16,0.391667,0.539445,0.890625,0.582436,0.854167,0.6875
+A1,recursive_512_100,bm25,15,language,vi,24,0.366667,0.511529,0.923611,0.557002,0.763889,0.541667
+A1,recursive_512_100,bm25,15,difficulty,easy,12,0.366667,0.455679,0.958333,0.519737,0.847222,0.666667
+A1,recursive_512_100,bm25,15,difficulty,hard,10,0.506667,0.53482,0.95,0.625155,0.816667,0.5
+A1,recursive_512_100,bm25,15,difficulty,medium,18,0.311111,0.560637,0.856481,0.56659,0.759259,0.611111
+A1,recursive_512_100,bm25,15,topic,Algorithm Design Techniques,4,0.35,0.479167,1.0,0.557493,0.75,0.5
+A1,recursive_512_100,bm25,15,topic,Array & Linked List,5,0.386667,0.402027,1.0,0.503076,0.9,0.8
+A1,recursive_512_100,bm25,15,topic,Graph Algorithms,6,0.311111,0.461254,0.805556,0.563038,0.805556,0.5
+A1,recursive_512_100,bm25,15,topic,Hashing,4,0.516667,0.597118,0.875,0.657567,0.75,0.5
+A1,recursive_512_100,bm25,15,topic,Searching & Sorting,6,0.333333,0.677706,0.805556,0.647331,0.916667,0.833333
+A1,recursive_512_100,bm25,15,topic,Stack & Queue,5,0.306667,0.510245,1.0,0.547611,1.0,1.0
+A1,recursive_512_100,bm25,15,topic,Time & Space Complexity,4,0.5,0.589683,1.0,0.613347,0.666667,0.25
+A1,recursive_512_100,bm25,15,topic,"Tree, BST & AVL",6,0.377778,0.474804,0.875,0.47629,0.583333,0.333333
+A1,recursive_512_100,bm25,15,question_type,algorithm_steps,5,0.413333,0.437343,0.9,0.567813,0.866667,0.6
+A1,recursive_512_100,bm25,15,question_type,application_scenario,3,0.311111,0.334397,1.0,0.514921,0.611111,0.333333
+A1,recursive_512_100,bm25,15,question_type,code_interpretation,4,0.333333,0.419444,1.0,0.412815,0.625,0.5
+A1,recursive_512_100,bm25,15,question_type,comparison,4,0.333333,0.586364,0.833333,0.601232,0.75,0.5
+A1,recursive_512_100,bm25,15,question_type,concept_explanation,5,0.4,0.54,0.75,0.514068,0.8,0.6
+A1,recursive_512_100,bm25,15,question_type,definition,4,0.45,0.481177,1.0,0.621823,0.875,0.75
+A1,recursive_512_100,bm25,15,question_type,multi_evidence_reasoning,4,0.45,0.558662,1.0,0.663768,0.916667,0.75
+A1,recursive_512_100,bm25,15,question_type,pseudocode_interpretation,4,0.183333,0.511607,0.875,0.564241,0.833333,0.75
+A1,recursive_512_100,bm25,15,question_type,space_complexity,3,0.466667,0.584656,1.0,0.586481,0.777778,0.333333
+A1,recursive_512_100,bm25,15,question_type,time_complexity,4,0.416667,0.75873,0.833333,0.629473,0.875,0.75
+A1,recursive_512_100,bm25,15,evidence_complexity,multi_evidence,40,0.376667,0.522695,0.910417,0.567175,0.8,0.6
+A2,recursive_512_100,dense,15,language,en,16,0.370833,0.493352,0.890625,0.526539,0.760417,0.5
+A2,recursive_512_100,dense,15,language,vi,24,0.241667,0.376943,0.603175,0.33216,0.576389,0.375
+A2,recursive_512_100,dense,15,difficulty,easy,12,0.316667,0.387526,0.7875,0.390821,0.722222,0.5
+A2,recursive_512_100,dense,15,difficulty,hard,10,0.366667,0.409573,0.741667,0.439403,0.5,0.2
+A2,recursive_512_100,dense,15,difficulty,medium,18,0.237037,0.455235,0.658862,0.406254,0.685185,0.5
+A2,recursive_512_100,dense,15,topic,Algorithm Design Techniques,4,0.283333,0.416667,1.0,0.451072,0.5,0.25
+A2,recursive_512_100,dense,15,topic,Array & Linked List,5,0.413333,0.410452,0.628571,0.461389,0.9,0.8
+A2,recursive_512_100,dense,15,topic,Graph Algorithms,6,0.166667,0.386966,0.533333,0.293838,0.388889,0.166667
+A2,recursive_512_100,dense,15,topic,Hashing,4,0.333333,0.428571,0.75,0.369674,0.416667,0.0
+A2,recursive_512_100,dense,15,topic,Searching & Sorting,6,0.233333,0.46645,0.85,0.49439,0.833333,0.666667
+A2,recursive_512_100,dense,15,topic,Stack & Queue,5,0.346667,0.481876,0.74,0.476848,1.0,1.0
+A2,recursive_512_100,dense,15,topic,Time & Space Complexity,4,0.35,0.4125,0.875,0.483776,0.791667,0.5
+A2,recursive_512_100,dense,15,topic,"Tree, BST & AVL",6,0.277778,0.387864,0.513889,0.29297,0.388889,0.0
+A2,recursive_512_100,dense,15,question_type,algorithm_steps,5,0.213333,0.272238,0.733333,0.354989,0.666667,0.6
+A2,recursive_512_100,dense,15,question_type,application_scenario,3,0.2,0.323232,0.416667,0.255253,0.5,0.333333
+A2,recursive_512_100,dense,15,question_type,code_interpretation,4,0.4,0.475,0.708333,0.442863,0.5,0.5
+A2,recursive_512_100,dense,15,question_type,comparison,4,0.25,0.413636,0.585714,0.358151,0.625,0.25
+A2,recursive_512_100,dense,15,question_type,concept_explanation,5,0.36,0.465714,0.75,0.401127,0.7,0.4
+A2,recursive_512_100,dense,15,question_type,definition,4,0.266667,0.258916,0.675,0.352726,0.625,0.5
+A2,recursive_512_100,dense,15,question_type,multi_evidence_reasoning,4,0.35,0.423246,0.8125,0.480793,0.5,0.0
+A2,recursive_512_100,dense,15,question_type,pseudocode_interpretation,4,0.2,0.632143,0.708333,0.43724,0.708333,0.5
+A2,recursive_512_100,dense,15,question_type,space_complexity,3,0.4,0.488095,1.0,0.535063,0.611111,0.0
+A2,recursive_512_100,dense,15,question_type,time_complexity,4,0.3,0.50119,0.775,0.48946,1.0,1.0
+A2,recursive_512_100,dense,15,evidence_complexity,multi_evidence,40,0.293333,0.423507,0.718155,0.409912,0.65,0.425
+A3,recursive_512_100,hybrid_rrf,15,language,en,16,0.445833,0.609378,0.895833,0.637505,0.916667,0.8125
+A3,recursive_512_100,hybrid_rrf,15,language,vi,24,0.313889,0.45321,0.813889,0.466892,0.680556,0.5
+A3,recursive_512_100,hybrid_rrf,15,difficulty,easy,12,0.366667,0.44195,0.958333,0.499725,0.833333,0.75
+A3,recursive_512_100,hybrid_rrf,15,difficulty,hard,10,0.5,0.572872,0.85,0.578502,0.733333,0.5
+A3,recursive_512_100,hybrid_rrf,15,difficulty,medium,18,0.292593,0.533054,0.77037,0.534654,0.759259,0.611111
+A3,recursive_512_100,hybrid_rrf,15,topic,Algorithm Design Techniques,4,0.316667,0.458333,1.0,0.535789,0.583333,0.5
+A3,recursive_512_100,hybrid_rrf,15,topic,Array & Linked List,5,0.426667,0.433797,0.766667,0.494178,0.9,0.8
+A3,recursive_512_100,hybrid_rrf,15,topic,Graph Algorithms,6,0.277778,0.516382,0.75,0.48986,0.75,0.5
+A3,recursive_512_100,hybrid_rrf,15,topic,Hashing,4,0.5,0.602757,0.875,0.573456,0.625,0.25
+A3,recursive_512_100,hybrid_rrf,15,topic,Searching & Sorting,6,0.255556,0.495887,0.866667,0.57684,0.833333,0.666667
+A3,recursive_512_100,hybrid_rrf,15,topic,Stack & Queue,5,0.333333,0.511861,0.9,0.546793,1.0,1.0
+A3,recursive_512_100,hybrid_rrf,15,topic,Time & Space Complexity,4,0.566667,0.675595,0.875,0.661561,1.0,1.0
+A3,recursive_512_100,hybrid_rrf,15,topic,"Tree, BST & AVL",6,0.355556,0.479741,0.805556,0.452867,0.527778,0.333333
+A3,recursive_512_100,hybrid_rrf,15,question_type,algorithm_steps,5,0.266667,0.305315,0.9,0.468106,0.8,0.6
+A3,recursive_512_100,hybrid_rrf,15,question_type,application_scenario,3,0.288889,0.367889,0.833333,0.466314,0.611111,0.333333
+A3,recursive_512_100,hybrid_rrf,15,question_type,code_interpretation,4,0.416667,0.544444,1.0,0.512918,0.75,0.75
+A3,recursive_512_100,hybrid_rrf,15,question_type,comparison,4,0.3,0.486364,0.708333,0.482025,0.625,0.25
+A3,recursive_512_100,hybrid_rrf,15,question_type,concept_explanation,5,0.52,0.680952,0.766667,0.572706,1.0,1.0
+A3,recursive_512_100,hybrid_rrf,15,question_type,definition,4,0.366667,0.345421,0.875,0.455552,0.625,0.5
+A3,recursive_512_100,hybrid_rrf,15,question_type,multi_evidence_reasoning,4,0.4,0.524671,0.875,0.574349,0.666667,0.5
+A3,recursive_512_100,hybrid_rrf,15,question_type,pseudocode_interpretation,4,0.183333,0.586607,0.75,0.531144,0.708333,0.5
+A3,recursive_512_100,hybrid_rrf,15,question_type,space_complexity,3,0.511111,0.628307,1.0,0.696233,0.888889,0.666667
+A3,recursive_512_100,hybrid_rrf,15,question_type,time_complexity,4,0.416667,0.689286,0.8,0.622461,1.0,1.0
+A3,recursive_512_100,hybrid_rrf,15,evidence_complexity,multi_evidence,40,0.366667,0.515677,0.846667,0.535137,0.775,0.625
+A4,recursive_512_100,hybrid_rerank,15,language,en,16,0.5,0.687244,1.0,0.756662,0.895833,0.8125
+A4,recursive_512_100,hybrid_rerank,15,language,vi,24,0.455556,0.665929,0.979167,0.718109,0.916667,0.791667
+A4,recursive_512_100,hybrid_rerank,15,difficulty,easy,12,0.511111,0.662981,1.0,0.723906,0.958333,0.916667
+A4,recursive_512_100,hybrid_rerank,15,difficulty,hard,10,0.58,0.613774,1.0,0.69832,0.833333,0.6
+A4,recursive_512_100,hybrid_rerank,15,difficulty,medium,18,0.388889,0.715816,0.972222,0.759508,0.916667,0.833333
+A4,recursive_512_100,hybrid_rerank,15,topic,Algorithm Design Techniques,4,0.383333,0.49375,1.0,0.619512,0.583333,0.25
+A4,recursive_512_100,hybrid_rerank,15,topic,Array & Linked List,5,0.6,0.63072,1.0,0.805585,1.0,1.0
+A4,recursive_512_100,hybrid_rerank,15,topic,Graph Algorithms,6,0.422222,0.688105,1.0,0.718019,0.888889,0.666667
+A4,recursive_512_100,hybrid_rerank,15,topic,Hashing,4,0.5,0.636278,1.0,0.714211,0.916667,0.75
+A4,recursive_512_100,hybrid_rerank,15,topic,Searching & Sorting,6,0.388889,0.737987,1.0,0.79399,0.916667,0.833333
+A4,recursive_512_100,hybrid_rerank,15,topic,Stack & Queue,5,0.453333,0.71974,0.9,0.695607,1.0,1.0
+A4,recursive_512_100,hybrid_rerank,15,topic,Time & Space Complexity,4,0.6,0.732937,1.0,0.800603,1.0,1.0
+A4,recursive_512_100,hybrid_rerank,15,topic,"Tree, BST & AVL",6,0.477778,0.702913,1.0,0.704318,0.916667,0.833333
+A4,recursive_512_100,hybrid_rerank,15,question_type,algorithm_steps,5,0.52,0.561888,1.0,0.669653,0.866667,0.6
+A4,recursive_512_100,hybrid_rerank,15,question_type,application_scenario,3,0.466667,0.622541,1.0,0.755011,0.722222,0.333333
+A4,recursive_512_100,hybrid_rerank,15,question_type,code_interpretation,4,0.533333,0.727778,1.0,0.633272,1.0,1.0
+A4,recursive_512_100,hybrid_rerank,15,question_type,comparison,4,0.433333,0.756818,1.0,0.795987,0.875,0.75
+A4,recursive_512_100,hybrid_rerank,15,question_type,concept_explanation,5,0.546667,0.760952,1.0,0.763811,1.0,1.0
+A4,recursive_512_100,hybrid_rerank,15,question_type,definition,4,0.516667,0.578588,1.0,0.746257,1.0,1.0
+A4,recursive_512_100,hybrid_rerank,15,question_type,multi_evidence_reasoning,4,0.5,0.60307,1.0,0.721643,0.75,0.5
+A4,recursive_512_100,hybrid_rerank,15,question_type,pseudocode_interpretation,4,0.216667,0.686607,0.875,0.680215,0.833333,0.75
+A4,recursive_512_100,hybrid_rerank,15,question_type,space_complexity,3,0.488889,0.621693,1.0,0.738539,1.0,1.0
+A4,recursive_512_100,hybrid_rerank,15,question_type,time_complexity,4,0.483333,0.80496,1.0,0.84594,1.0,1.0
+A4,recursive_512_100,hybrid_rerank,15,evidence_complexity,multi_evidence,40,0.473333,0.674455,0.9875,0.733531,0.908333,0.8
+B1,structure_adaptive,bm25,15,language,en,16,0.291667,0.422687,0.911458,0.48208,0.614583,0.375
+B1,structure_adaptive,bm25,15,language,vi,24,0.244444,0.438202,0.828869,0.423664,0.513889,0.291667
+B1,structure_adaptive,bm25,15,difficulty,easy,12,0.233333,0.427957,0.923611,0.470386,0.638889,0.416667
+B1,structure_adaptive,bm25,15,difficulty,hard,10,0.32,0.38603,0.925,0.414633,0.416667,0.1
+B1,structure_adaptive,bm25,15,difficulty,medium,18,0.251852,0.460226,0.785714,0.449458,0.574074,0.388889
+B1,structure_adaptive,bm25,15,topic,Algorithm Design Techniques,4,0.183333,0.37619,1.0,0.447446,0.416667,0.25
+B1,structure_adaptive,bm25,15,topic,Array & Linked List,5,0.32,0.406794,1.0,0.460833,0.833333,0.6
+B1,structure_adaptive,bm25,15,topic,Graph Algorithms,6,0.244444,0.413889,0.791667,0.39148,0.555556,0.333333
+B1,structure_adaptive,bm25,15,topic,Hashing,4,0.366667,0.421791,0.875,0.503532,0.583333,0.5
+B1,structure_adaptive,bm25,15,topic,Searching & Sorting,6,0.255556,0.577814,0.777778,0.55007,0.666667,0.333333
+B1,structure_adaptive,bm25,15,topic,Stack & Queue,5,0.2,0.36908,0.828571,0.32159,0.4,0.2
+B1,structure_adaptive,bm25,15,topic,Time & Space Complexity,4,0.3,0.4375,0.770833,0.463386,0.666667,0.5
+B1,structure_adaptive,bm25,15,topic,"Tree, BST & AVL",6,0.255556,0.418056,0.888889,0.443724,0.333333,0.0
+B1,structure_adaptive,bm25,15,question_type,algorithm_steps,5,0.32,0.519091,0.85,0.548167,0.666667,0.6
+B1,structure_adaptive,bm25,15,question_type,application_scenario,3,0.222222,0.379085,0.833333,0.514243,0.444444,0.0
+B1,structure_adaptive,bm25,15,question_type,code_interpretation,4,0.233333,0.28581,1.0,0.288533,0.625,0.5
+B1,structure_adaptive,bm25,15,question_type,comparison,4,0.35,0.683654,0.875,0.586272,0.625,0.5
+B1,structure_adaptive,bm25,15,question_type,concept_explanation,5,0.253333,0.418333,0.683333,0.392844,0.7,0.6
+B1,structure_adaptive,bm25,15,question_type,definition,4,0.266667,0.388258,1.0,0.402782,0.5,0.25
+B1,structure_adaptive,bm25,15,question_type,multi_evidence_reasoning,4,0.266667,0.390476,1.0,0.480881,0.416667,0.0
+B1,structure_adaptive,bm25,15,question_type,pseudocode_interpretation,4,0.083333,0.244048,0.619048,0.223532,0.25,0.0
+B1,structure_adaptive,bm25,15,question_type,space_complexity,3,0.355556,0.423203,1.0,0.592006,0.555556,0.333333
+B1,structure_adaptive,bm25,15,question_type,time_complexity,4,0.283333,0.554221,0.833333,0.482354,0.666667,0.25
+B1,structure_adaptive,bm25,15,evidence_complexity,multi_evidence,40,0.263333,0.431996,0.861905,0.44703,0.554167,0.325
+B2,structure_adaptive,dense,15,language,en,16,0.266667,0.38627,0.746875,0.438466,0.541667,0.375
+B2,structure_adaptive,dense,15,language,vi,24,0.155556,0.271958,0.55873,0.245583,0.291667,0.125
+B2,structure_adaptive,dense,15,difficulty,easy,12,0.211111,0.343752,0.565278,0.30236,0.5,0.333333
+B2,structure_adaptive,dense,15,difficulty,hard,10,0.246667,0.318692,0.8,0.427604,0.416667,0.2
+B2,structure_adaptive,dense,15,difficulty,medium,18,0.166667,0.299742,0.587566,0.278062,0.305556,0.166667
+B2,structure_adaptive,dense,15,topic,Algorithm Design Techniques,4,0.183333,0.391667,0.875,0.445213,0.5,0.5
+B2,structure_adaptive,dense,15,topic,Array & Linked List,5,0.36,0.455502,0.568571,0.393005,0.633333,0.4
+B2,structure_adaptive,dense,15,topic,Graph Algorithms,6,0.111111,0.178704,0.45,0.246693,0.388889,0.166667
+B2,structure_adaptive,dense,15,topic,Hashing,4,0.25,0.335394,0.395833,0.277868,0.375,0.25
+B2,structure_adaptive,dense,15,topic,Searching & Sorting,6,0.155556,0.365097,0.761111,0.370547,0.333333,0.0
+B2,structure_adaptive,dense,15,topic,Stack & Queue,5,0.173333,0.306033,0.633333,0.217381,0.2,0.0
+B2,structure_adaptive,dense,15,topic,Time & Space Complexity,4,0.25,0.375,0.875,0.469743,0.75,0.75
+B2,structure_adaptive,dense,15,topic,"Tree, BST & AVL",6,0.166667,0.204762,0.583333,0.230468,0.111111,0.0
+B2,structure_adaptive,dense,15,question_type,algorithm_steps,5,0.133333,0.274545,0.8,0.377429,0.366667,0.2
+B2,structure_adaptive,dense,15,question_type,application_scenario,3,0.0,0.0,0.0,0.0,0.0,0.0
+B2,structure_adaptive,dense,15,question_type,code_interpretation,4,0.266667,0.334262,0.8,0.322302,0.375,0.25
+B2,structure_adaptive,dense,15,question_type,comparison,4,0.216667,0.321635,0.535714,0.313091,0.25,0.0
+B2,structure_adaptive,dense,15,question_type,concept_explanation,5,0.253333,0.418333,0.65,0.340855,0.6,0.6
+B2,structure_adaptive,dense,15,question_type,definition,4,0.233333,0.3704,0.708333,0.296476,0.375,0.0
+B2,structure_adaptive,dense,15,question_type,multi_evidence_reasoning,4,0.233333,0.336905,0.75,0.44912,0.416667,0.25
+B2,structure_adaptive,dense,15,question_type,pseudocode_interpretation,4,0.083333,0.238095,0.308333,0.161237,0.25,0.0
+B2,structure_adaptive,dense,15,question_type,space_complexity,3,0.333333,0.386166,0.733333,0.495062,0.666667,0.666667
+B2,structure_adaptive,dense,15,question_type,time_complexity,4,0.233333,0.419805,0.875,0.41599,0.541667,0.25
+B2,structure_adaptive,dense,15,evidence_complexity,multi_evidence,40,0.2,0.317683,0.633988,0.322737,0.391667,0.225
+B3,structure_adaptive,hybrid_rrf,15,language,en,16,0.345833,0.512675,0.9375,0.55878,0.708333,0.4375
+B3,structure_adaptive,hybrid_rrf,15,language,vi,24,0.213889,0.376823,0.700463,0.358915,0.423611,0.208333
+B3,structure_adaptive,hybrid_rrf,15,difficulty,easy,12,0.25,0.43792,0.836111,0.466112,0.666667,0.5
+B3,structure_adaptive,hybrid_rrf,15,difficulty,hard,10,0.34,0.437838,0.827778,0.460445,0.516667,0.2
+B3,structure_adaptive,hybrid_rrf,15,difficulty,medium,18,0.237037,0.422952,0.75,0.408703,0.462963,0.222222
+B3,structure_adaptive,hybrid_rrf,15,topic,Algorithm Design Techniques,4,0.216667,0.433333,1.0,0.486599,0.583333,0.5
+B3,structure_adaptive,hybrid_rrf,15,topic,Array & Linked List,5,0.333333,0.409665,0.9,0.466009,0.733333,0.4
+B3,structure_adaptive,hybrid_rrf,15,topic,Graph Algorithms,6,0.2,0.330556,0.615741,0.320581,0.472222,0.333333
+B3,structure_adaptive,hybrid_rrf,15,topic,Hashing,4,0.416667,0.51504,0.666667,0.467162,0.583333,0.5
+B3,structure_adaptive,hybrid_rrf,15,topic,Searching & Sorting,6,0.211111,0.466829,0.791667,0.461269,0.416667,0.0
+B3,structure_adaptive,hybrid_rrf,15,topic,Stack & Queue,5,0.24,0.429563,0.866667,0.395501,0.5,0.2
+B3,structure_adaptive,hybrid_rrf,15,topic,Time & Space Complexity,4,0.333333,0.489583,0.8,0.534475,0.75,0.75
+B3,structure_adaptive,hybrid_rrf,15,topic,"Tree, BST & AVL",6,0.244444,0.419048,0.777778,0.43381,0.388889,0.0
+B3,structure_adaptive,hybrid_rrf,15,question_type,algorithm_steps,5,0.226667,0.370909,0.822222,0.440257,0.466667,0.2
+B3,structure_adaptive,hybrid_rrf,15,question_type,application_scenario,3,0.177778,0.375817,0.777778,0.468289,0.5,0.333333
+B3,structure_adaptive,hybrid_rrf,15,question_type,code_interpretation,4,0.316667,0.376832,0.875,0.304127,0.5,0.25
+B3,structure_adaptive,hybrid_rrf,15,question_type,comparison,4,0.233333,0.384135,0.770833,0.445805,0.375,0.0
+B3,structure_adaptive,hybrid_rrf,15,question_type,concept_explanation,5,0.32,0.523333,0.74,0.457861,0.7,0.6
+B3,structure_adaptive,hybrid_rrf,15,question_type,definition,4,0.25,0.379329,0.833333,0.392527,0.5,0.25
+B3,structure_adaptive,hybrid_rrf,15,question_type,multi_evidence_reasoning,4,0.3,0.467857,0.791667,0.512222,0.583333,0.25
+B3,structure_adaptive,hybrid_rrf,15,question_type,pseudocode_interpretation,4,0.133333,0.377976,0.520833,0.299143,0.458333,0.25
+B3,structure_adaptive,hybrid_rrf,15,question_type,space_complexity,3,0.422222,0.490196,1.0,0.670099,0.777778,0.666667
+B3,structure_adaptive,hybrid_rrf,15,question_type,time_complexity,4,0.3,0.558198,0.875,0.458352,0.541667,0.25
+B3,structure_adaptive,hybrid_rrf,15,evidence_complexity,multi_evidence,40,0.266667,0.431164,0.795278,0.438861,0.5375,0.3
+B4,structure_adaptive,hybrid_rerank,15,language,en,16,0.404167,0.625667,0.96875,0.649393,0.8125,0.5
+B4,structure_adaptive,hybrid_rerank,15,language,vi,24,0.305556,0.529049,0.855556,0.551758,0.708333,0.458333
+B4,structure_adaptive,hybrid_rerank,15,difficulty,easy,12,0.344444,0.631709,0.958333,0.665472,0.875,0.75
+B4,structure_adaptive,hybrid_rerank,15,difficulty,hard,10,0.413333,0.51386,0.92,0.533143,0.65,0.1
+B4,structure_adaptive,hybrid_rerank,15,difficulty,medium,18,0.307407,0.55493,0.851852,0.573077,0.722222,0.5
+B4,structure_adaptive,hybrid_rerank,15,topic,Algorithm Design Techniques,4,0.333333,0.667262,1.0,0.644456,0.75,0.25
+B4,structure_adaptive,hybrid_rerank,15,topic,Array & Linked List,5,0.44,0.5511,1.0,0.661704,0.833333,0.6
+B4,structure_adaptive,hybrid_rerank,15,topic,Graph Algorithms,6,0.333333,0.523148,0.916667,0.525008,0.666667,0.333333
+B4,structure_adaptive,hybrid_rerank,15,topic,Hashing,4,0.45,0.569017,0.875,0.60345,0.75,0.5
+B4,structure_adaptive,hybrid_rerank,15,topic,Searching & Sorting,6,0.277778,0.622457,0.805556,0.630172,0.75,0.5
+B4,structure_adaptive,hybrid_rerank,15,topic,Stack & Queue,5,0.333333,0.555053,0.8,0.528211,0.7,0.6
+B4,structure_adaptive,hybrid_rerank,15,topic,Time & Space Complexity,4,0.4,0.645833,1.0,0.657859,0.875,0.75
+B4,structure_adaptive,hybrid_rerank,15,topic,"Tree, BST & AVL",6,0.255556,0.4625,0.866667,0.521462,0.722222,0.333333
+B4,structure_adaptive,hybrid_rerank,15,question_type,algorithm_steps,5,0.386667,0.605758,1.0,0.688121,0.7,0.4
+B4,structure_adaptive,hybrid_rerank,15,question_type,application_scenario,3,0.266667,0.562092,1.0,0.685598,0.611111,0.333333
+B4,structure_adaptive,hybrid_rerank,15,question_type,code_interpretation,4,0.433333,0.546852,0.875,0.501972,0.875,0.75
+B4,structure_adaptive,hybrid_rerank,15,question_type,comparison,4,0.333333,0.659135,1.0,0.700998,0.75,0.5
+B4,structure_adaptive,hybrid_rerank,15,question_type,concept_explanation,5,0.413333,0.71,1.0,0.667715,0.8,0.6
+B4,structure_adaptive,hybrid_rerank,15,question_type,definition,4,0.366667,0.524621,0.875,0.580761,0.875,0.75
+B4,structure_adaptive,hybrid_rerank,15,question_type,multi_evidence_reasoning,4,0.35,0.543452,0.8,0.501752,0.666667,0.0
+B4,structure_adaptive,hybrid_rerank,15,question_type,pseudocode_interpretation,4,0.1,0.27381,0.708333,0.354662,0.416667,0.0
+B4,structure_adaptive,hybrid_rerank,15,question_type,space_complexity,3,0.422222,0.516885,0.833333,0.615874,0.888889,0.666667
+B4,structure_adaptive,hybrid_rerank,15,question_type,time_complexity,4,0.35,0.675162,0.875,0.597075,0.916667,0.75
+B4,structure_adaptive,hybrid_rerank,15,evidence_complexity,multi_evidence,40,0.345,0.567696,0.900833,0.590812,0.75,0.475

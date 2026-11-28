@@ -1,0 +1,147 @@
+{
+  "generated_utc": "2026-11-28T18:06:24.070869+00:00",
+  "preserved_unrelated_root_reports": [
+    "README.md",
+    "BAO_CAO_CONG_VIEC_DA_THUC_HIEN.md"
+  ],
+  "official_reports_in_evaluation_reports": [
+    "evaluation/reports/01_environment.md",
+    "evaluation/reports/02_chunking_indexing.md",
+    "evaluation/reports/03_dataset_ground_truth.md",
+    "evaluation/reports/04_system_evaluation.md",
+    "evaluation/reports/05_final_evaluation.md"
+  ],
+  "removed_or_merged_count": 13,
+  "entries": [
+    {
+      "existing_path": "PHASE_01_IMPLEMENTATION_REPORT.md",
+      "classification": "MERGE",
+      "bytes_before_removal": 37829,
+      "unique_info_preserved": true,
+      "replacement_path": "evaluation/reports/01_environment.md",
+      "backup_status": "Git history (commit 9b09c2e)",
+      "justification": "Tracked in Git history (8fe5458); consolidated into 01_environment.md",
+      "removed_from_active_tree": true
+    },
+    {
+      "existing_path": "PHASE_01_ROUND_02_VERIFICATION_REPORT.md",
+      "classification": "MERGE",
+      "bytes_before_removal": 19913,
+      "unique_info_preserved": true,
+      "replacement_path": "evaluation/reports/01_environment.md",
+      "backup_status": "Git history (commit 9b09c2e)",
+      "justification": "Tracked in Git history (8fe5458); consolidated into 01_environment.md",
+      "removed_from_active_tree": true
+    },
+    {
+      "existing_path": "PHASE_E1_01_IMPLEMENTATION_REPORT.md",
+      "classification": "MERGE",
+      "bytes_before_removal": 27935,
+      "unique_info_preserved": true,
+      "replacement_path": "evaluation/reports/02_chunking_indexing.md",
+      "backup_status": "Git history (commit 9b09c2e)",
+      "justification": "Tracked in Git history (0012a0c); consolidated into 02_chunking_indexing.md",
+      "removed_from_active_tree": true
+    },
+    {
+      "existing_path": "PHASE_E1_01_ROUND_02_VERIFICATION_REPORT.md",
+      "classification": "MERGE",
+      "bytes_before_removal": 69173,
+      "unique_info_preserved": true,
+      "replacement_path": "evaluation/reports/02_chunking_indexing.md",
+      "backup_status": "Git history (commit 9b09c2e)",
+      "justification": "Tracked in Git history (0012a0c); consolidated into 02_chunking_indexing.md",
+      "removed_from_active_tree": true
+    },
+    {
+      "existing_path": "E1_02_ADAPTIVE_CHUNKING_SPECIFICATION.md",
+      "classification": "MERGE",
+      "bytes_before_removal": 95771,
+      "unique_info_preserved": true,
+      "replacement_path": "evaluation/reports/02_chunking_indexing.md",
+      "backup_status": "Git history (commit 9b09c2e)",
+      "justification": "Tracked in Git history (0012a0c); core spec preserved in 02_chunking_indexing.md and evaluation/chunking/",
+      "removed_from_active_tree": true
+    },
+    {
+      "existing_path": "STAGE_02_DUAL_CHUNKING_INDEXING_REPORT.md",
+      "classification": "MERGE",
+      "bytes_before_removal": 30730,
+      "unique_info_preserved": true,
+      "replacement_path": "evaluation/reports/02_chunking_indexing.md",
+      "backup_status": "Git history (commit 9b09c2e)",
+      "justification": "Tracked in Git history (0012a0c); consolidated into 02_chunking_indexing.md",
+      "removed_from_active_tree": true
+    },
+    {
+      "existing_path": "STAGE_03_GROUND_TRUTH_REPORT.md",
+      "classification": "MERGE",
+      "bytes_before_removal": 48005,
+      "unique_info_preserved": true,
+      "replacement_path": "evaluation/reports/03_dataset_ground_truth.md",
+      "backup_status": "Git history (commit 9b09c2e)",
+      "justification": "Tracked in Git history (c21700a); consolidated into 03_dataset_ground_truth.md",
+      "removed_from_active_tree": true
+    },
+    {
+      "existing_path": "STAGE_04_COMPREHENSIVE_EVALUATION_REPORT.md",
+      "classification": "MERGE",
+      "bytes_before_removal": 39239,
+      "unique_info_preserved": true,
+      "replacement_path": "evaluation/reports/04_system_evaluation.md",
+      "backup_status": "Git history (commit 9b09c2e)",
+      "justification": "Tracked in Git history (966ecfa); consolidated into 04_system_evaluation.md",
+      "removed_from_active_tree": true
+    },
+    {
+      "existing_path": "STAGE_04_AC04_COMPLETION_REPORT.md",
+      "classification": "MERGE",
+      "bytes_before_removal": 25106,
+      "unique_info_preserved": true,
+      "replacement_path": "evaluation/reports/04_system_evaluation.md",
+      "backup_status": "Git history (commit 9b09c2e)",
+      "justification": "Tracked in Git history (9b09c2e); consolidated into 04_system_evaluation.md",
+      "removed_from_active_tree": true
+    },
+    {
+      "existing_path": "STAGE_05_FINAL_EVALUATION_REPORT.md",
+      "classification": "MERGE",
+      "bytes_before_removal": 93188,
+      "unique_info_preserved": true,
+      "replacement_path": "evaluation/reports/05_final_evaluation.md",
+      "backup_status": "Git history (commit 9b09c2e)",
+      "justification": "Tracked in Git history (139957c/9b09c2e); consolidated into 05_final_evaluation.md",
+      "removed_from_active_tree": true
+    },
+    {
+      "existing_path": "PROJECT_AUDIT_FINAL_READINESS.md",
+      "classification": "ARCHIVE_AND_REMOVE",
+      "bytes_before_removal": 109089,
+      "unique_info_preserved": true,
+      "replacement_path": "evaluation/reports/01_environment.md",
+      "backup_status": "Git history + data/runtime/consolidation_rollback_archive/",
+      "justification": "Untracked audit backed up with SHA-256 to data/runtime/consolidation_rollback_archive/ before removal",
+      "removed_from_active_tree": true
+    },
+    {
+      "existing_path": "EVALUATION_MASTER_AUDIT_REPORT.md",
+      "classification": "ARCHIVE_AND_REMOVE",
+      "bytes_before_removal": 110343,
+      "unique_info_preserved": true,
+      "replacement_path": "evaluation/reports/01_environment.md",
+      "backup_status": "Git history + data/runtime/consolidation_rollback_archive/",
+      "justification": "Untracked audit backed up with SHA-256 to data/runtime/consolidation_rollback_archive/ before removal",
+      "removed_from_active_tree": true
+    },
+    {
+      "existing_path": "evaluation/reports/README.md",
+      "classification": "DELETE_CANDIDATE",
+      "bytes_before_removal": 394,
+      "unique_info_preserved": true,
+      "replacement_path": "evaluation/README.md",
+      "backup_status": "Git history (commit 9b09c2e)",
+      "justification": "Placeholder 0.4 KB stub removed so evaluation/reports/ contains exactly 5 official Stage reports",
+      "removed_from_active_tree": true
+    }
+  ]
+}

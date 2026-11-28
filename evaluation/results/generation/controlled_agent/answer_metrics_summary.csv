@@ -1,0 +1,10 @@
+combo_id,profile_id,retrieval_method,n_answers,answer_correctness_norm,answer_correctness_norm_n,answer_relevancy_norm,answer_relevancy_norm_n,faithfulness_norm,faithfulness_norm_n,answer_completeness_norm,answer_completeness_norm_n,citation_accuracy_norm,citation_accuracy_norm_n,citation_validity,citation_validity_n,unsupported_claim_rate,unsupported_claim_rate_n,contradiction_rate,contradiction_rate_n,complexity_correctness_norm,complexity_correctness_norm_n,code_correctness_norm,code_correctness_norm_n
+A1,recursive_512_100,bm25,40,0.8125,40,0.85,40,0.925,40,0.7917,40,0.85,40,1.0,38,0.059,40,0.0027,40,0.9231,13,0.7778,9
+A2,recursive_512_100,dense,40,0.7063,40,0.7688,40,0.8562,40,0.6667,40,0.8187,40,1.0,35,0.1125,40,0.0,40,0.8462,13,0.8889,9
+A3,recursive_512_100,hybrid_rrf,40,0.8187,40,0.85,40,0.85,40,0.8083,40,0.8187,40,1.0,38,0.1225,40,0.0027,40,0.9062,16,0.8333,9
+A4,recursive_512_100,hybrid_rerank,40,0.925,40,0.9563,40,0.9187,40,0.9167,40,0.8187,40,1.0,39,0.0638,40,0.0,40,1.0,14,0.95,10
+B1,structure_adaptive,bm25,40,0.6625,40,0.7438,40,0.8562,40,0.6,40,0.8,40,1.0,39,0.1263,40,0.0035,40,0.9091,11,0.5625,8
+B2,structure_adaptive,dense,40,0.4813,40,0.5938,40,0.875,40,0.35,40,0.8438,40,1.0,40,0.1205,40,0.0043,40,0.6154,13,0.3333,9
+B3,structure_adaptive,hybrid_rrf,40,0.6562,40,0.7312,40,0.8313,40,0.5917,40,0.8063,40,1.0,40,0.1439,40,0.002,40,0.8462,13,0.7778,9
+B4,structure_adaptive,hybrid_rerank,40,0.75,40,0.8,40,0.85,40,0.7333,40,0.8125,40,1.0,40,0.1131,40,0.0136,40,0.9583,12,0.7,10
+NO_RAG,NONE,NO_RAG,40,0.9688,40,1.0,40,,0,0.9208,40,,0,,0,,0,0.0175,40,1.0,13,0.95,10

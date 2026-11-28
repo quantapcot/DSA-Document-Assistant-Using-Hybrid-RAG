@@ -1,0 +1,57 @@
+{
+  "timestamp_utc": "2026-11-28T17:19:04.626909+00:00",
+  "original_qdrant_eval_untouched": true,
+  "historical_stage04_ac04_status": "PARTIAL",
+  "gates": {
+    "GATE-01": {
+      "name": "Live Groq connectivity verified",
+      "status": "PASS"
+    },
+    "GATE-02": {
+      "name": "Actual application Answer Generation evaluated (40q Config A + 40q Config B + 40q NO_RAG)",
+      "status": "PASS"
+    },
+    "GATE-03": {
+      "name": "Actual HTTP End-to-End evaluated (Chat + Edge Cases + 504 Timeout + 20 Robustness)",
+      "status": "PASS"
+    },
+    "GATE-04": {
+      "name": "Real Quiz (8 topics + raw 422) and Roadmap (4 scenarios) API evaluated",
+      "status": "PASS"
+    },
+    "GATE-05": {
+      "name": "Robustness, answer quality, latency & token tracking valid and reproducible",
+      "status": "PASS"
+    },
+    "GATE-06": {
+      "name": "Supplementary artifacts, 6 figures, reports, regression tests & integrity checks",
+      "status": "PASS"
+    }
+  },
+  "audit_summary": {
+    "human_validated": false,
+    "human_approval_status": "DRAFT",
+    "primary_judge_model": "antigravity_agent_pro",
+    "secondary_audit_model": "antigravity_agent_flash",
+    "stage04_synthetic_controls_retained": "3/3 PASS",
+    "total_chat_judgments": 120,
+    "total_robustness_judgments": 20,
+    "total_study_judgments": 12,
+    "secondary_audit_sample_size": 14,
+    "correctness_within_1pt_agreement_pct": 100.0,
+    "faithfulness_within_1pt_agreement_pct": 87.5
+  },
+  "total_tokens_summary": {
+    "experiment_group": "TOTAL_ALL_LIVE_GROQ",
+    "http_or_task_requests": 157,
+    "actual_provider_calls": 90,
+    "provider_success_calls": 84,
+    "provider_error_calls": 6,
+    "rate_limit_429_calls": 6,
+    "prompt_tokens": 58116,
+    "completion_tokens": 58975,
+    "total_tokens": 117091,
+    "mean_tokens_per_provider_call": 1393.9
+  },
+  "recommended_updated_stage04_ac04_status": "PASS_EVALUATION_GATE_WITH_PRODUCTION_DEFECTS_DOCUMENTED"
+}

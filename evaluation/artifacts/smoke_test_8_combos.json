@@ -1,0 +1,426 @@
+{
+  "note": "Smoke test only (not official evaluation benchmark; no P/R/MRR/nDCG computed without Ground Truth).",
+  "qdrant_path": "D:\\DSA-Document-Assistant-Using-Hybrid-RAG\\data\\runtime\\qdrant_eval",
+  "collection": "eval_dsa_chunks_v1",
+  "workspace_id": "evaluation",
+  "top_k": 15,
+  "candidate_top_k": 30,
+  "actual_devices": {
+    "embedding": "cuda:0",
+    "reranker": "cuda:0"
+  },
+  "embedding_cache_info": {
+    "hits": 48,
+    "misses": 1,
+    "maxsize": 4,
+    "currsize": 1
+  },
+  "reranker_cache_info": {
+    "hits": 8,
+    "misses": 1,
+    "maxsize": 4,
+    "currsize": 1
+  },
+  "combos": [
+    {
+      "combo": "A1",
+      "profile_id": "recursive_512_100",
+      "corpus_id": "eval-recursive-512-v1",
+      "method": "bm25",
+      "mean_smoke_latency_ms": 3449.06,
+      "queries": [
+        {
+          "query_id": "smoke_vi_avl",
+          "returned_count": 15,
+          "latency_ms": 12466.74,
+          "top1_chunk_id": "56ec3689bed56418cf280e28",
+          "top1_score": 26.3711,
+          "top1_filename": "013_train_file_Vie.pdf",
+          "top1_page": 16,
+          "top1_content_type": "recursive_segment"
+        },
+        {
+          "query_id": "smoke_en_bst",
+          "returned_count": 15,
+          "latency_ms": 440.75,
+          "top1_chunk_id": "262cf3edd70084914fd04798",
+          "top1_score": 37.1196,
+          "top1_filename": "004_train_file_Eng.pdf",
+          "top1_page": 2,
+          "top1_content_type": "recursive_segment"
+        },
+        {
+          "query_id": "smoke_code_sort",
+          "returned_count": 15,
+          "latency_ms": 451.46,
+          "top1_chunk_id": "f7ff089a712c30d8c4e64bcb",
+          "top1_score": 36.6263,
+          "top1_filename": "021_train_file_Vie.pdf",
+          "top1_page": 34,
+          "top1_content_type": "recursive_segment"
+        },
+        {
+          "query_id": "smoke_complexity",
+          "returned_count": 15,
+          "latency_ms": 437.29,
+          "top1_chunk_id": "10c40ebc4d0e28cd533ae6d6",
+          "top1_score": 20.2505,
+          "top1_filename": "021_train_file_Vie.pdf",
+          "top1_page": 8,
+          "top1_content_type": "recursive_segment"
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "combo": "A2",
+      "profile_id": "recursive_512_100",
+      "corpus_id": "eval-recursive-512-v1",
+      "method": "dense",
+      "mean_smoke_latency_ms": 675.32,
+      "queries": [
+        {
+          "query_id": "smoke_vi_avl",
+          "returned_count": 15,
+          "latency_ms": 998.66,
+          "top1_chunk_id": "1b9a076f4d4fd3d363f35e24",
+          "top1_score": 0.7572,
+          "top1_filename": "013_train_file_Vie.pdf",
+          "top1_page": 21,
+          "top1_content_type": "recursive_segment"
+        },
+        {
+          "query_id": "smoke_en_bst",
+          "returned_count": 15,
+          "latency_ms": 638.79,
+          "top1_chunk_id": "22ccf2d606c4d0824f0ed512",
+          "top1_score": 0.6858,
+          "top1_filename": "021_train_file_Vie.pdf",
+          "top1_page": 10,
+          "top1_content_type": "recursive_segment"
+        },
+        {
+          "query_id": "smoke_code_sort",
+          "returned_count": 15,
+          "latency_ms": 502.45,
+          "top1_chunk_id": "0d6d942329e91f36f58b257c",
+          "top1_score": 0.7978,
+          "top1_filename": "021_train_file_Vie.pdf",
+          "top1_page": 37,
+          "top1_content_type": "recursive_segment"
+        },
+        {
+          "query_id": "smoke_complexity",
+          "returned_count": 15,
+          "latency_ms": 561.39,
+          "top1_chunk_id": "94b58d8b296dac58316629d4",
+          "top1_score": 0.6262,
+          "top1_filename": "011_train_file_Vie.pdf",
+          "top1_page": 12,
+          "top1_content_type": "recursive_segment"
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "combo": "A3",
+      "profile_id": "recursive_512_100",
+      "corpus_id": "eval-recursive-512-v1",
+      "method": "hybrid_rrf",
+      "mean_smoke_latency_ms": 954.65,
+      "queries": [
+        {
+          "query_id": "smoke_vi_avl",
+          "returned_count": 15,
+          "latency_ms": 1001.99,
+          "top1_chunk_id": "1b9a076f4d4fd3d363f35e24",
+          "top1_score": 0.032,
+          "top1_filename": "013_train_file_Vie.pdf",
+          "top1_page": 21,
+          "top1_content_type": "recursive_segment"
+        },
+        {
+          "query_id": "smoke_en_bst",
+          "returned_count": 15,
+          "latency_ms": 945.59,
+          "top1_chunk_id": "ca9a5ed3691b8bd50a8f38a6",
+          "top1_score": 0.0315,
+          "top1_filename": "001_train_file_Eng.docx",
+          "top1_page": 3,
+          "top1_content_type": "recursive_segment"
+        },
+        {
+          "query_id": "smoke_code_sort",
+          "returned_count": 15,
+          "latency_ms": 934.36,
+          "top1_chunk_id": "f7ff089a712c30d8c4e64bcb",
+          "top1_score": 0.0325,
+          "top1_filename": "021_train_file_Vie.pdf",
+          "top1_page": 34,
+          "top1_content_type": "recursive_segment"
+        },
+        {
+          "query_id": "smoke_complexity",
+          "returned_count": 15,
+          "latency_ms": 936.66,
+          "top1_chunk_id": "cb6c429d83105df9c91968ae",
+          "top1_score": 0.0308,
+          "top1_filename": "012_train_file_Vie.pdf",
+          "top1_page": 32,
+          "top1_content_type": "recursive_segment"
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "combo": "A4",
+      "profile_id": "recursive_512_100",
+      "corpus_id": "eval-recursive-512-v1",
+      "method": "hybrid_rerank",
+      "mean_smoke_latency_ms": 1502.03,
+      "queries": [
+        {
+          "query_id": "smoke_vi_avl",
+          "returned_count": 15,
+          "latency_ms": 1595.85,
+          "top1_chunk_id": "fbf49ec2edcb2ba6b1f089a9",
+          "top1_score": 0.9195,
+          "top1_filename": "013_train_file_Vie.pdf",
+          "top1_page": 15,
+          "top1_content_type": "recursive_segment"
+        },
+        {
+          "query_id": "smoke_en_bst",
+          "returned_count": 15,
+          "latency_ms": 1503.11,
+          "top1_chunk_id": "ca9a5ed3691b8bd50a8f38a6",
+          "top1_score": 0.9905,
+          "top1_filename": "001_train_file_Eng.docx",
+          "top1_page": 3,
+          "top1_content_type": "recursive_segment"
+        },
+        {
+          "query_id": "smoke_code_sort",
+          "returned_count": 15,
+          "latency_ms": 1480.33,
+          "top1_chunk_id": "96bfbfbae1602059ad4e8cd5",
+          "top1_score": 0.967,
+          "top1_filename": "021_train_file_Vie.pdf",
+          "top1_page": 34,
+          "top1_content_type": "recursive_segment"
+        },
+        {
+          "query_id": "smoke_complexity",
+          "returned_count": 15,
+          "latency_ms": 1428.82,
+          "top1_chunk_id": "e4077fd0a88db77c7b5925d3",
+          "top1_score": 0.8161,
+          "top1_filename": "006_train_file_Vie.pdf",
+          "top1_page": 132,
+          "top1_content_type": "recursive_segment"
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "combo": "B1",
+      "profile_id": "structure_adaptive",
+      "corpus_id": "eval-structure-adaptive-v1",
+      "method": "bm25",
+      "mean_smoke_latency_ms": 5265.4,
+      "queries": [
+        {
+          "query_id": "smoke_vi_avl",
+          "returned_count": 15,
+          "latency_ms": 19357.22,
+          "top1_chunk_id": "d582918fdb29086986017ef2",
+          "top1_score": 24.8354,
+          "top1_filename": "013_train_file_Vie.pdf",
+          "top1_page": 1,
+          "top1_content_type": "narrative"
+        },
+        {
+          "query_id": "smoke_en_bst",
+          "returned_count": 15,
+          "latency_ms": 580.39,
+          "top1_chunk_id": "3ba105dd27d9bdd444de40f8",
+          "top1_score": 35.1492,
+          "top1_filename": "004_train_file_Eng.pdf",
+          "top1_page": 2,
+          "top1_content_type": "algorithm_steps"
+        },
+        {
+          "query_id": "smoke_code_sort",
+          "returned_count": 15,
+          "latency_ms": 591.09,
+          "top1_chunk_id": "53971622387938637902d7c3",
+          "top1_score": 33.794,
+          "top1_filename": "021_train_file_Vie.pdf",
+          "top1_page": 34,
+          "top1_content_type": "algorithm_steps"
+        },
+        {
+          "query_id": "smoke_complexity",
+          "returned_count": 15,
+          "latency_ms": 532.89,
+          "top1_chunk_id": "13a9edd84f6f36add07ff37d",
+          "top1_score": 24.289,
+          "top1_filename": "004_train_file_Vie.pdf",
+          "top1_page": 50,
+          "top1_content_type": "complexity_analysis"
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "combo": "B2",
+      "profile_id": "structure_adaptive",
+      "corpus_id": "eval-structure-adaptive-v1",
+      "method": "dense",
+      "mean_smoke_latency_ms": 586.88,
+      "queries": [
+        {
+          "query_id": "smoke_vi_avl",
+          "returned_count": 15,
+          "latency_ms": 527.28,
+          "top1_chunk_id": "109b292f951445bdeb100c14",
+          "top1_score": 0.8063,
+          "top1_filename": "013_train_file_Vie.pdf",
+          "top1_page": 16,
+          "top1_content_type": "algorithm_steps"
+        },
+        {
+          "query_id": "smoke_en_bst",
+          "returned_count": 15,
+          "latency_ms": 575.11,
+          "top1_chunk_id": "dd4bfc6af57f4ce234d323b3",
+          "top1_score": 0.6989,
+          "top1_filename": "013_train_file_Vie.pdf",
+          "top1_page": 5,
+          "top1_content_type": "narrative"
+        },
+        {
+          "query_id": "smoke_code_sort",
+          "returned_count": 15,
+          "latency_ms": 528.2,
+          "top1_chunk_id": "53971622387938637902d7c3",
+          "top1_score": 0.8574,
+          "top1_filename": "021_train_file_Vie.pdf",
+          "top1_page": 34,
+          "top1_content_type": "algorithm_steps"
+        },
+        {
+          "query_id": "smoke_complexity",
+          "returned_count": 15,
+          "latency_ms": 716.93,
+          "top1_chunk_id": "c643a55b5d4780daf0d7bab8",
+          "top1_score": 0.6939,
+          "top1_filename": "011_train_file_Vie.pdf",
+          "top1_page": 12,
+          "top1_content_type": "algorithm_steps"
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "combo": "B3",
+      "profile_id": "structure_adaptive",
+      "corpus_id": "eval-structure-adaptive-v1",
+      "method": "hybrid_rrf",
+      "mean_smoke_latency_ms": 1092.4,
+      "queries": [
+        {
+          "query_id": "smoke_vi_avl",
+          "returned_count": 15,
+          "latency_ms": 1155.84,
+          "top1_chunk_id": "f845d208423a6995908f2e15",
+          "top1_score": 0.0313,
+          "top1_filename": "013_train_file_Vie.pdf",
+          "top1_page": 22,
+          "top1_content_type": "narrative"
+        },
+        {
+          "query_id": "smoke_en_bst",
+          "returned_count": 15,
+          "latency_ms": 1250.94,
+          "top1_chunk_id": "dd4bfc6af57f4ce234d323b3",
+          "top1_score": 0.0311,
+          "top1_filename": "013_train_file_Vie.pdf",
+          "top1_page": 5,
+          "top1_content_type": "narrative"
+        },
+        {
+          "query_id": "smoke_code_sort",
+          "returned_count": 15,
+          "latency_ms": 1068.03,
+          "top1_chunk_id": "53971622387938637902d7c3",
+          "top1_score": 0.0328,
+          "top1_filename": "021_train_file_Vie.pdf",
+          "top1_page": 34,
+          "top1_content_type": "algorithm_steps"
+        },
+        {
+          "query_id": "smoke_complexity",
+          "returned_count": 15,
+          "latency_ms": 894.8,
+          "top1_chunk_id": "b950857c9117a3ab0f18a6b7",
+          "top1_score": 0.0323,
+          "top1_filename": "003_train_file_Vie.pdf",
+          "top1_page": 148,
+          "top1_content_type": "complexity_analysis"
+        }
+      ],
+      "status": "PASS"
+    },
+    {
+      "combo": "B4",
+      "profile_id": "structure_adaptive",
+      "corpus_id": "eval-structure-adaptive-v1",
+      "method": "hybrid_rerank",
+      "mean_smoke_latency_ms": 1237.26,
+      "queries": [
+        {
+          "query_id": "smoke_vi_avl",
+          "returned_count": 15,
+          "latency_ms": 1315.79,
+          "top1_chunk_id": "a0b4581c79fba29d70588f3a",
+          "top1_score": 0.6404,
+          "top1_filename": "013_train_file_Vie.pdf",
+          "top1_page": 21,
+          "top1_content_type": "narrative"
+        },
+        {
+          "query_id": "smoke_en_bst",
+          "returned_count": 15,
+          "latency_ms": 1195.01,
+          "top1_chunk_id": "3445374add043044ef03e5fb",
+          "top1_score": 0.9545,
+          "top1_filename": "001_train_file_Eng.docx",
+          "top1_page": 3,
+          "top1_content_type": "narrative"
+        },
+        {
+          "query_id": "smoke_code_sort",
+          "returned_count": 15,
+          "latency_ms": 1249.3,
+          "top1_chunk_id": "1118a912c8f88cc49f316f92",
+          "top1_score": 0.9625,
+          "top1_filename": "021_train_file_Vie.pdf",
+          "top1_page": 34,
+          "top1_content_type": "algorithm_steps"
+        },
+        {
+          "query_id": "smoke_complexity",
+          "returned_count": 15,
+          "latency_ms": 1188.94,
+          "top1_chunk_id": "13a9edd84f6f36add07ff37d",
+          "top1_score": 0.9317,
+          "top1_filename": "004_train_file_Vie.pdf",
+          "top1_page": 50,
+          "top1_content_type": "complexity_analysis"
+        }
+      ],
+      "status": "PASS"
+    }
+  ]
+}

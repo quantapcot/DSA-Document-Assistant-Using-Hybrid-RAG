@@ -30,19 +30,87 @@ def precision_at_k(retrieved, relevant, k=5):
     return len(found) / k
 
 
-def recall_at_k(retrieved, relevant, k=5, *, labels_complete=True):
-    """Fraction of all labeled relevant IDs found in Top-K."""
+def recall_at_k(retrieved, relevant, k=5, *, labels_complete=True, zero_positive_policy="raise"):
+    """Fraction of all labeled relevant IDs found in Top-K.
+
+    *zero_positive_policy*:
+      - ``"raise"`` (default, backward compatible): raise ValueError if *relevant* is empty.
+      - ``"none"``: return ``None`` so macro-aggregators exclude undefined denominators explicitly.
+    """
     _validate_k(k)
     _require_complete_labels(labels_complete)
 
     relevant_ids = set(relevant)
     if not relevant_ids:
+        if zero_positive_policy == "none":
+            return None
         raise ValueError(
             "ground truth must contain at least one relevant chunk"
         )
 
     found = set(retrieved[:k]) & relevant_ids
     return len(found) / len(relevant_ids)
+
+
+def hit_rate_at_k(retrieved, relevant, k=5):
+    """1.0 if at least one relevant chunk appears in Top-K, else 0.0."""
+    _validate_k(k)
+    relevant_ids = set(relevant)
+    return 1.0 if (set(retrieved[:k]) & relevant_ids) else 0.0
+
+
+def average_precision_at_k(retrieved, relevant, k=5, *, labels_complete=True, zero_positive_policy="raise"):
+    """Average Precision at K with cutoff normalization denominator ``min(k, len(relevant_ids))``.
+
+    Duplicate retrieved IDs are ignored after their first occurrence while preserving rank positions.
+    """
+    _validate_k(k)
+    _require_complete_labels(labels_complete)
+
+    relevant_ids = set(relevant)
+    if not relevant_ids:
+        if zero_positive_policy == "none":
+            return None
+        raise ValueError("ground truth must contain at least one relevant chunk")
+
+    denom = min(k, len(relevant_ids))
+    hits = 0
+    precision_sum = 0.0
+    seen = set()
+    for rank, chunk_id in enumerate(retrieved[:k], start=1):
+        if chunk_id in seen:
+            continue
+        seen.add(chunk_id)
+        if chunk_id in relevant_ids:
+            hits += 1
+            precision_sum += hits / rank
+    return precision_sum / denom
+
+
+def f1_at_k(precision, recall):
+    """Harmonic mean of per-query Precision@K and Recall@K; returns None if recall is undefined."""
+    if precision is None or recall is None:
+        return None
+    if precision + recall == 0.0:
+        return 0.0
+    return 2.0 * precision * recall / (precision + recall)
+
+
+def judged_at_k(retrieved, judged_ids, k=5):
+    """Return ``(judged_rate, judged_count, actual_returned_count)`` for the first K slots.
+
+    Denominator is ``actual_returned_count = len(retrieved[:k])`` (0.0 if empty) so callers can
+    inspect ``actual_returned_count`` alongside ``judged_rate`` without conflating fewer-than-K
+    with full coverage.
+    """
+    _validate_k(k)
+    top = list(retrieved[:k])
+    returned_count = len(top)
+    if returned_count == 0:
+        return 0.0, 0, 0
+    judged_set = set(judged_ids)
+    judged_count = sum(1 for cid in top if cid in judged_set)
+    return judged_count / returned_count, judged_count, returned_count
 
 
 def reciprocal_rank(retrieved, relevant, k=None):

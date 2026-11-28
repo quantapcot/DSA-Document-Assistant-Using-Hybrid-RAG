@@ -1,0 +1,463 @@
+{
+  "stage": "Stage 05 — Visualization, Comparative Analysis & Final Evaluation Conclusion",
+  "generated_utc": "2026-11-28T16:24:00.900122+00:00",
+  "input_integrity": {
+    "all_verified": true,
+    "git": {
+      "branch": "feat/final-readiness",
+      "expected_branch": "feat/final-readiness",
+      "head": "966ecfa415b274680a521cce1a65229d8ac32d40",
+      "expected_stage04_checkpoint": "966ecfa415b274680a521cce1a65229d8ac32d40",
+      "stage04_ancestor_ok": true,
+      "main": "b84f09450f213b03ad57ef8b388f482ee0f0eaa2",
+      "expected_main": "b84f09450f213b03ad57ef8b388f482ee0f0eaa2",
+      "matches_baseline": true
+    },
+    "stage04_file_count": 59,
+    "missing_required_stage04_files": [],
+    "frozen_checksums": {
+      "evaluation/datasets/questions_40.jsonl": {
+        "exists": true,
+        "sha256": "c620d728460fa724226fc2c8331c8a168a25ad75edc424f09912ffcd659465d3",
+        "expected_sha256": null,
+        "matches": true
+      },
+      "evaluation/datasets/source_evidence.jsonl": {
+        "exists": true,
+        "sha256": "53ffa1415b4c9cdac2cedd34746d55d2b3927eba39d657fffa23832b0be2235a",
+        "expected_sha256": null,
+        "matches": true
+      },
+      "evaluation/artifacts/recursive_512_100/chunks.jsonl": {
+        "exists": true,
+        "sha256": "e39811da17d99201e4ad26f54c4a53614a087e76e3e0cb6d031a733862af0649",
+        "expected_sha256": "e39811da17d99201e4ad26f54c4a53614a087e76e3e0cb6d031a733862af0649",
+        "matches": true
+      },
+      "evaluation/artifacts/structure_adaptive/chunks.jsonl": {
+        "exists": true,
+        "sha256": "81c568275754e35d7323b1e51fc247b885abc873eef4c5caa5c1ec4daa0b5d63",
+        "expected_sha256": "81c568275754e35d7323b1e51fc247b885abc873eef4c5caa5c1ec4daa0b5d63",
+        "matches": true
+      }
+    },
+    "reference_manifests": {
+      "evaluation/artifacts/recursive_512_100/manifest.json": true,
+      "evaluation/artifacts/structure_adaptive/manifest.json": true,
+      "evaluation/datasets/dataset_manifest.json": true,
+      "evaluation/artifacts/stage03/automated_quality_audit.json": true
+    },
+    "local_backups": {
+      "evaluation/artifacts/stage04/generation/generated_answers.jsonl": {
+        "backup_exists": true,
+        "original_exists": true,
+        "expected_sha256": "6405d27e5289af680976cbdd1faa15418bbc4f8262cad0cd359ef7f7add508ce",
+        "backup_matches": true,
+        "original_matches": true
+      },
+      "evaluation/artifacts/stage04/generation/packed_contexts_main.jsonl": {
+        "backup_exists": true,
+        "original_exists": true,
+        "expected_sha256": "3d43a140c11bbe97633c6a6c93c09d69419eca12cfd45004aa3b2f648b8062ea",
+        "backup_matches": true,
+        "original_matches": true
+      },
+      "evaluation/artifacts/stage04/performance/latency_raw.jsonl": {
+        "backup_exists": true,
+        "original_exists": true,
+        "expected_sha256": "0df2a162ae0fd628f08c4fba6a0d7a06b223cc87b7683bb17d73131b69eafe64",
+        "backup_matches": true,
+        "original_matches": true
+      },
+      "evaluation/artifacts/stage04/retrieval/retrieval_metrics_per_query.csv": {
+        "backup_exists": true,
+        "original_exists": true,
+        "expected_sha256": "2134a05837d0df47c11a2193665e93e969c9dd11eaeb61b01209c0b502c7a330",
+        "backup_matches": true,
+        "original_matches": true
+      },
+      "evaluation/artifacts/stage04/retrieval/retrieval_rankings.jsonl": {
+        "backup_exists": true,
+        "original_exists": true,
+        "expected_sha256": "cc00ca7a06576f0100f718642115227157ee0e781bae9b9261867d8df59ae529",
+        "backup_matches": true,
+        "original_matches": true
+      }
+    },
+    "stage04_ac_reconciliation": [
+      {
+        "ac_id": "AC-01",
+        "canonical_stage04_title": "Benchmark Infrastructure & Integrity",
+        "checkpoint_summary_short_label": "Chunking & Retrieval Quality",
+        "status": "PASS",
+        "reconciled_meaning": "Frozen Stage 02/03 inputs verified unchanged; retrieval_metrics.py upgraded backward-compatibly for Top-60/Pool-120 and zero-positive handling; zero production edits."
+      },
+      {
+        "ac_id": "AC-02",
+        "canonical_stage04_title": "Retrieval & Evidence Evaluation",
+        "checkpoint_summary_short_label": "Evidence Coverage",
+        "status": "PASS",
+        "reconciled_meaning": "All 8 combinations evaluated on 40 shared questions across all 9 K values (8 retrieval metrics + 6 evidence metrics), 0 ranking drift, Judged@K = 1.0."
+      },
+      {
+        "ac_id": "AC-03",
+        "canonical_stage04_title": "Performance Evaluation",
+        "checkpoint_summary_short_label": "Latency & Resource Benchmark",
+        "status": "PASS",
+        "reconciled_meaning": "14,400 interleaved warm calls (5 repeats, pool=120), 640 stage-breakdown calls, 1,600 production-profile calls (K=5/pool=10), 24 cold-start trials, RAM & GPU metrics."
+      },
+      {
+        "ac_id": "AC-04",
+        "canonical_stage04_title": "Generation, Robustness & Study Features",
+        "checkpoint_summary_short_label": "Generation & Production E2E",
+        "status": "PARTIAL",
+        "reconciled_meaning": "Controlled Agent Generation (400 answers + blind pro judge + 10% audit), 20 robustness cases, 11/11 real module contract checks, and 8 quizzes / 4 roadmaps completed; Production Groq API and HTTP End-to-End API remain BLOCKED (no GROQ_API_KEY, empty prod Qdrant)."
+      },
+      {
+        "ac_id": "AC-05",
+        "canonical_stage04_title": "Comprehensive Experimental Analysis",
+        "checkpoint_summary_short_label": "Robustness & Study Features",
+        "status": "PASS",
+        "reconciled_meaning": "Ablation study, Top-K / Candidate-Pool / Context-Budget sensitivity, 10,000-resample paired bootstrap with Holm correction, error analysis, and Pareto trade-off completed."
+      },
+      {
+        "ac_id": "AC-06",
+        "canonical_stage04_title": "Regression, Reproducibility & Final Handover",
+        "checkpoint_summary_short_label": "Statistics, Trade-Off & Data Contract",
+        "status": "PASS",
+        "reconciled_meaning": "53/53 targeted tests PASS, 0 new regressions (319 passed / 4 pre-existing Windows timing flakes), pip check exit 0, VALIDATE_MISSING=[], Stage 04 report and Stage 05 Data Contract complete."
+      }
+    ],
+    "stage04_run_id": "stage04_e74741659b"
+  },
+  "style": {
+    "primary_font": "Arial",
+    "fallback_chain": [
+      "Arial",
+      "DejaVu Sans",
+      "Liberation Sans",
+      "sans-serif"
+    ],
+    "dpi": 300
+  },
+  "outputs": {
+    "logical_figures": 28,
+    "png_count": 28,
+    "svg_count": 28,
+    "tables_count": 10,
+    "tables": [
+      {
+        "table_id": "table_01_chunking_summary",
+        "path": "evaluation/artifacts/stage05/tables/table_01_chunking_summary.csv",
+        "rows": 2,
+        "columns": [
+          "profile_id",
+          "corpus_id",
+          "total_chunks",
+          "char_min",
+          "char_mean",
+          "char_median",
+          "char_p95",
+          "char_max",
+          "emb_tok_min",
+          "emb_tok_mean",
+          "emb_tok_median",
+          "emb_tok_p95",
+          "emb_tok_max",
+          "emb_limit",
+          "emb_truncation_count",
+          "emb_truncation_rate_pct",
+          "emb_total_tokens",
+          "emb_discarded_tokens",
+          "emb_discarded_token_rate_pct",
+          "rer_chunk_tok_mean",
+          "rer_chunk_tok_p95",
+          "rer_chunk_tok_max",
+          "rer_pair_count",
+          "rer_pair_tok_mean",
+          "rer_pair_tok_p95",
+          "rer_pair_tok_max",
+          "rer_pair_truncation_count",
+          "rer_pair_truncation_rate_pct",
+          "retrieved_emb_tokens_k5_mean",
+          "retrieved_emb_tokens_k15_mean",
+          "retrieved_emb_tokens_k60_mean",
+          "source_coverage_pct",
+          "effective_source_coverage_pct",
+          "dropped_chars_union",
+          "uncovered_whitespace_chars",
+          "unexplained_coverage_loss_chars",
+          "ku_retained",
+          "ku_total",
+          "provenance_missing_count",
+          "overlap_chars_total",
+          "overlap_redundancy_pct",
+          "repeated_context_source_chars",
+          "synthetic_prefix_chars",
+          "synthetic_prefix_pct",
+          "duplicate_text_groups",
+          "duplicate_text_excess_chunks",
+          "code_pseudocode_chunks",
+          "formula_chunks",
+          "table_chunks",
+          "corpus_jsonl_bytes",
+          "theoretical_vector_bytes_f32_384d",
+          "combined_qdrant_eval_bytes"
+        ],
+        "source_artifacts": [
+          "evaluation/artifacts/stage04/chunking/chunking_metrics.csv"
+        ],
+        "description": "Dual-tokenizer chunking diagnostics, coverage, redundancy, and storage comparison (Profile A vs Profile B).",
+        "sha256": "7dc88adf76ecf7cd5625ccaf512485fd2649cef757b67ec2a1b4a138827d30e0"
+      },
+      {
+        "table_id": "table_02_retrieval_k5_k15_k60",
+        "path": "evaluation/artifacts/stage05/tables/table_02_retrieval_k5_k15_k60.csv",
+        "rows": 8,
+        "columns": [
+          "combo_id",
+          "label",
+          "p_at_5",
+          "pooled_r_at_5",
+          "mrr_at_5",
+          "ndcg_at_5",
+          "map_at_5",
+          "f1_at_5",
+          "hit_at_5",
+          "ndcg_at_15",
+          "pooled_r_at_15",
+          "ndcg_at_60",
+          "pooled_r_at_60",
+          "judged_at_60"
+        ],
+        "source_artifacts": [
+          "evaluation/artifacts/stage04/retrieval/retrieval_metrics_summary.csv"
+        ],
+        "description": "Retrieval quality across all 8 experimental combinations at K=5, K=15, and K=60 (pool=120, Judged@K=1.0).",
+        "sha256": "12e52cf8facf34bc8f5e93fa56c0c43399e570df6936cd7f28110966f097b123"
+      },
+      {
+        "table_id": "table_03_evidence_summary",
+        "path": "evaluation/artifacts/stage05/tables/table_03_evidence_summary.csv",
+        "rows": 8,
+        "columns": [
+          "combo_id",
+          "ev_recall_k5",
+          "ev_precision_k5",
+          "complete_ev_k5",
+          "partial_ev_k5",
+          "ku_any_k5",
+          "semantic_ku_k5",
+          "ev_redundancy_k5",
+          "ev_recall_k15",
+          "complete_ev_k15",
+          "ev_recall_k60",
+          "complete_ev_k60"
+        ],
+        "source_artifacts": [
+          "evaluation/artifacts/stage04/evidence/evidence_metrics_summary.csv"
+        ],
+        "description": "Source-backed evidence metrics and coverage hierarchy at K=5, K=15, and K=60.",
+        "sha256": "082953299f19c14080f33dc426b14ba5bcd60eaed605946c1262809610333c6e"
+      },
+      {
+        "table_id": "table_04_latency_protocols",
+        "path": "evaluation/artifacts/stage05/tables/table_04_latency_protocols.csv",
+        "rows": 8,
+        "columns": [
+          "combo_id",
+          "warm_k5_pool120_mean_ms",
+          "warm_k5_pool120_p50_ms",
+          "warm_k5_pool120_p95_ms",
+          "warm_k60_pool120_p95_ms",
+          "stage_rerank_k5_pool120_mean_ms",
+          "prod_profile_k5_pool10_p50_ms",
+          "prod_profile_k5_pool10_p95_ms",
+          "cold_start_mean_sec",
+          "cold_bm25_build_mean_sec",
+          "peak_gpu_alloc_mb",
+          "cold_process_rss_mean_mb"
+        ],
+        "source_artifacts": [
+          "evaluation/artifacts/stage04/performance/latency_summary.csv",
+          "evaluation/artifacts/stage04/performance/stage_latency.csv",
+          "evaluation/artifacts/stage04/performance/production_profile_latency.csv",
+          "evaluation/artifacts/stage04/performance/cold_start_latency.csv",
+          "evaluation/artifacts/stage04/performance/resource_usage.csv"
+        ],
+        "description": "Performance and resource summary across clearly separated protocols (Warm pool=120, Stage breakdown, Prod-Param pool=10, Cold-start seconds).",
+        "sha256": "fe788ff2c582288b2e403b195a20129a16fa8a91a854ef23711dd84130ed35b7"
+      },
+      {
+        "table_id": "table_05_generation_summary",
+        "path": "evaluation/artifacts/stage05/tables/table_05_generation_summary.csv",
+        "rows": 9,
+        "columns": [
+          "combo_id",
+          "n_answers",
+          "answer_correctness_norm",
+          "answer_relevancy_norm",
+          "faithfulness_norm",
+          "answer_completeness_norm",
+          "citation_accuracy_norm",
+          "citation_validity",
+          "unsupported_claim_rate",
+          "contradiction_rate",
+          "complexity_correctness_norm",
+          "code_correctness_norm"
+        ],
+        "source_artifacts": [
+          "evaluation/artifacts/stage04/generation/answer_metrics_summary.csv"
+        ],
+        "description": "Controlled Agent Generation 10-metric summary across all 8 RAG combos and NO_RAG (N/A preserved).",
+        "sha256": "c6984d6d5e65cc5981f37f85662e12e412e7e4d00e0120d41c4d11009392c459"
+      },
+      {
+        "table_id": "table_06_ablation_and_stats",
+        "path": "evaluation/artifacts/stage05/tables/table_06_ablation_and_stats.csv",
+        "rows": 20,
+        "columns": [
+          "comparison_id",
+          "category",
+          "combo_new",
+          "combo_base",
+          "k",
+          "metric",
+          "mean_new",
+          "mean_base",
+          "abs_improvement",
+          "rel_improvement",
+          "ci_95_low",
+          "ci_95_high",
+          "p_value_holm",
+          "significant_holm_005"
+        ],
+        "source_artifacts": [
+          "evaluation/artifacts/stage04/ablation/ablation_results.csv"
+        ],
+        "description": "Paired component ablation differences with 95% bootstrap CIs and Holm-adjusted p-values at K=5 (nDCG) and K=15 (EvRecall).",
+        "sha256": "c85cd97af03ed06451847d3818adf59f8b0e62570b3264ac60f36d533dd4bfed"
+      },
+      {
+        "table_id": "table_07_sensitivity_summary",
+        "path": "evaluation/artifacts/stage05/tables/table_07_sensitivity_summary.csv",
+        "rows": 16,
+        "columns": [
+          "sensitivity_experiment",
+          "combo_id",
+          "profile_id",
+          "method",
+          "top_k",
+          "candidate_top_k",
+          "queries",
+          "precision_at_5",
+          "pooled_recall_at_5",
+          "mrr_at_5",
+          "ndcg_at_5",
+          "evidence_recall_at_5",
+          "complete_evidence_rate_at_5",
+          "judged_at_5",
+          "total_unjudged_slots",
+          "mean_latency_ms",
+          "p50_latency_ms",
+          "p95_latency_ms"
+        ],
+        "source_artifacts": [
+          "evaluation/artifacts/stage04/sensitivity/candidate_pool_sensitivity.csv",
+          "evaluation/artifacts/stage04/sensitivity/context_budget_sensitivity.csv"
+        ],
+        "description": "Single-pass Candidate Pool sensitivity (pool=10,30,60,120, K=5). Context budget sensitivity preserved in Stage 04 CSV.",
+        "sha256": "cdb51a89088965110478497ed8962987fd6a80e4fa34e3b9fd9034de6873457a"
+      },
+      {
+        "table_id": "table_08_robustness_and_study",
+        "path": "evaluation/artifacts/stage05/tables/table_08_robustness_and_study.csv",
+        "rows": 6,
+        "columns": [
+          "category",
+          "n_cases",
+          "correct_handling_rate",
+          "abstention_rate",
+          "abstention_appropriateness",
+          "unsupported_answer_rate",
+          "injection_resistance_rate",
+          "mean_ev_recall_degradation",
+          "mean_answer_quality_norm",
+          "runtime_failure_rate"
+        ],
+        "source_artifacts": [
+          "evaluation/artifacts/stage04/robustness/robustness_metrics.csv",
+          "evaluation/artifacts/stage04/study_features/study_features_summary.csv"
+        ],
+        "description": "Robustness metrics across 6 categories (n=20 independent cases); Study Features separated in Stage 04 summary & functional_test_results.json.",
+        "sha256": "37102948647a5650c25da6fda4a289516bd6dd6867669b1a3d3b02ff0a95628f"
+      },
+      {
+        "table_id": "table_09_pareto_and_recommendations",
+        "path": "evaluation/artifacts/stage05/tables/table_09_pareto_and_recommendations.csv",
+        "rows": 16,
+        "columns": [
+          "combo_id",
+          "profile_id",
+          "method",
+          "k",
+          "compatibility_note",
+          "ndcg_at_k",
+          "precision_at_k",
+          "pooled_recall_at_k",
+          "mrr_at_k",
+          "evidence_recall_at_k",
+          "complete_evidence_rate_at_k",
+          "answer_correctness_norm",
+          "mean_latency_ms",
+          "p50_latency_ms",
+          "p95_latency_ms",
+          "retrieved_emb_tokens_mean",
+          "peak_gpu_allocated_max_mb",
+          "process_rss_mean_mb",
+          "is_pareto_optimal",
+          "dominated_by"
+        ],
+        "source_artifacts": [
+          "evaluation/artifacts/stage04/tradeoff/pareto_frontier.csv"
+        ],
+        "description": "Quality-Latency-Resource Pareto frontier at K=5 and K=15 under matched Main Warm Latency (pool=120).",
+        "sha256": "fa61ce9c558cc77cdd8a45ffb9d9994e1d8b64c304c7bc8f82248f747b4c9e88"
+      },
+      {
+        "table_id": "table_10_stage04_ac_reconciliation",
+        "path": "evaluation/artifacts/stage05/tables/table_10_stage04_ac_reconciliation.csv",
+        "rows": 6,
+        "columns": [
+          "ac_id",
+          "canonical_stage04_title",
+          "checkpoint_summary_short_label",
+          "status",
+          "reconciled_meaning"
+        ],
+        "source_artifacts": [
+          "STAGE_04_COMPREHENSIVE_EVALUATION_REPORT.md"
+        ],
+        "description": "Explicit reconciliation between canonical Stage 04 AC-01..AC-06 definitions and checkpoint short labels (5 PASS / 1 PARTIAL preserved).",
+        "sha256": "468a6b0bbf622c4feb34fb6f1c1512590995066ad68624d75d90667b9e78afe3"
+      }
+    ],
+    "figure_manifest": "evaluation/artifacts/stage05/figure_manifest.json",
+    "configuration_recommendations": "evaluation/artifacts/stage05/configuration_recommendations.json",
+    "chart_validation": "evaluation/artifacts/stage05/chart_validation.json",
+    "final_report": "STAGE_05_FINAL_EVALUATION_REPORT.md"
+  },
+  "validation_summary": {
+    "logical_figures_expected": 28,
+    "logical_figures_found": 28,
+    "png_passed": 28,
+    "svg_passed": 28,
+    "data_contract_1_to_28_complete": true,
+    "groups_A_to_K_complete": true,
+    "missing_source_artifacts": [],
+    "no_rag_na_preserved": true,
+    "input_integrity_ok": true,
+    "report_validation_ok": true,
+    "report_exists": true
+  }
+}

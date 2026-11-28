@@ -10,6 +10,7 @@ from uuid import uuid4
 from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
 from fastapi.concurrency import run_in_threadpool
 
+from app.core.config import settings
 from app.orchestration.ingestion_flow import InvalidDocumentError, process_and_index_document, upload_document_id
 from app.orchestration.study_sessions import SESSION_CORPUS, resolve_scope
 from app.retrieval.indexing import scope_mutation_lock
@@ -18,8 +19,18 @@ from app.retrieval.vector_store import scope_filter
 logger = logging.getLogger("app.api.routes.upload")
 
 router = APIRouter()
-UPLOAD_DIR = Path(__file__).resolve().parents[4] / "data" / "runtime" / "uploads"
+_DEFAULT_UPLOAD_DIR = settings.upload_dir
+UPLOAD_DIR = _DEFAULT_UPLOAD_DIR
 MAX_FILE_SIZE = 15 * 1024 * 1024  # 15 MB
+
+
+def resolve_upload_dir(override: Path | None = None) -> Path:
+    """Single source of truth for the legacy upload root, honoring test monkeypatches."""
+    if override is not None and override != _DEFAULT_UPLOAD_DIR:
+        return Path(override)
+    if UPLOAD_DIR != _DEFAULT_UPLOAD_DIR:
+        return Path(UPLOAD_DIR)
+    return settings.upload_dir
 
 
 
@@ -97,7 +108,7 @@ def _save_and_index(content, filename, suffix, client, config, corpus_id, worksp
     with scope_mutation_lock(config.collection, corpus_id, workspace_id):
         if registry is not None:
             registry.ensure_active(workspace_id)
-        root = registry.directory(workspace_id) / "uploads" if registry is not None else UPLOAD_DIR
+        root = registry.directory(workspace_id) / "uploads" if registry is not None else resolve_upload_dir()
         path = _upload_path(root, corpus_id, workspace_id, document_id, revision, suffix)
         previous = _prior_uploads(client, config, corpus_id, workspace_id, filename, document_id)
         path.parent.mkdir(parents=True, exist_ok=True)

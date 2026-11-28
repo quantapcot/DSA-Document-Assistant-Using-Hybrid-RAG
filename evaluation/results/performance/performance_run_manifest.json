@@ -1,0 +1,101 @@
+{
+  "timestamp_utc": "2026-11-28T15:45:21.819036+00:00",
+  "warm_runtime_sec": 18308.42,
+  "hardware": {
+    "cpu_physical": 14,
+    "cpu_logical": 20,
+    "ram_gb": 15.71,
+    "gpu": "NVIDIA GeForce RTX 5060 Laptop GPU",
+    "cuda_version": "12.8"
+  },
+  "warm_protocol": {
+    "queries": 40,
+    "combinations": 8,
+    "ks": [
+      1,
+      3,
+      5,
+      10,
+      15,
+      20,
+      30,
+      45,
+      60
+    ],
+    "candidate_top_k": 120,
+    "repeats": 5,
+    "seed": 42,
+    "warmup_calls": 16,
+    "total_measured_samples": 14400,
+    "bm25_rebuilds_during_measure": 115,
+    "resource_snapshots": [
+      {
+        "phase": "warm_repeat_1",
+        "completed_calls": 2880,
+        "elapsed_sec": 3616.98,
+        "process_rss_mb": 993.37,
+        "peak_gpu_allocated_mb": 2686.82,
+        "peak_gpu_reserved_mb": 2790.0,
+        "bm25_rebuilds_during_measure": 22,
+        "cuda_oom_count": 0
+      },
+      {
+        "phase": "warm_repeat_2",
+        "completed_calls": 5760,
+        "elapsed_sec": 7035.95,
+        "process_rss_mb": 965.22,
+        "peak_gpu_allocated_mb": 2686.82,
+        "peak_gpu_reserved_mb": 2790.0,
+        "bm25_rebuilds_during_measure": 44,
+        "cuda_oom_count": 0
+      },
+      {
+        "phase": "warm_repeat_3",
+        "completed_calls": 8640,
+        "elapsed_sec": 11225.67,
+        "process_rss_mb": 965.71,
+        "peak_gpu_allocated_mb": 2686.82,
+        "peak_gpu_reserved_mb": 2790.0,
+        "bm25_rebuilds_during_measure": 70,
+        "cuda_oom_count": 0
+      },
+      {
+        "phase": "warm_repeat_4",
+        "completed_calls": 11520,
+        "elapsed_sec": 14807.59,
+        "process_rss_mb": 971.62,
+        "peak_gpu_allocated_mb": 2686.82,
+        "peak_gpu_reserved_mb": 2790.0,
+        "bm25_rebuilds_during_measure": 93,
+        "cuda_oom_count": 0
+      },
+      {
+        "phase": "warm_repeat_5",
+        "completed_calls": 14400,
+        "elapsed_sec": 18253.06,
+        "process_rss_mb": 966.11,
+        "peak_gpu_allocated_mb": 2686.82,
+        "peak_gpu_reserved_mb": 2790.0,
+        "bm25_rebuilds_during_measure": 115,
+        "cuda_oom_count": 0
+      }
+    ]
+  },
+  "production_profile": {
+    "top_k": 5,
+    "candidate_top_k": 10,
+    "repeats": 5,
+    "samples": 1600,
+    "note": "Evaluation-index experiment, NOT production end-to-end API"
+  },
+  "cold_start": {
+    "trials_per_combo": 3,
+    "total_trials": 24,
+    "os_disk_cache_cleared": false
+  },
+  "limitations": [
+    "OS disk cache was not flushed between cold-start subprocess trials.",
+    "Thermal throttling and OS background services were not externally locked.",
+    "torch.cuda.max_memory_allocated measures PyTorch tensor allocations, not full CUDA driver context overhead."
+  ]
+}

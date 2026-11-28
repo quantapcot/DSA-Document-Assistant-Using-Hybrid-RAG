@@ -1,0 +1,142 @@
+{
+  "production_llm_api_status": "UNAVAILABLE_NO_GROQ_API_KEY",
+  "production_end_to_end_api_status": "BLOCKED_NO_GROQ_KEY_AND_EMPTY_PROD_QDRANT",
+  "contract_checks_total": 11,
+  "contract_checks_passed": 11,
+  "checks": [
+    {
+      "check": "chat_query_planner_intents",
+      "type": "real_module_contract",
+      "passed": true,
+      "detail": "comp=comparison, over=overview, expl=explanation"
+    },
+    {
+      "check": "safety_guardrail_module_audit",
+      "type": "architecture_audit",
+      "passed": true,
+      "detail": "backend/app/safety/guardrail.py is 0B scaffold; runtime safety currently relies on abstention.py + prompt rule #7"
+    },
+    {
+      "check": "chat_empty_workspace_abstention",
+      "type": "real_module_contract",
+      "passed": true,
+      "mode": "abstained"
+    },
+    {
+      "check": "quiz_empty_workspace_abstention",
+      "type": "real_module_contract",
+      "passed": true,
+      "mode": "abstained"
+    },
+    {
+      "check": "roadmap_empty_workspace_abstention",
+      "type": "real_module_contract",
+      "passed": true,
+      "mode": "abstained"
+    },
+    {
+      "check": "low_score_abstention_triggered",
+      "type": "real_module_contract",
+      "passed": true
+    },
+    {
+      "check": "study_planner_dag_1",
+      "type": "real_module_contract",
+      "passed": true,
+      "topics": 30
+    },
+    {
+      "check": "study_planner_dag_2",
+      "type": "real_module_contract",
+      "passed": true,
+      "topics": 179
+    },
+    {
+      "check": "study_planner_dag_3",
+      "type": "real_module_contract",
+      "passed": true,
+      "topics": 151
+    },
+    {
+      "check": "study_planner_dag_4",
+      "type": "real_module_contract",
+      "passed": true,
+      "topics": 18
+    },
+    {
+      "check": "citation_builder_contract",
+      "type": "real_module_contract",
+      "passed": true
+    }
+  ],
+  "deterministic_study_planner_results": [
+    {
+      "topic": "Cây nhị phân tìm kiếm",
+      "catalog_topics": 30,
+      "passages_selected": 31,
+      "dependency_edges": 0,
+      "topological_order_valid": true,
+      "ordered_titles": [
+        "Trees & Binary Search Trees (BST)",
+        "Binary Search Tree",
+        "Phase 3: Code Practice (C++ & Python)",
+        "Binary Search Tree (Node & Traversal)",
+        "Cây (Trees) & Cây tìm kiếm nhị phân (BST)",
+        "Giai đoạn 3: Thực hành Code (C++ & Python)",
+        "Cây tìm kiếm nhị phân (BST Node & Duyệt cây)",
+        "Lecture 6: Binary Trees I"
+      ]
+    },
+    {
+      "topic": "Đồ thị",
+      "catalog_topics": 179,
+      "passages_selected": 210,
+      "dependency_edges": 6,
+      "topological_order_valid": true,
+      "ordered_titles": [
+        "Stacks & Queues",
+        "BFS",
+        "Đồ thị",
+        "DFS",
+        "Ngăn xếp (Stack) & Hàng đợi (Queue)",
+        "lve an Algorithms Problem",
+        "ree (L06-L07)",
+        "Design your own (recursive) algorithm"
+      ]
+    },
+    {
+      "topic": "Sắp xếp",
+      "catalog_topics": 151,
+      "passages_selected": 168,
+      "dependency_edges": 3,
+      "topological_order_valid": true,
+      "ordered_titles": [
+        "Các khái niệm cơ bản",
+        "Các thuật toán tìm kiếm cơ bản",
+        "Sắp xếp",
+        "lve an Algorithms Problem",
+        "Insertion Sort",
+        "Selection Sort",
+        "Merge sort",
+        "Counting Sort"
+      ]
+    },
+    {
+      "topic": "Quy hoạch động",
+      "catalog_topics": 18,
+      "passages_selected": 23,
+      "dependency_edges": 0,
+      "topological_order_valid": true,
+      "ordered_titles": [
+        "Quy hoạch động",
+        "Design your own (recursive) algorithm",
+        "Solve hard computational problems (with non-constant-sized inputs)",
+        "Lecture 20: Course Review",
+        "Subproblem deﬁnition",
+        "Topological order",
+        "- Constant-sized program to solve arbitrary input",
+        "Lecture 15: Recursive Algorithms"
+      ]
+    }
+  ]
+}

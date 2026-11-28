@@ -1,0 +1,369 @@
+{
+  "round": 1,
+  "prompt_version": "stage03_llm_judge_v1",
+  "calibration_notes": "",
+  "seed": 202603,
+  "pilot_target_count": 160,
+  "primary_valid_count": 160,
+  "secondary_valid_count": 160,
+  "primary_retries": 0,
+  "primary_invalids": 0,
+  "secondary_retries": 0,
+  "secondary_invalids": 0,
+  "synthetic_controls": {
+    "flash": {
+      "exact_match": 6,
+      "total": 6,
+      "injection_blocked": true,
+      "grades": {
+        "SYN_01": 2,
+        "SYN_02": 2,
+        "SYN_03": 1,
+        "SYN_04": 0,
+        "SYN_05": 0,
+        "SYN_06": 0
+      }
+    },
+    "pro": {
+      "exact_match": 6,
+      "total": 6,
+      "injection_blocked": true,
+      "grades": {
+        "SYN_01": 2,
+        "SYN_02": 2,
+        "SYN_03": 1,
+        "SYN_04": 0,
+        "SYN_05": 0,
+        "SYN_06": 0
+      }
+    }
+  },
+  "overall_metrics": {
+    "count": 160,
+    "exact_agreement_count": 143,
+    "exact_agreement_pct": 89.38,
+    "disagreement_count": 17,
+    "disagreement_rate_pct": 10.62,
+    "severe_0_vs_2_conflicts": 0,
+    "linear_weighted_kappa": 0.8885,
+    "quadratic_weighted_kappa": 0.9334,
+    "confusion_matrix": [
+      [
+        54,
+        0,
+        0
+      ],
+      [
+        2,
+        22,
+        0
+      ],
+      [
+        0,
+        15,
+        67
+      ]
+    ],
+    "per_grade_primary_disagreement": {
+      "0": {
+        "total": 54,
+        "disagreed": 0,
+        "disagreement_rate_pct": 0.0
+      },
+      "1": {
+        "total": 24,
+        "disagreed": 2,
+        "disagreement_rate_pct": 8.33
+      },
+      "2": {
+        "total": 82,
+        "disagreed": 15,
+        "disagreement_rate_pct": 18.29
+      }
+    }
+  },
+  "profile_a_metrics": {
+    "count": 80,
+    "exact_agreement_count": 72,
+    "exact_agreement_pct": 90.0,
+    "disagreement_count": 8,
+    "disagreement_rate_pct": 10.0,
+    "severe_0_vs_2_conflicts": 0,
+    "linear_weighted_kappa": 0.874,
+    "quadratic_weighted_kappa": 0.9227,
+    "confusion_matrix": [
+      [
+        16,
+        0,
+        0
+      ],
+      [
+        0,
+        10,
+        0
+      ],
+      [
+        0,
+        8,
+        46
+      ]
+    ],
+    "per_grade_primary_disagreement": {
+      "0": {
+        "total": 16,
+        "disagreed": 0,
+        "disagreement_rate_pct": 0.0
+      },
+      "1": {
+        "total": 10,
+        "disagreed": 0,
+        "disagreement_rate_pct": 0.0
+      },
+      "2": {
+        "total": 54,
+        "disagreed": 8,
+        "disagreement_rate_pct": 14.81
+      }
+    }
+  },
+  "profile_b_metrics": {
+    "count": 80,
+    "exact_agreement_count": 71,
+    "exact_agreement_pct": 88.75,
+    "disagreement_count": 9,
+    "disagreement_rate_pct": 11.25,
+    "severe_0_vs_2_conflicts": 0,
+    "linear_weighted_kappa": 0.8789,
+    "quadratic_weighted_kappa": 0.9264,
+    "confusion_matrix": [
+      [
+        38,
+        0,
+        0
+      ],
+      [
+        2,
+        12,
+        0
+      ],
+      [
+        0,
+        7,
+        21
+      ]
+    ],
+    "per_grade_primary_disagreement": {
+      "0": {
+        "total": 38,
+        "disagreed": 0,
+        "disagreement_rate_pct": 0.0
+      },
+      "1": {
+        "total": 14,
+        "disagreed": 2,
+        "disagreement_rate_pct": 14.29
+      },
+      "2": {
+        "total": 28,
+        "disagreed": 7,
+        "disagreement_rate_pct": 25.0
+      }
+    }
+  },
+  "disagreements": [
+    {
+      "annotation_id": "A_Q007_0009",
+      "query_id": "Q007",
+      "profile_id": "recursive_512_100",
+      "primary_grade": 2,
+      "secondary_grade": 1,
+      "severe": false,
+      "primary_reason": "Provides the exact DEQUEUE pseudocode handling the single-element case, else branch, and Dispose(p).",
+      "secondary_reason": "Contains DEQUEUE's single-element conditional, else branch, and Dispose(p), but omits context naming DEQUEUE or the single-element case.",
+      "chunk_preview": "if (F = R) and (F <> Null) then F:= R:= Null;\n\n                2. else F:= LINK(p); 3. Call Dispose(p) ;\n\nEnd\n\nĐỗBích Diệp - Khoa CNTT - ĐHBK Hà\nnội"
+    },
+    {
+      "annotation_id": "A_Q009_0081",
+      "query_id": "Q009",
+      "profile_id": "recursive_512_100",
+      "primary_grade": 2,
+      "secondary_grade": 1,
+      "severe": false,
+      "primary_reason": "Directly gives insert O(1) amortized and delete_max O(n) complexities for an unordered dynamic array PQ.",
+      "secondary_reason": "Covers unordered dynamic array insert O(1) and delete_max O(n) complexities, but omits Priority Queue context and Selection Sort.",
+      "chunk_preview": "Store elements in an unordered dynamic array\n\n   - insert(x): append x to end in amortized O(1) time - delete max(): ﬁnd max in O(n), swap max to the end and re"
+    },
+    {
+      "annotation_id": "A_Q016_0052",
+      "query_id": "Q016",
+      "profile_id": "recursive_512_100",
+      "primary_grade": 2,
+      "secondary_grade": 1,
+      "severe": false,
+      "primary_reason": "Directly specifies the double rotation needed to rebalance node B when skew(F) is -1.",
+      "secondary_reason": "Covers Case 3 right-then-left rotation for skew(F)=-1, but omits skew(B)=2 and Case 1/2 left rotation required by composite KU3.",
+      "chunk_preview": "ht(<A>). Then height(<G>) = h + 1 and height(<D>) is h + 1 in\n\nCase 1, h in Case 2\n∗ After rotation: · the skew of <B> is either 1 in Case 1 or 0 in Case 2, so "
+    },
+    {
+      "annotation_id": "A_Q017_0048",
+      "query_id": "Q017",
+      "profile_id": "recursive_512_100",
+      "primary_grade": 2,
+      "secondary_grade": 1,
+      "severe": false,
+      "primary_reason": "Directly states the symmetry, element sum, and row/column degree properties of an undirected adjacency matrix.",
+      "secondary_reason": "Lists all undirected adjacency matrix properties in KU1, but cuts off before stating any directed adjacency matrix properties.",
+      "chunk_preview": "lOMoARcPSD|62814109\n\nTRƯỜNG ĐẠI HỌC CÔNG NGHỆ THÔNG TIN - ĐHQG-HCM\nBAN HỌC TẬP CÔNG NGHỆ PHẦN MỀM\n\n- A[i][j] = 1 → Có liên kết giữa 2 đỉnh\n- A[i][j] = 0 → Không"
+    },
+    {
+      "annotation_id": "A_Q018_0109",
+      "query_id": "Q018",
+      "profile_id": "recursive_512_100",
+      "primary_grade": 2,
+      "secondary_grade": 1,
+      "severe": false,
+      "primary_reason": "Directly defines tin[v] as DFS entry time and introduces the auxiliary array fup[v].",
+      "secondary_reason": "Defines DFS entry time tin[v] and introduces fup[v], but cuts off before giving the fup[v] minimum recurrence.",
+      "chunk_preview": ".\n\nPhương pháp hiệu quả nhận biết điều kiện trên được thực hiện dựa trên thời điểm\nvào của mỗi đỉnh. Gọi tin[v] - thời điểm vào đỉnh v khi duyệt theo chiều sâu."
+    },
+    {
+      "annotation_id": "A_Q020_0028",
+      "query_id": "Q020",
+      "profile_id": "recursive_512_100",
+      "primary_grade": 2,
+      "secondary_grade": 1,
+      "severe": false,
+      "primary_reason": "Shows the exact stale-entry check if (cur_d > d[v]) continue and pushes updated distances into q.",
+      "secondary_reason": "Shows the cur_d > d[v] check and pushing negated updated distances (-d[to]), indirectly supporting KU1 and KU2 without prose explanations.",
+      "chunk_preview": "q.pop();\n            if (cur_d > d[v]) continue;\n            for (size_t j=0; j<g[v].size(); ++j) { int to = g[v][j].first,\n                len = g[v][j].second"
+    },
+    {
+      "annotation_id": "A_Q020_0001",
+      "query_id": "Q020",
+      "profile_id": "recursive_512_100",
+      "primary_grade": 2,
+      "secondary_grade": 1,
+      "severe": false,
+      "primary_reason": "Shows the Dijkstra priority_queue setup, negative distance extraction, and stale-state continue check.",
+      "secondary_reason": "Provides the Dijkstra priority_queue loop with -q.top().first and cur_d > d[v], giving code context without explaining Max-Heap or stale entries.",
+      "chunk_preview": "; x.first=b;g[a].push_back(x);\n      }\n    int s ;\n    fi>>s;\n    vector<int> d (n+1, INF), p (n+1); d[s] = 0;\n    priority_queue < pair<int,int> > q;\n    q.pus"
+    },
+    {
+      "annotation_id": "A_Q031_0088",
+      "query_id": "Q031",
+      "profile_id": "recursive_512_100",
+      "primary_grade": 2,
+      "secondary_grade": 1,
+      "severe": false,
+      "primary_reason": "Explains that Θ(n) items are inserted before reallocation and Θ(n) operations take Θ(n) total time.",
+      "secondary_reason": "Gives Θ(n) insertions and Θ(n) sequence cost for reallocation, but omits dynamic array and extra-space allocation.",
+      "chunk_preview": "ce at end to ﬁll ratio ri (e.g., 1/2)\n\n- Will have to insert Θ(n) items before the next reallocation - A single operation can take Θ(n) time for reallocation\n\n-"
+    },
+    {
+      "annotation_id": "B_Q006_0065",
+      "query_id": "Q006",
+      "profile_id": "structure_adaptive",
+      "primary_grade": 2,
+      "secondary_grade": 1,
+      "severe": false,
+      "primary_reason": "Directly lists the four basic Deque operations required by KU2.",
+      "secondary_reason": "Lists the four operation names from KU2, but lacks context identifying them as Deque's basic operations.",
+      "chunk_preview": "                - insertFirst(o)\n                - insertLast(o) :\n                - removeFirst()\n                - removeLast()"
+    },
+    {
+      "annotation_id": "B_Q016_0010",
+      "query_id": "Q016",
+      "profile_id": "structure_adaptive",
+      "primary_grade": 2,
+      "secondary_grade": 1,
+      "severe": false,
+      "primary_reason": "Directly states the recurrence relation and exponential lower bound for minimum nodes F(h) in an AVL tree.",
+      "secondary_reason": "States the AVL node-count recurrence and inequality from KU2, but omits what F(h) represents and the O(log n) height conclusion.",
+      "chunk_preview": "F (h) ≥ 2h/2\nF (0) = 1, F (1) = 2, F (h) = 1+F (h−1)+F (h−2) ≥ 2F (h−2) =⇒"
+    },
+    {
+      "annotation_id": "B_Q017_0088",
+      "query_id": "Q017",
+      "profile_id": "structure_adaptive",
+      "primary_grade": 1,
+      "secondary_grade": 0,
+      "severe": false,
+      "primary_reason": "Provides only introductory background defining 0/1 entries in an adjacency matrix without stating its properties.",
+      "secondary_reason": "Contains only the adjacency matrix heading and basic 0/1 entry definition without matrix properties or adjacency list advantages.",
+      "chunk_preview": "8.3.1. Ma trận kề (Adjacency matrix)\nphần tử của ma trận có giá trị 0 hoặc 1 thể hiện mối liên kết giữa các đỉnh. Đồ thị vô hướng: Xét ma trận kề A là biểu diễn"
+    },
+    {
+      "annotation_id": "B_Q019_0038",
+      "query_id": "Q019",
+      "profile_id": "structure_adaptive",
+      "primary_grade": 1,
+      "secondary_grade": 0,
+      "severe": false,
+      "primary_reason": "Contains only the BACK edge labeling statement without showing the branching condition.",
+      "secondary_reason": "Contains only an isolated setLabel(e, BACK) statement and author footer without any branching condition or DISCOVERY labeling.",
+      "chunk_preview": "                setLabel(e, BACK)\nĐỗBích Diệp - Khoa CNTT"
+    },
+    {
+      "annotation_id": "B_Q020_0026",
+      "query_id": "Q020",
+      "profile_id": "structure_adaptive",
+      "primary_grade": 2,
+      "secondary_grade": 1,
+      "severe": false,
+      "primary_reason": "Directly states that C++ priority_queue defaults to a Max-Heap.",
+      "secondary_reason": "States C++ defaults to Max-Heap as needed for KU1, but omits priority_queue, negative-distance trick, and Dijkstra context.",
+      "chunk_preview": "// C++ mặc định là Max-Heap. Để dùng Min-Heap cần cấu hình:"
+    },
+    {
+      "annotation_id": "B_Q021_0066",
+      "query_id": "Q021",
+      "profile_id": "structure_adaptive",
+      "primary_grade": 2,
+      "secondary_grade": 1,
+      "severe": false,
+      "primary_reason": "Directly provides the handshaking lemma bound and resulting Theta(|V| + |E|) graph storage space.",
+      "secondary_reason": "States the handshaking lemma bound and Theta(|V| + |E|) space, but omits adjacency lists and Theta(|V|) Adj size.",
+      "chunk_preview": "            u∈V deg(u) ≤ 2|E| by handshaking lemma, graph storable in Θ(|V | + |E|) space"
+    },
+    {
+      "annotation_id": "B_Q024_0049",
+      "query_id": "Q024",
+      "profile_id": "structure_adaptive",
+      "primary_grade": 2,
+      "secondary_grade": 1,
+      "severe": false,
+      "primary_reason": "Directly states that binary search is used for searching on a sorted array.",
+      "secondary_reason": "States searching on a sorted array, partially supporting KU1, but omits the algorithm name and header context.",
+      "chunk_preview": "- Sửdụng cho việc tìm kiếm trên mảng đã được sắp xếp\n- Mô tả"
+    },
+    {
+      "annotation_id": "B_Q028_0071",
+      "query_id": "Q028",
+      "profile_id": "structure_adaptive",
+      "primary_grade": 2,
+      "secondary_grade": 1,
+      "severe": false,
+      "primary_reason": "Directly states that decision tree height is lower bounded by log(n!) = Omega(n log n).",
+      "secondary_reason": "Chunk states the height bound log(n!) >= Omega(n log n), partially supporting KU2 without Omega(log L) or decision-tree context.",
+      "chunk_preview": "      - Thus height lower bounded by log(n!) ≥ log((n/2)n/2) = Ω(n log n)"
+    },
+    {
+      "annotation_id": "B_Q036_0094",
+      "query_id": "Q036",
+      "profile_id": "structure_adaptive",
+      "primary_grade": 2,
+      "secondary_grade": 1,
+      "severe": false,
+      "primary_reason": "Directly states that m = Omega(n) yields load factor O(1) and O(1) expected chain length.",
+      "secondary_reason": "States m = Omega(n) makes load factor O(1) in expectation, incompletely supporting KU3 without stating chain length or Theta(n) space.",
+      "chunk_preview": "   - Since m = Ω(n), load factor α = n/m = O(1), so O(1) in expectation!"
+    }
+  ],
+  "targets_met": {
+    "valid_100pct": true,
+    "exact_agreement_ge_85": true,
+    "weighted_kappa_ge_075": true,
+    "zero_severe_0_vs_2": true
+  },
+  "runtime_sec": 735.94
+}

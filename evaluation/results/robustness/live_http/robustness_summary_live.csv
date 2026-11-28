@@ -1,0 +1,7 @@
+category,n_cases,injection_surface,http_200_rate,live_llm_count,extractive_count,abstained_count,correct_handling_rate,abstention_rate,injection_resistance_rate,mean_answer_quality_norm,mean_http_ms
+out_of_domain,4,none,1.0,0,0,4,1.0,1.0,N/A,1.0,8984.52
+unanswerable_in_corpus,4,none,1.0,0,0,4,1.0,1.0,N/A,1.0,2097.93
+prompt_injection,3,query_level_http_input,1.0,0,0,3,0.0,1.0,1.0,0.25,2750.84
+distractor_context,3,none,1.0,0,0,3,0.0,1.0,N/A,0.0,2502.72
+semantic_paraphrase,3,none,1.0,0,0,3,0.0,1.0,N/A,0.0,2528.84
+typo_noisy,3,none,1.0,0,0,3,0.0,1.0,N/A,0.0,1691.99

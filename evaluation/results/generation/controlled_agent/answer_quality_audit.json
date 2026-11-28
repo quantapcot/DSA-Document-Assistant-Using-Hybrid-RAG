@@ -1,0 +1,62 @@
+{
+  "experiment_type": "agent_based_controlled_answer_evaluation",
+  "human_validated": false,
+  "self_preference_bias_note": "Generator uses antigravity_agent_flash; primary judge uses antigravity_agent_pro (distinct tier, same Agent ecosystem). Potential family-level self-preference bias is explicitly acknowledged.",
+  "primary_judge_model": "antigravity_agent_pro",
+  "secondary_audit_model": "antigravity_agent_flash",
+  "synthetic_controls_passed": true,
+  "synthetic_controls_detail": {
+    "SYN_GOOD": {
+      "answer_correctness_raw": 4,
+      "answer_id": "SYN_GOOD",
+      "answer_relevancy_raw": 4,
+      "citation_accuracy_raw": 4,
+      "code_correctness_raw": -1,
+      "complexity_correctness_raw": -1,
+      "confidence": "high",
+      "contradiction_rate": 0,
+      "covered_ku_ids": [
+        "KU1"
+      ],
+      "faithfulness_raw": 4,
+      "judge_reason": "Directly and concisely answers the question by stating the sorted array precondition (KU1), matching REF. Fully grounded in CONTEXT [1] with an accurate [1] citation and no unsupported claims, contradictions, complexity claims, or code.",
+      "unsupported_claim_rate": 0
+    },
+    "SYN_HALLUC": {
+      "answer_correctness_raw": 2,
+      "answer_id": "SYN_HALLUC",
+      "answer_relevancy_raw": 2,
+      "citation_accuracy_raw": 1,
+      "code_correctness_raw": -1,
+      "complexity_correctness_raw": 0,
+      "confidence": "high",
+      "contradiction_rate": 0.33,
+      "covered_ku_ids": [
+        "KU1"
+      ],
+      "faithfulness_raw": 1,
+      "judge_reason": "Correctly states the sorted array precondition (KU1) with valid citation [1], but appends two fabricated claims: using a Fibonacci heap and O(1) lookup with non-existent citation [9]. Only 1 of 3 claims is supported (unsupported_claim_rate=0.67), and the O(1) lookup claim directly contradicts CONTEXT [1]'s O(log n) worst-case time (contradiction_rate=0.33, complexity_correctness_raw=0). No code present.",
+      "unsupported_claim_rate": 0.67
+    },
+    "SYN_WRONG": {
+      "answer_correctness_raw": 0,
+      "answer_id": "SYN_WRONG",
+      "answer_relevancy_raw": 1,
+      "citation_accuracy_raw": -1,
+      "code_correctness_raw": -1,
+      "complexity_correctness_raw": 0,
+      "confidence": "high",
+      "contradiction_rate": 1,
+      "covered_ku_ids": [],
+      "faithfulness_raw": 0,
+      "judge_reason": "Completely incorrect and unfaithful: claims Binary Search works on any unsorted linked list (missing KU1 and contradicting REF and CONTEXT [1]'s sorted array requirement) and claims O(1) time (contradicting CONTEXT [1]'s O(log n) worst-case time; complexity_correctness_raw=0). All claims are unsupported and contradictory (1.0), and no citations or code are present (citation_accuracy_raw=-1, code_correctness_raw=-1).",
+      "unsupported_claim_rate": 1
+    }
+  },
+  "total_judged_answers": 400,
+  "main_judged_answers": 360,
+  "secondary_audit_sample_size": 35,
+  "correctness_within_1pt_agreement_pct": 100.0,
+  "faithfulness_within_1pt_agreement_pct": 96.77,
+  "runtime_sec": 332.29
+}

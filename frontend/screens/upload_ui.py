@@ -26,6 +26,7 @@ def _render_upload_tab(workspace_id, corpus_id, cache_key, token) -> None:
         "Chọn file PDF hoặc DOCX tài liệu DSA",
         type=["pdf", "docx"],
         accept_multiple_files=True,
+        max_upload_size=15,
         help="Slide bài giảng, giáo trình, đề cương môn Cấu trúc Dữ liệu & Giải thuật.",
         key="uploader_file",
     )

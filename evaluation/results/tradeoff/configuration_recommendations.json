@@ -1,0 +1,19 @@
+{
+  "methodology_note": "Objective multi-criteria summary at K=5 and K=15 (candidate_top_k=120); no arbitrary composite weights. Exploratory selection on benchmark set (not held-out validated).",
+  "best_retrieval_ndcg_k5": "A4",
+  "best_evidence_recall_k5": "A4",
+  "best_retrieval_ndcg_k15": "A4",
+  "best_evidence_recall_k15": "A4",
+  "lowest_p95_latency_k5": "A1",
+  "pareto_optimal_k5": [
+    "A1",
+    "A4",
+    "B4"
+  ],
+  "pareto_optimal_k15": [
+    "A1",
+    "A4",
+    "B4"
+  ],
+  "best_answer_correctness": "A4"
+}

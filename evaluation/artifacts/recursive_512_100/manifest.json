@@ -1,0 +1,331 @@
+{
+  "manifest_schema_version": "benchmark_manifest_v1",
+  "python_version": "3.11.9",
+  "raw_file_count": 54,
+  "raw_total_bytes": 80294690,
+  "raw_aggregate_sha256_spec": "sha256_v1_relpath_colon_bytes_colon_hex_lf",
+  "raw_aggregate_sha256": "cc44dfdf537710e23e4426dc71d0d28fab8fd09ca8ca7ef180a090979f8903f6",
+  "raw_inventory": [
+    {
+      "rel_path": "docx_Files/end_docx/001_train_file_Eng.docx",
+      "bytes": 37409,
+      "sha256": "ef8a097eafd1d7de13364972a43b481a1d3943011d63369d6f541940bfd6fda2"
+    },
+    {
+      "rel_path": "docx_Files/end_docx/002_train_file_Eng.docx",
+      "bytes": 37643,
+      "sha256": "be3e493d779fad5a543d926f7e39d6710617f07505ca35a67307cbd8262a01b5"
+    },
+    {
+      "rel_path": "docx_Files/end_docx/003_train_file_Eng.docx",
+      "bytes": 37947,
+      "sha256": "dc0aac763894b42f5abb3a8dbbc0579d5a0e437bdcc18abb7195494a87e23eab"
+    },
+    {
+      "rel_path": "docx_Files/end_docx/004_train_file_Eng.docx",
+      "bytes": 37472,
+      "sha256": "17d7ffef83fb2c4e24f352e12891734dcf0ab9f44843f0744fc255df3bfce50e"
+    },
+    {
+      "rel_path": "docx_Files/end_docx/005_train_file_Eng.docx",
+      "bytes": 37313,
+      "sha256": "f0c4aa5af72fbeed62ff2a9c527bb8b864a2ddb2b8373933e2b5703f9252af55"
+    },
+    {
+      "rel_path": "docx_Files/end_docx/006_train_file_Eng.docx",
+      "bytes": 37548,
+      "sha256": "09acd076efb59955efb330545029473fe5b71c4bf64cb4cc2172e1f9bd7d9c2b"
+    },
+    {
+      "rel_path": "docx_Files/vie_docx/001_train_file_Vie.docx",
+      "bytes": 37776,
+      "sha256": "a6d7b61cbbea2985898bd25975dd2af104049c4eac9b2bcfbb635b0cde2d5f97"
+    },
+    {
+      "rel_path": "docx_Files/vie_docx/002_train_file_Vie.docx",
+      "bytes": 143483,
+      "sha256": "dcf8eb7f5307b958f7ad0747baccf815093ba062c2bfc22293d7ea856f59973d"
+    },
+    {
+      "rel_path": "docx_Files/vie_docx/003_train_file_Vie.docx",
+      "bytes": 37659,
+      "sha256": "ce961a067b48ae66a5a654bde7ec6b3e645af3dd76af09a3fe37b8cedbd3b7f0"
+    },
+    {
+      "rel_path": "docx_Files/vie_docx/004_train_file_Vie.docx",
+      "bytes": 37654,
+      "sha256": "8ad271ce9e87813724cde1551cfe76a45e774781dd6735d0642af6eede8b7781"
+    },
+    {
+      "rel_path": "docx_Files/vie_docx/005_train_file_Vie.docx",
+      "bytes": 37643,
+      "sha256": "21ecfdc4dc6904852cd4bbf8c422d9aa7b50c2bd76af7e7154116c3f27c34edc"
+    },
+    {
+      "rel_path": "docx_Files/vie_docx/006_train_file_Vie.docx",
+      "bytes": 38208,
+      "sha256": "87351248f92a74177454c0ee1ae1baf393caf5da3e6dad11da4711ee1f856eb5"
+    },
+    {
+      "rel_path": "docx_Files/vie_docx/007_train_file_Vie.docx",
+      "bytes": 37791,
+      "sha256": "38a959a41e09b157179c794774fb918d1a8e072cd15d09512b0668b5e15a951c"
+    },
+    {
+      "rel_path": "pdf_Files/eng_pdf/001_train_file_Eng.pdf",
+      "bytes": 237706,
+      "sha256": "8f2f9c1ce1b63313344c86491870e487da796de71b3312ea05b681a00a5b2de5"
+    },
+    {
+      "rel_path": "pdf_Files/eng_pdf/002_train_file_Eng.pdf",
+      "bytes": 221904,
+      "sha256": "8a4659725b3f91ace2590603449a656fdc7b66bd344f1aaaf8004f8be550cb50"
+    },
+    {
+      "rel_path": "pdf_Files/eng_pdf/003_train_file_Eng.pdf",
+      "bytes": 229595,
+      "sha256": "d1286329a3781b909c8ed481a5527a12c5f6cc3de76f303fe64d858aa1c91e40"
+    },
+    {
+      "rel_path": "pdf_Files/eng_pdf/004_train_file_Eng.pdf",
+      "bytes": 224668,
+      "sha256": "cbc9a669f00c7554520c667853f4bc95f041348fea7ce76fd8a37246c94dc564"
+    },
+    {
+      "rel_path": "pdf_Files/eng_pdf/005_train_file_Eng.pdf",
+      "bytes": 212265,
+      "sha256": "21b2a6d0fb0a7f83da874e31d2da4a445b93d02fb1dbebab7fa5a7e1415fc010"
+    },
+    {
+      "rel_path": "pdf_Files/eng_pdf/006_train_file_Eng.pdf",
+      "bytes": 242252,
+      "sha256": "1130b0c7e033a7232c591b497d8fbafca25840f61492bda9875fdecb39dc2c78"
+    },
+    {
+      "rel_path": "pdf_Files/eng_pdf/007_train_file_Eng.pdf",
+      "bytes": 260901,
+      "sha256": "db45282ccf191109d6725ebaead32ca8c8477abda594f45c1ac83bb78fee17bd"
+    },
+    {
+      "rel_path": "pdf_Files/eng_pdf/008_train_file_Eng.pdf",
+      "bytes": 236091,
+      "sha256": "e9a6cdd3ec699a757c4d2c0973cef38dfa3a2aa5da0404dcfdf910197cb92fa3"
+    },
+    {
+      "rel_path": "pdf_Files/eng_pdf/009_train_file_Eng.pdf",
+      "bytes": 213915,
+      "sha256": "8c0248bb206ffb4556cc346167e18a6fc93d41ad1bdc630ee28d30e51caba9d6"
+    },
+    {
+      "rel_path": "pdf_Files/eng_pdf/010_train_file_Eng.pdf",
+      "bytes": 226027,
+      "sha256": "b296cb999a106c0de56f2fda725162c8adf12bce06ae849d97842f87c272ad2d"
+    },
+    {
+      "rel_path": "pdf_Files/eng_pdf/011_train_file_Eng.pdf",
+      "bytes": 137043,
+      "sha256": "8f762641b3b9f470d8f9019d3b279448dfe071480a56aa7bb9dd60cd6ce55ff5"
+    },
+    {
+      "rel_path": "pdf_Files/eng_pdf/012_train_file_Eng.pdf",
+      "bytes": 299012,
+      "sha256": "be7e7b80c799bd2e521a94829ee3d5b9c9089f1f7067be21cd4170a6029976c6"
+    },
+    {
+      "rel_path": "pdf_Files/eng_pdf/013_train_file_Eng.pdf",
+      "bytes": 375389,
+      "sha256": "bc6a8d82890d24257cb5ccaa50bf76171145c5b3e532f468b546cb1fc7119e08"
+    },
+    {
+      "rel_path": "pdf_Files/eng_pdf/014_train_file_Eng.pdf",
+      "bytes": 230559,
+      "sha256": "b6e8920c63f7607ef8dcf4f67c9a8659ef6912bbca46ae30a29c2cb62916c76f"
+    },
+    {
+      "rel_path": "pdf_Files/eng_pdf/015_train_file_Eng.pdf",
+      "bytes": 261370,
+      "sha256": "cda406f918364a6f8d713a18e0ac8773975ebdb23b54a22612ae11f014092fbe"
+    },
+    {
+      "rel_path": "pdf_Files/eng_pdf/016_train_file_Eng.pdf",
+      "bytes": 252211,
+      "sha256": "4ffd3740ecac3df26f3b03651a9295a44858f3e3e90da1129d605305b1dc4a1c"
+    },
+    {
+      "rel_path": "pdf_Files/eng_pdf/017_train_file_Eng.pdf",
+      "bytes": 209376,
+      "sha256": "4da736373d0325dcadf2aaf858cbb55942f9a56bf5f9da1fa9e121efd3ab8992"
+    },
+    {
+      "rel_path": "pdf_Files/eng_pdf/018_train_file_Eng.pdf",
+      "bytes": 267578,
+      "sha256": "1ab30bcc723f73f3cedb1c49266cc3bb6d8dbfc53dcf46e1d232df6d5c76a9b5"
+    },
+    {
+      "rel_path": "pdf_Files/eng_pdf/019_train_file_Eng.pdf",
+      "bytes": 262512,
+      "sha256": "90235febb335919afa2f36666a74ab9d087dea4cab8db3b7232fa66b5c00f35f"
+    },
+    {
+      "rel_path": "pdf_Files/eng_pdf/020_train_file_Eng.pdf",
+      "bytes": 225588,
+      "sha256": "f5420032ed55791f358044569c6d191530afd30ea2e18caeaa654778468ec567"
+    },
+    {
+      "rel_path": "pdf_Files/vie_pdf/001_train_file_Vie.pdf",
+      "bytes": 15484807,
+      "sha256": "82415a9303587b6bb0a2a9cdde0f7136543be0e6c1c881089b747b076f958590"
+    },
+    {
+      "rel_path": "pdf_Files/vie_pdf/002_train_file_Vie.pdf",
+      "bytes": 7709704,
+      "sha256": "353d01e359c0b2d5605e9aab25b2f6fa406e53487907d33c7e5ed72d7209d3ef"
+    },
+    {
+      "rel_path": "pdf_Files/vie_pdf/003_train_file_Vie.pdf",
+      "bytes": 11999413,
+      "sha256": "c26e7bb657e9382f350f94018d278ce221780664ea9f9d67e1de19584d228d5e"
+    },
+    {
+      "rel_path": "pdf_Files/vie_pdf/004_train_file_Vie.pdf",
+      "bytes": 13620120,
+      "sha256": "25d2a0f0fa9265c7049432c873045ccbc52481640eb9365895fd516987faf8c4"
+    },
+    {
+      "rel_path": "pdf_Files/vie_pdf/005_train_file_Vie.pdf",
+      "bytes": 6081554,
+      "sha256": "478bab6edcc899552ee0022ed1086a2232034066535adb1267265d9461b3f262"
+    },
+    {
+      "rel_path": "pdf_Files/vie_pdf/006_train_file_Vie.pdf",
+      "bytes": 7331134,
+      "sha256": "db5a76d8f3253482b3c8d8e9fa0c197e0573ade5b2e141045ecde6543617c230"
+    },
+    {
+      "rel_path": "pdf_Files/vie_pdf/007_train_file_Vie.pdf",
+      "bytes": 404188,
+      "sha256": "d20dc8853f0c4df176cdd283f9522a741e2774ec575dd2a7efb774d39353a0cc"
+    },
+    {
+      "rel_path": "pdf_Files/vie_pdf/008_train_file_Vie.pdf",
+      "bytes": 457217,
+      "sha256": "a7cf9823780e9bcec1fcaf1f12481548a42effe4b8731e0581a1bf9f4a56164c"
+    },
+    {
+      "rel_path": "pdf_Files/vie_pdf/009_train_file_Vie.pdf",
+      "bytes": 438437,
+      "sha256": "12a017e4cbdbc91d0189aaf633b938fe9b647ea4920d655d289bf4f2475525bc"
+    },
+    {
+      "rel_path": "pdf_Files/vie_pdf/010_train_file_Vie.pdf",
+      "bytes": 346329,
+      "sha256": "8e2b79fcb64bf85b521794ef4d5594f4b9d36aa4f7c6e741c7cf2a5e45fcdbb2"
+    },
+    {
+      "rel_path": "pdf_Files/vie_pdf/011_train_file_Vie.pdf",
+      "bytes": 393399,
+      "sha256": "105f4192c06a1fbbb832744125a60909d2e5159161051f4e6a0c90f41cf1d09e"
+    },
+    {
+      "rel_path": "pdf_Files/vie_pdf/012_train_file_Vie.pdf",
+      "bytes": 400627,
+      "sha256": "cf6b10ccb3506324b0e771f50bfadab1dc275ee2ec21772391fa4432a2d06af1"
+    },
+    {
+      "rel_path": "pdf_Files/vie_pdf/013_train_file_Vie.pdf",
+      "bytes": 400564,
+      "sha256": "201d1716e04fb67af1d98c8306e599b80da7fa3e12fba4e9f44cdc7f3bc428d2"
+    },
+    {
+      "rel_path": "pdf_Files/vie_pdf/014_train_file_Vie.pdf",
+      "bytes": 474317,
+      "sha256": "d0b6784bce4a1a0f2cc2204e30298607da3271acf5e378fe0ec99675fea72f77"
+    },
+    {
+      "rel_path": "pdf_Files/vie_pdf/015_train_file_Vie.pdf",
+      "bytes": 143581,
+      "sha256": "c99b9b6fa85f1631cc4d694446b1ab3b223e04f28111f2e63d399a77080bce42"
+    },
+    {
+      "rel_path": "pdf_Files/vie_pdf/016_train_file_Vie.pdf",
+      "bytes": 271867,
+      "sha256": "c5b1d8bb147ee6389d9b98305c6fb0dcf295923a8e10be1e8933a782c7487ae7"
+    },
+    {
+      "rel_path": "pdf_Files/vie_pdf/017_train_file_Vie.pdf",
+      "bytes": 963648,
+      "sha256": "dde65a9a86bf2c88aeb0fa10a76ca8f21b0d51e317008c3add61bd0b659b48a1"
+    },
+    {
+      "rel_path": "pdf_Files/vie_pdf/018_train_file_Vie.pdf",
+      "bytes": 631943,
+      "sha256": "f2eb46065945e73f8bb7b666a22ac0f736395a4273bd0863f9cbc89765989f57"
+    },
+    {
+      "rel_path": "pdf_Files/vie_pdf/019_train_file_Vie.pdf",
+      "bytes": 623458,
+      "sha256": "9256e6817da58b36416d07321168cd8418b86d44fef59123ca311512165162c3"
+    },
+    {
+      "rel_path": "pdf_Files/vie_pdf/020_train_file_Vie.pdf",
+      "bytes": 695425,
+      "sha256": "2ce89ee68c87395c98bb82ddf96246f097cda7d29e3e079955207cbe3dfd9eb4"
+    },
+    {
+      "rel_path": "pdf_Files/vie_pdf/021_train_file_Vie.pdf",
+      "bytes": 6001450,
+      "sha256": "fac7953091b382551b759a73c21b04d3ff4575ba4bd8f974b169735ee181f15c"
+    }
+  ],
+  "preprocessor": {
+    "version": "shared_preprocessor_v1",
+    "shared_preprocessor_sha256": "e8d69b7b55f93bca58e2c708349017c5370ef3786f27fa92309ba0dce7af3fef",
+    "docx_tables_enabled": true,
+    "code_indent_guard": true,
+    "language_detector": "deterministic_rule_based_v1",
+    "canonical_fingerprint_sha256": "712f3847a6370156258f18297eabb41a657b4ac109dbe6290b9b50d9a0c6bd1d"
+  },
+  "identity_schema_versions": {
+    "source_identity": "source_id_v1",
+    "chunk_identity": "chunk_id_v1",
+    "canonical_coordinate": "canonical_nfc_page_v1"
+  },
+  "tokenizer": {
+    "embedding_model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+    "embedding_revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42",
+    "embedding_max_seq_length": 128,
+    "reranker_model": "BAAI/bge-reranker-v2-m3",
+    "reranker_revision": "953dc6f6f85a1b2dbfca4c34a2796e7dde08d41e",
+    "reranker_max_length": 512
+  },
+  "profile": {
+    "profile_id": "recursive_512_100",
+    "chunking_config": {
+      "profile_id": "recursive_512_100",
+      "unit": "characters",
+      "chunk_size": 512,
+      "chunk_overlap": 100,
+      "min_chunk_size": 100,
+      "min_words": 15,
+      "non_alpha_max_ratio": 0.8,
+      "separators": [
+        "\n\n",
+        "\n",
+        ". ",
+        " ",
+        ""
+      ]
+    },
+    "chunking_config_hash": "57eb773e46e6",
+    "chunk_count": 6366,
+    "chunk_ids_sha256": "41873bc4d3304206c66e3511e41672f4386d8c230c31a4df58b125a30ea8bcda",
+    "corpus_jsonl_path": "evaluation/artifacts/recursive_512_100/chunks.jsonl",
+    "corpus_sha256": "e39811da17d99201e4ad26f54c4a53614a087e76e3e0cb6d031a733862af0649",
+    "qdrant_scope": {
+      "qdrant_path": "data/runtime/qdrant_eval",
+      "collection": "eval_dsa_chunks_v1",
+      "workspace_id": "evaluation",
+      "corpus_id": "eval-recursive-512-v1"
+    }
+  }
+}
