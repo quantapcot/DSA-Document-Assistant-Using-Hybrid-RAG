@@ -1,0 +1,90 @@
+{
+  "run_id": "stage04_e74741659b",
+  "steps": {
+    "preflight": {
+      "status": "COMPLETED",
+      "canonical_fingerprint_sha256": "712f3847a6370156258f18297eabb41a657b4ac109dbe6290b9b50d9a0c6bd1d",
+      "qdrant_total_points": 19756,
+      "profiles": {
+        "recursive_512_100": {
+          "corpus_id": "eval-recursive-512-v1",
+          "chunk_count": 6366,
+          "corpus_sha256": "e39811da17d99201e4ad26f54c4a53614a087e76e3e0cb6d031a733862af0649"
+        },
+        "structure_adaptive": {
+          "corpus_id": "eval-structure-adaptive-v1",
+          "chunk_count": 13390,
+          "corpus_sha256": "81c568275754e35d7323b1e51fc247b885abc873eef4c5caa5c1ec4daa0b5d63"
+        }
+      }
+    },
+    "retrieval_evidence": {
+      "status": "COMPLETED",
+      "exact_ranking_matches": 320,
+      "total_calls_compared": 320,
+      "exact_ranking_agreement_pct": 100.0,
+      "unique_unjudged_candidates": 0
+    },
+    "chunking": {
+      "status": "COMPLETED",
+      "combined_qdrant_eval_bytes": 105722471
+    },
+    "candidate_pool_sensitivity": {
+      "status": "COMPLETED",
+      "rows": 16
+    },
+    "study_features_contract": {
+      "status": "COMPLETED",
+      "passed": 11,
+      "total": 11
+    },
+    "analysis": {
+      "status": "COMPLETED",
+      "methodology_note": "Objective multi-criteria summary at K=5 and K=15 (candidate_top_k=120); no arbitrary composite weights. Exploratory selection on benchmark set (not held-out validated).",
+      "best_retrieval_ndcg_k5": "A4",
+      "best_evidence_recall_k5": "A4",
+      "best_retrieval_ndcg_k15": "A4",
+      "best_evidence_recall_k15": "A4",
+      "lowest_p95_latency_k5": "A1",
+      "pareto_optimal_k5": [
+        "A1",
+        "A4",
+        "B4"
+      ],
+      "pareto_optimal_k15": [
+        "A1",
+        "A4",
+        "B4"
+      ],
+      "best_answer_correctness": "A4"
+    }
+  },
+  "last_updated_utc": "2026-11-28T15:45:59.012935+00:00",
+  "large_raw_artifact_backups": {
+    "evaluation/artifacts/stage04/generation/generated_answers.jsonl": {
+      "backup_path": "data/runtime/eval_stage04_backups/generated_answers.jsonl",
+      "bytes": 1314075,
+      "sha256": "6405d27e5289af680976cbdd1faa15418bbc4f8262cad0cd359ef7f7add508ce"
+    },
+    "evaluation/artifacts/stage04/generation/packed_contexts_main.jsonl": {
+      "backup_path": "data/runtime/eval_stage04_backups/packed_contexts_main.jsonl",
+      "bytes": 3284792,
+      "sha256": "3d43a140c11bbe97633c6a6c93c09d69419eca12cfd45004aa3b2f648b8062ea"
+    },
+    "evaluation/artifacts/stage04/performance/latency_raw.jsonl": {
+      "backup_path": "data/runtime/eval_stage04_backups/latency_raw.jsonl",
+      "bytes": 3024602,
+      "sha256": "0df2a162ae0fd628f08c4fba6a0d7a06b223cc87b7683bb17d73131b69eafe64"
+    },
+    "evaluation/artifacts/stage04/retrieval/retrieval_metrics_per_query.csv": {
+      "backup_path": "data/runtime/eval_stage04_backups/retrieval_metrics_per_query.csv",
+      "bytes": 543842,
+      "sha256": "2134a05837d0df47c11a2193665e93e969c9dd11eaeb61b01209c0b502c7a330"
+    },
+    "evaluation/artifacts/stage04/retrieval/retrieval_rankings.jsonl": {
+      "backup_path": "data/runtime/eval_stage04_backups/retrieval_rankings.jsonl",
+      "bytes": 1569731,
+      "sha256": "cc00ca7a06576f0100f718642115227157ee0e781bae9b9261867d8df59ae529"
+    }
+  }
+}

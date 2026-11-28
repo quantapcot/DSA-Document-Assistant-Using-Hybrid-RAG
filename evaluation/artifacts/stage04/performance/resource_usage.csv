@@ -1,0 +1,9 @@
+combo_id,profile_id,method,process_rss_mean_mb,peak_gpu_allocated_max_mb,peak_gpu_reserved_max_mb,cuda_oom_count,model_init_count_per_cold_trial,candidate_pool_processed,retrieved_emb_tokens_k5_mean,retrieved_emb_tokens_k15_mean,retrieved_emb_tokens_k60_mean,sampling_note
+A1,recursive_512_100,bm25,1246.02,0.0,0.0,0,0,120,654.5,1939.3,7532.9,Cold-start isolated process peaks (3 trials); warm process snapshots in manifest
+A2,recursive_512_100,dense,2063.99,458.5,484.0,0,1,120,654.5,1939.3,7532.9,Cold-start isolated process peaks (3 trials); warm process snapshots in manifest
+A3,recursive_512_100,hybrid_rrf,2119.97,458.5,484.0,0,1,120,654.5,1939.3,7532.9,Cold-start isolated process peaks (3 trials); warm process snapshots in manifest
+A4,recursive_512_100,hybrid_rerank,2556.87,2661.98,2692.0,0,2,120,654.5,1939.3,7532.9,Cold-start isolated process peaks (3 trials); warm process snapshots in manifest
+B1,structure_adaptive,bm25,1255.9,0.0,0.0,0,0,120,309.2,842.1,3347.6,Cold-start isolated process peaks (3 trials); warm process snapshots in manifest
+B2,structure_adaptive,dense,2063.53,458.5,484.0,0,1,120,309.2,842.1,3347.6,Cold-start isolated process peaks (3 trials); warm process snapshots in manifest
+B3,structure_adaptive,hybrid_rrf,2131.37,458.5,484.0,0,1,120,309.2,842.1,3347.6,Cold-start isolated process peaks (3 trials); warm process snapshots in manifest
+B4,structure_adaptive,hybrid_rerank,2578.93,2648.32,2690.0,0,2,120,309.2,842.1,3347.6,Cold-start isolated process peaks (3 trials); warm process snapshots in manifest
