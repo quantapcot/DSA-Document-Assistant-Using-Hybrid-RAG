@@ -1,0 +1,17 @@
+sensitivity_experiment,combo_id,profile_id,method,top_k,candidate_top_k,queries,precision_at_5,pooled_recall_at_5,mrr_at_5,ndcg_at_5,evidence_recall_at_5,complete_evidence_rate_at_5,judged_at_5,total_unjudged_slots,mean_latency_ms,p50_latency_ms,p95_latency_ms
+candidate_pool_single_pass_n40,A3,recursive_512_100,hybrid_rrf,5,10,40,0.57,0.277984,0.858333,0.502112,0.5875,0.325,1.0,0,952.272,963.869,1085.396
+candidate_pool_single_pass_n40,A3,recursive_512_100,hybrid_rrf,5,30,40,0.57,0.28275,0.859167,0.512206,0.595833,0.325,1.0,0,1150.906,1151.938,1310.302
+candidate_pool_single_pass_n40,A3,recursive_512_100,hybrid_rrf,5,60,40,0.575,0.287011,0.846667,0.506524,0.604167,0.35,1.0,0,1066.686,1038.526,1234.175
+candidate_pool_single_pass_n40,A3,recursive_512_100,hybrid_rrf,5,120,40,0.57,0.284511,0.846667,0.503654,0.604167,0.35,1.0,0,1103.994,1088.014,1288.961
+candidate_pool_single_pass_n40,A4,recursive_512_100,hybrid_rerank,5,10,40,0.645,0.325034,0.970833,0.63574,0.6625,0.4,1.0,0,1279.557,1268.651,1691.122
+candidate_pool_single_pass_n40,A4,recursive_512_100,hybrid_rerank,5,30,40,0.71,0.352828,0.9875,0.703915,0.7375,0.525,1.0,0,1627.712,1614.646,1776.503
+candidate_pool_single_pass_n40,A4,recursive_512_100,hybrid_rerank,5,60,40,0.705,0.350558,0.9875,0.704106,0.729167,0.525,1.0,0,2218.878,2204.118,2457.419
+candidate_pool_single_pass_n40,A4,recursive_512_100,hybrid_rerank,5,120,40,0.7,0.347433,0.9875,0.70525,0.720833,0.55,1.0,0,3485.608,3458.48,3980.261
+candidate_pool_single_pass_n40,B3,structure_adaptive,hybrid_rrf,5,10,40,0.46,0.26993,0.802917,0.424027,0.395833,0.175,1.0,0,1296.116,1257.679,1514.284
+candidate_pool_single_pass_n40,B3,structure_adaptive,hybrid_rrf,5,30,40,0.43,0.251394,0.77375,0.404468,0.354167,0.125,1.0,0,1306.076,1301.751,1535.743
+candidate_pool_single_pass_n40,B3,structure_adaptive,hybrid_rrf,5,60,40,0.42,0.250995,0.771667,0.405366,0.3625,0.125,1.0,0,1171.635,1169.437,1247.606
+candidate_pool_single_pass_n40,B3,structure_adaptive,hybrid_rrf,5,120,40,0.435,0.262882,0.78625,0.416327,0.375,0.15,1.0,0,1235.833,1227.803,1396.249
+candidate_pool_single_pass_n40,B4,structure_adaptive,hybrid_rerank,5,10,40,0.5,0.29328,0.8875,0.486281,0.445833,0.25,1.0,0,1525.335,1502.28,1696.265
+candidate_pool_single_pass_n40,B4,structure_adaptive,hybrid_rerank,5,30,40,0.56,0.329946,0.889583,0.531661,0.4625,0.225,1.0,0,1597.677,1576.947,1816.535
+candidate_pool_single_pass_n40,B4,structure_adaptive,hybrid_rerank,5,60,40,0.57,0.333984,0.888333,0.539737,0.479167,0.25,1.0,0,1982.671,1961.491,2270.651
+candidate_pool_single_pass_n40,B4,structure_adaptive,hybrid_rerank,5,120,40,0.6,0.350901,0.900833,0.559133,0.5125,0.3,1.0,0,3171.792,2571.242,3404.455

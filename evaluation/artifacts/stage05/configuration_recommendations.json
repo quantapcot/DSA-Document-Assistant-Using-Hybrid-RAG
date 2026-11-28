@@ -1,0 +1,116 @@
+{
+  "governance": {
+    "status": "EXPLORATORY_NOT_HELD_OUT_VALIDATED",
+    "human_validated": false,
+    "human_approval_status": "DRAFT",
+    "production_groq_e2e_status": "BLOCKED",
+    "note": "All recommendations below are exploratory selections derived from the 40-question Stage 04 benchmark using AI-generated pooled relevance judgments and Controlled Agent Generation. They are NOT independently validated production settings."
+  },
+  "operating_scenarios": {
+    "quality_oriented": {
+      "recommended_combo": "A4",
+      "profile_id": "recursive_512_100",
+      "retrieval_method": "hybrid_rerank",
+      "evidence_summary": {
+        "ndcg_at_5": 0.7053,
+        "mrr_at_5": 0.9875,
+        "precision_at_5": 0.7,
+        "evidence_recall_at_5": 0.7208,
+        "evidence_recall_at_15": 0.9083,
+        "complete_evidence_rate_at_15": 0.8,
+        "rag_answer_correctness": 0.925,
+        "rag_contradiction_rate": 0.0,
+        "warm_p95_k5_pool120_ms": 3693.1,
+        "peak_gpu_allocated_mb": 2662.0
+      },
+      "caveats": [
+        "Does NOT win every metric: NO_RAG Correctness (0.9688) exceeds A4; A1 leads Faithfulness (0.9250) and Citation Accuracy (0.8500); B4 leads Pooled Recall@5 (0.3509) and has 0% embedding truncation.",
+        "Highest warm retrieval latency at pool=120 (P95 = 3,693.1 ms) and 43.2% MiniLM embedding truncation."
+      ]
+    },
+    "low_latency_lightweight": {
+      "recommended_combo": "A1",
+      "profile_id": "recursive_512_100",
+      "retrieval_method": "bm25",
+      "evidence_summary": {
+        "ndcg_at_5": 0.5584,
+        "evidence_recall_at_5": 0.6583,
+        "evidence_recall_at_15": 0.8,
+        "faithfulness": 0.925,
+        "citation_accuracy": 0.85,
+        "rag_answer_correctness": 0.8125,
+        "warm_p95_k5_pool120_ms": 607.5,
+        "prod_profile_p95_k5_pool10_ms": 447.0,
+        "peak_gpu_allocated_mb": 0.0
+      },
+      "caveats": [
+        "Pareto-optimal for CPU-only / strict latency budgets; zero GPU VRAM required.",
+        "Vulnerable to lexical mismatch, paraphrases, and Vietnamese unaccented queries (accent_insensitive=false)."
+      ]
+    },
+    "alternative_chunking": {
+      "recommended_combo": "B4",
+      "profile_id": "structure_adaptive",
+      "retrieval_method": "hybrid_rerank",
+      "evidence_summary": {
+        "embedding_truncation_rate_pct": 0.0,
+        "overlap_redundancy_pct": 1.06,
+        "evidence_redundancy_at_5": 0.0075,
+        "pooled_recall_at_5": 0.3509,
+        "isolated_rerank_mean_k5_pool120_ms": 1364.8,
+        "isolated_rerank_speedup_vs_a4_pct": 41.2,
+        "warm_p95_k5_pool120_ms": 3214.3,
+        "warm_p95_speedup_vs_a4_k5_pct": 13.0,
+        "ndcg_at_5": 0.5591,
+        "rag_answer_correctness": 0.75
+      },
+      "caveats": [
+        "Context fragmentation (median 112 chars, 2.1x chunk count) reduces nDCG@5 (-20.7%, Holm p=0.001) and EvRecall@15 (-17.4%, Holm p=0.0035) relative to A4.",
+        "Requires ~1.5x longer cold BM25 build (15.5s vs 10.7s) and 2.1x theoretical vector storage."
+      ]
+    },
+    "practical_balanced_exploratory": {
+      "recommended_combo": "A4 (tuned candidate_top_k=30)",
+      "chunking": "recursive_512_100 (chunk_size=512, overlap=100)",
+      "retrieval": "BM25 + Dense + RRF (k=60) + BGE-reranker-v2-m3",
+      "candidate_pool": 30,
+      "top_k_range": "5-10 (15 for high-completeness analytical tasks)",
+      "context_budget_tokens": 2048,
+      "evidence_summary": {
+        "single_pass_pool30_ndcg_at_5": 0.7039,
+        "ndcg_retention_vs_pool120_pct": 99.8,
+        "single_pass_pool30_ev_recall_at_5": 0.7375,
+        "single_pass_pool30_mean_ms": 1628.0,
+        "single_pass_pool30_p95_ms": 1777.0,
+        "budget_2048_n10_correctness": 0.95,
+        "budget_2048_n10_faithfulness": 0.925
+      },
+      "protocol_warning": "Pool=30 latency originates from Protocol 5 (640 single-pass calls) and budget=2048 sensitivity originates from an exploratory n=10 subset; both must be validated on an independent held-out set and live production stack before deployment."
+    }
+  },
+  "future_work_not_implemented_in_stage05": [
+    "Enable accent_insensitive=true (or dual diacritic-aware + folded BM25 fields) to remediate the 0.0% Vietnamese unaccented typo failure (-0.6667 EvRecall@5).",
+    "Migrate from QdrantLocal SQLite (~461-645 ms/search leg) to Qdrant Server (HNSW) and evaluate persistent/async BM25 cache refresh to eliminate 300s TTL rebuild spikes.",
+    "Refine structure_adaptive chunking with minimum semantic unit merging (target 80-120 tokens) to combine 0% embedding truncation with lower context fragmentation.",
+    "Conduct human domain-expert ground-truth validation (moving human_validated=false -> true) and live Groq + HTTP E2E benchmarking once API credentials and production Qdrant indexing are authorized."
+  ],
+  "source_stage04_recommendations": {
+    "methodology_note": "Objective multi-criteria summary at K=5 and K=15 (candidate_top_k=120); no arbitrary composite weights. Exploratory selection on benchmark set (not held-out validated).",
+    "best_retrieval_ndcg_k5": "A4",
+    "best_evidence_recall_k5": "A4",
+    "best_retrieval_ndcg_k15": "A4",
+    "best_evidence_recall_k15": "A4",
+    "lowest_p95_latency_k5": "A1",
+    "pareto_optimal_k5": [
+      "A1",
+      "A4",
+      "B4"
+    ],
+    "pareto_optimal_k15": [
+      "A1",
+      "A4",
+      "B4"
+    ],
+    "best_answer_correctness": "A4"
+  }
+}

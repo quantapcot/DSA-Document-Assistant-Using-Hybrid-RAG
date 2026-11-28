@@ -1,0 +1,810 @@
+{
+  "validated_utc": "2026-11-28T16:24:00.871665+00:00",
+  "overall_pass": true,
+  "summary": {
+    "logical_figures_expected": 28,
+    "logical_figures_found": 28,
+    "png_passed": 28,
+    "svg_passed": 28,
+    "data_contract_1_to_28_complete": true,
+    "groups_A_to_K_complete": true,
+    "missing_source_artifacts": [],
+    "no_rag_na_preserved": true,
+    "input_integrity_ok": true,
+    "report_validation_ok": true,
+    "report_exists": true
+  },
+  "report_check": {
+    "report_exists": true,
+    "relative_links_checked": 135,
+    "broken_links": [],
+    "missing_figures_in_report": [],
+    "ok": true
+  },
+  "figures": [
+    {
+      "figure_number": 1,
+      "figure_id": "fig01_chunk_count_and_storage",
+      "data_contract_id": 1,
+      "group": "A",
+      "png": {
+        "ok": true,
+        "width_px": 3181,
+        "height_px": 1541,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 69.51,
+        "bytes": 279552
+      },
+      "svg": {
+        "ok": true,
+        "root_tag": "{http://www.w3.org/2000/svg}svg",
+        "viewBox": "0 0 762.082122 369.9",
+        "text_elements": 48,
+        "bytes": 28444
+      },
+      "sources_exist": true,
+      "has_caption_vi": true,
+      "has_protocol": true,
+      "all_ok": true
+    },
+    {
+      "figure_number": 2,
+      "figure_id": "fig02_chunk_length_distribution",
+      "data_contract_id": 2,
+      "group": "A",
+      "png": {
+        "ok": true,
+        "width_px": 3071,
+        "height_px": 1541,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 62.19,
+        "bytes": 265763
+      },
+      "svg": {
+        "ok": true,
+        "root_tag": "{http://www.w3.org/2000/svg}svg",
+        "viewBox": "0 0 736.852211 369.9",
+        "text_elements": 54,
+        "bytes": 34791
+      },
+      "sources_exist": true,
+      "has_caption_vi": true,
+      "has_protocol": true,
+      "all_ok": true
+    },
+    {
+      "figure_number": 3,
+      "figure_id": "fig03_token_distribution_and_context_volume",
+      "data_contract_id": 3,
+      "group": "A",
+      "png": {
+        "ok": true,
+        "width_px": 3629,
+        "height_px": 1541,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 66.26,
+        "bytes": 331767
+      },
+      "svg": {
+        "ok": true,
+        "root_tag": "{http://www.w3.org/2000/svg}svg",
+        "viewBox": "0 0 870.772211 369.9",
+        "text_elements": 69,
+        "bytes": 44735
+      },
+      "sources_exist": true,
+      "has_caption_vi": true,
+      "has_protocol": true,
+      "all_ok": true
+    },
+    {
+      "figure_number": 4,
+      "figure_id": "fig04_truncation_rate_and_discarded_tokens",
+      "data_contract_id": 4,
+      "group": "A",
+      "png": {
+        "ok": true,
+        "width_px": 2978,
+        "height_px": 1482,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 72.59,
+        "bytes": 256120
+      },
+      "svg": {
+        "ok": true,
+        "root_tag": "{http://www.w3.org/2000/svg}svg",
+        "viewBox": "0 0 714.532211 355.86",
+        "text_elements": 41,
+        "bytes": 25154
+      },
+      "sources_exist": true,
+      "has_caption_vi": true,
+      "has_protocol": true,
+      "all_ok": true
+    },
+    {
+      "figure_number": 5,
+      "figure_id": "fig05_source_coverage_ku_and_redundancy",
+      "data_contract_id": 5,
+      "group": "A",
+      "png": {
+        "ok": true,
+        "width_px": 3045,
+        "height_px": 1512,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 77.21,
+        "bytes": 274490
+      },
+      "svg": {
+        "ok": true,
+        "root_tag": "{http://www.w3.org/2000/svg}svg",
+        "viewBox": "0 0 730.585836 362.88",
+        "text_elements": 46,
+        "bytes": 27098
+      },
+      "sources_exist": true,
+      "has_caption_vi": true,
+      "has_protocol": true,
+      "all_ok": true
+    },
+    {
+      "figure_number": 6,
+      "figure_id": "fig06_precision_at_k",
+      "data_contract_id": 6,
+      "group": "B",
+      "png": {
+        "ok": true,
+        "width_px": 3360,
+        "height_px": 1599,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 54.45,
+        "bytes": 481748
+      },
+      "svg": {
+        "ok": true,
+        "root_tag": "{http://www.w3.org/2000/svg}svg",
+        "viewBox": "0 0 806.267312 383.94",
+        "text_elements": 63,
+        "bytes": 58460
+      },
+      "sources_exist": true,
+      "has_caption_vi": true,
+      "has_protocol": true,
+      "all_ok": true
+    },
+    {
+      "figure_number": 7,
+      "figure_id": "fig07_pooled_recall_at_k",
+      "data_contract_id": 7,
+      "group": "B",
+      "png": {
+        "ok": true,
+        "width_px": 4452,
+        "height_px": 1599,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 46.46,
+        "bytes": 499742
+      },
+      "svg": {
+        "ok": true,
+        "root_tag": "{http://www.w3.org/2000/svg}svg",
+        "viewBox": "0 0 1091.37 383.94",
+        "text_elements": 63,
+        "bytes": 58436
+      },
+      "sources_exist": true,
+      "has_caption_vi": true,
+      "has_protocol": true,
+      "all_ok": true
+    },
+    {
+      "figure_number": 8,
+      "figure_id": "fig08_mrr_at_k",
+      "data_contract_id": 8,
+      "group": "B",
+      "png": {
+        "ok": true,
+        "width_px": 3360,
+        "height_px": 1599,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 59.83,
+        "bytes": 379849
+      },
+      "svg": {
+        "ok": true,
+        "root_tag": "{http://www.w3.org/2000/svg}svg",
+        "viewBox": "0 0 806.267312 383.94",
+        "text_elements": 63,
+        "bytes": 58378
+      },
+      "sources_exist": true,
+      "has_caption_vi": true,
+      "has_protocol": true,
+      "all_ok": true
+    },
+    {
+      "figure_number": 9,
+      "figure_id": "fig09_ndcg_at_k",
+      "data_contract_id": 9,
+      "group": "B",
+      "png": {
+        "ok": true,
+        "width_px": 4793,
+        "height_px": 1599,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 48.43,
+        "bytes": 455667
+      },
+      "svg": {
+        "ok": true,
+        "root_tag": "{http://www.w3.org/2000/svg}svg",
+        "viewBox": "0 0 1172.1725 383.94",
+        "text_elements": 61,
+        "bytes": 57299
+      },
+      "sources_exist": true,
+      "has_caption_vi": true,
+      "has_protocol": true,
+      "all_ok": true
+    },
+    {
+      "figure_number": 10,
+      "figure_id": "fig10_map_at_k",
+      "data_contract_id": 10,
+      "group": "B",
+      "png": {
+        "ok": true,
+        "width_px": 3360,
+        "height_px": 1599,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 54.02,
+        "bytes": 441860
+      },
+      "svg": {
+        "ok": true,
+        "root_tag": "{http://www.w3.org/2000/svg}svg",
+        "viewBox": "0 0 806.267312 383.94",
+        "text_elements": 63,
+        "bytes": 58449
+      },
+      "sources_exist": true,
+      "has_caption_vi": true,
+      "has_protocol": true,
+      "all_ok": true
+    },
+    {
+      "figure_number": 11,
+      "figure_id": "fig11_f1_at_k",
+      "data_contract_id": 11,
+      "group": "B",
+      "png": {
+        "ok": true,
+        "width_px": 3360,
+        "height_px": 1599,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 55.8,
+        "bytes": 457069
+      },
+      "svg": {
+        "ok": true,
+        "root_tag": "{http://www.w3.org/2000/svg}svg",
+        "viewBox": "0 0 806.267312 383.94",
+        "text_elements": 65,
+        "bytes": 59894
+      },
+      "sources_exist": true,
+      "has_caption_vi": true,
+      "has_protocol": true,
+      "all_ok": true
+    },
+    {
+      "figure_number": 12,
+      "figure_id": "fig12_hit_rate_and_judged_at_k",
+      "data_contract_id": 12,
+      "group": "B",
+      "png": {
+        "ok": true,
+        "width_px": 3932,
+        "height_px": 1541,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 59.67,
+        "bytes": 352612
+      },
+      "svg": {
+        "ok": true,
+        "root_tag": "{http://www.w3.org/2000/svg}svg",
+        "viewBox": "0 0 962.85125 369.9",
+        "text_elements": 63,
+        "bytes": 50016
+      },
+      "sources_exist": true,
+      "has_caption_vi": true,
+      "has_protocol": true,
+      "all_ok": true
+    },
+    {
+      "figure_number": 13,
+      "figure_id": "fig13_evidence_recall_and_semantic_ku_at_k",
+      "data_contract_id": 13,
+      "group": "C",
+      "png": {
+        "ok": true,
+        "width_px": 3440,
+        "height_px": 1599,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 63.42,
+        "bytes": 470341
+      },
+      "svg": {
+        "ok": true,
+        "root_tag": "{http://www.w3.org/2000/svg}svg",
+        "viewBox": "0 0 825.096265 383.94",
+        "text_elements": 63,
+        "bytes": 53376
+      },
+      "sources_exist": true,
+      "has_caption_vi": true,
+      "has_protocol": true,
+      "all_ok": true
+    },
+    {
+      "figure_number": 14,
+      "figure_id": "fig14_evidence_precision_and_redundancy_at_k",
+      "data_contract_id": 14,
+      "group": "C",
+      "png": {
+        "ok": true,
+        "width_px": 3360,
+        "height_px": 1599,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 49.82,
+        "bytes": 404298
+      },
+      "svg": {
+        "ok": true,
+        "root_tag": "{http://www.w3.org/2000/svg}svg",
+        "viewBox": "0 0 806.267312 383.94",
+        "text_elements": 59,
+        "bytes": 54315
+      },
+      "sources_exist": true,
+      "has_caption_vi": true,
+      "has_protocol": true,
+      "all_ok": true
+    },
+    {
+      "figure_number": 15,
+      "figure_id": "fig15_complete_vs_partial_evidence_coverage",
+      "data_contract_id": 15,
+      "group": "C",
+      "png": {
+        "ok": true,
+        "width_px": 3496,
+        "height_px": 1599,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 56.89,
+        "bytes": 407508
+      },
+      "svg": {
+        "ok": true,
+        "root_tag": "{http://www.w3.org/2000/svg}svg",
+        "viewBox": "0 0 838.653291 383.94",
+        "text_elements": 49,
+        "bytes": 53125
+      },
+      "sources_exist": true,
+      "has_caption_vi": true,
+      "has_protocol": true,
+      "all_ok": true
+    },
+    {
+      "figure_number": 16,
+      "figure_id": "fig16_mean_latency_at_k",
+      "data_contract_id": 16,
+      "group": "D",
+      "png": {
+        "ok": true,
+        "width_px": 3392,
+        "height_px": 1570,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 49.94,
+        "bytes": 409936
+      },
+      "svg": {
+        "ok": true,
+        "root_tag": "{http://www.w3.org/2000/svg}svg",
+        "viewBox": "0 0 813.599461 376.92",
+        "text_elements": 60,
+        "bytes": 66747
+      },
+      "sources_exist": true,
+      "has_caption_vi": true,
+      "has_protocol": true,
+      "all_ok": true
+    },
+    {
+      "figure_number": 17,
+      "figure_id": "fig17_p95_latency_at_k",
+      "data_contract_id": 17,
+      "group": "D",
+      "png": {
+        "ok": true,
+        "width_px": 3392,
+        "height_px": 1570,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 55.47,
+        "bytes": 328866
+      },
+      "svg": {
+        "ok": true,
+        "root_tag": "{http://www.w3.org/2000/svg}svg",
+        "viewBox": "0 0 813.599461 376.92",
+        "text_elements": 60,
+        "bytes": 56366
+      },
+      "sources_exist": true,
+      "has_caption_vi": true,
+      "has_protocol": true,
+      "all_ok": true
+    },
+    {
+      "figure_number": 18,
+      "figure_id": "fig18_retrieval_latency_breakdown",
+      "data_contract_id": 18,
+      "group": "D",
+      "png": {
+        "ok": true,
+        "width_px": 3813,
+        "height_px": 1636,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 60.57,
+        "bytes": 307445
+      },
+      "svg": {
+        "ok": true,
+        "root_tag": "{http://www.w3.org/2000/svg}svg",
+        "viewBox": "0 0 912.842625 392.832",
+        "text_elements": 56,
+        "bytes": 51014
+      },
+      "sources_exist": true,
+      "has_caption_vi": true,
+      "has_protocol": true,
+      "all_ok": true
+    },
+    {
+      "figure_number": 19,
+      "figure_id": "fig19_cold_vs_warm_and_prod_profile_latency",
+      "data_contract_id": 19,
+      "group": "D",
+      "png": {
+        "ok": true,
+        "width_px": 3396,
+        "height_px": 1599,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 60.15,
+        "bytes": 286238
+      },
+      "svg": {
+        "ok": true,
+        "root_tag": "{http://www.w3.org/2000/svg}svg",
+        "viewBox": "0 0 814.972211 383.94",
+        "text_elements": 57,
+        "bytes": 43876
+      },
+      "sources_exist": true,
+      "has_caption_vi": true,
+      "has_protocol": true,
+      "all_ok": true
+    },
+    {
+      "figure_number": 20,
+      "figure_id": "fig20_resource_usage",
+      "data_contract_id": 20,
+      "group": "D",
+      "png": {
+        "ok": true,
+        "width_px": 3345,
+        "height_px": 1541,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 62.85,
+        "bytes": 266258
+      },
+      "svg": {
+        "ok": true,
+        "root_tag": "{http://www.w3.org/2000/svg}svg",
+        "viewBox": "0 0 802.439461 369.9",
+        "text_elements": 60,
+        "bytes": 39959
+      },
+      "sources_exist": true,
+      "has_caption_vi": true,
+      "has_protocol": true,
+      "all_ok": true
+    },
+    {
+      "figure_number": 21,
+      "figure_id": "fig21_answer_quality_comparison",
+      "data_contract_id": 21,
+      "group": "E",
+      "png": {
+        "ok": true,
+        "width_px": 3643,
+        "height_px": 1687,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 85.74,
+        "bytes": 399218
+      },
+      "svg": {
+        "ok": true,
+        "root_tag": "{http://www.w3.org/2000/svg}svg",
+        "viewBox": "0 0 877.622875 405",
+        "text_elements": 108,
+        "bytes": 60730
+      },
+      "sources_exist": true,
+      "has_caption_vi": true,
+      "has_protocol": true,
+      "all_ok": true
+    },
+    {
+      "figure_number": 22,
+      "figure_id": "fig22_rag_vs_norag_and_ablation_study",
+      "data_contract_id": 22,
+      "group": "E, F",
+      "png": {
+        "ok": true,
+        "width_px": 3739,
+        "height_px": 1687,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 54.42,
+        "bytes": 407170
+      },
+      "svg": {
+        "ok": true,
+        "root_tag": "{http://www.w3.org/2000/svg}svg",
+        "viewBox": "0 0 897.593461 405",
+        "text_elements": 56,
+        "bytes": 45008
+      },
+      "sources_exist": true,
+      "has_caption_vi": true,
+      "has_protocol": true,
+      "all_ok": true
+    },
+    {
+      "figure_number": 23,
+      "figure_id": "fig23_candidate_pool_and_topk_sensitivity",
+      "data_contract_id": 23,
+      "group": "G",
+      "png": {
+        "ok": true,
+        "width_px": 3427,
+        "height_px": 1599,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 45.18,
+        "bytes": 437626
+      },
+      "svg": {
+        "ok": true,
+        "root_tag": "{http://www.w3.org/2000/svg}svg",
+        "viewBox": "0 0 822.320938 383.94",
+        "text_elements": 63,
+        "bytes": 52129
+      },
+      "sources_exist": true,
+      "has_caption_vi": true,
+      "has_protocol": true,
+      "all_ok": true
+    },
+    {
+      "figure_number": 24,
+      "figure_id": "fig24_context_budget_sensitivity",
+      "data_contract_id": 24,
+      "group": "G",
+      "png": {
+        "ok": true,
+        "width_px": 3326,
+        "height_px": 1541,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 46.75,
+        "bytes": 371945
+      },
+      "svg": {
+        "ok": true,
+        "root_tag": "{http://www.w3.org/2000/svg}svg",
+        "viewBox": "0 0 799.282132 369.9",
+        "text_elements": 66,
+        "bytes": 38359
+      },
+      "sources_exist": true,
+      "has_caption_vi": true,
+      "has_protocol": true,
+      "all_ok": true
+    },
+    {
+      "figure_number": 25,
+      "figure_id": "fig25_quality_latency_pareto_tradeoff",
+      "data_contract_id": 25,
+      "group": "K",
+      "png": {
+        "ok": true,
+        "width_px": 3429,
+        "height_px": 1629,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 45.45,
+        "bytes": 414150
+      },
+      "svg": {
+        "ok": true,
+        "root_tag": "{http://www.w3.org/2000/svg}svg",
+        "viewBox": "0 0 822.272 390.96",
+        "text_elements": 62,
+        "bytes": 40677
+      },
+      "sources_exist": true,
+      "has_caption_vi": true,
+      "has_protocol": true,
+      "all_ok": true
+    },
+    {
+      "figure_number": 26,
+      "figure_id": "fig26_statistical_ci_subgroups_and_audit",
+      "data_contract_id": 26,
+      "group": "H",
+      "png": {
+        "ok": true,
+        "width_px": 3621,
+        "height_px": 2864,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 71.75,
+        "bytes": 489555
+      },
+      "svg": {
+        "ok": true,
+        "root_tag": "{http://www.w3.org/2000/svg}svg",
+        "viewBox": "0 0 868.507961 687.3984",
+        "text_elements": 103,
+        "bytes": 89443
+      },
+      "sources_exist": true,
+      "has_caption_vi": true,
+      "has_protocol": true,
+      "all_ok": true
+    },
+    {
+      "figure_number": 27,
+      "figure_id": "fig27_robustness_and_study_features",
+      "data_contract_id": 27,
+      "group": "I",
+      "png": {
+        "ok": true,
+        "width_px": 3854,
+        "height_px": 1629,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 68.52,
+        "bytes": 380825
+      },
+      "svg": {
+        "ok": true,
+        "root_tag": "{http://www.w3.org/2000/svg}svg",
+        "viewBox": "0 0 923.034873 390.96",
+        "text_elements": 63,
+        "bytes": 37625
+      },
+      "sources_exist": true,
+      "has_caption_vi": true,
+      "has_protocol": true,
+      "all_ok": true
+    },
+    {
+      "figure_number": 28,
+      "figure_id": "fig28_error_distribution_and_taxonomy",
+      "data_contract_id": 28,
+      "group": "J",
+      "png": {
+        "ok": true,
+        "width_px": 3941,
+        "height_px": 1629,
+        "dpi": [
+          300.0,
+          300.0
+        ],
+        "pixel_std": 51.12,
+        "bytes": 382105
+      },
+      "svg": {
+        "ok": true,
+        "root_tag": "{http://www.w3.org/2000/svg}svg",
+        "viewBox": "0 0 943.318625 390.96",
+        "text_elements": 53,
+        "bytes": 45042
+      },
+      "sources_exist": true,
+      "has_caption_vi": true,
+      "has_protocol": true,
+      "all_ok": true
+    }
+  ]
+}

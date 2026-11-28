@@ -1,0 +1,17 @@
+combo_id,profile_id,method,k,compatibility_note,ndcg_at_k,precision_at_k,pooled_recall_at_k,mrr_at_k,evidence_recall_at_k,complete_evidence_rate_at_k,answer_correctness_norm,mean_latency_ms,p50_latency_ms,p95_latency_ms,retrieved_emb_tokens_mean,peak_gpu_allocated_max_mb,process_rss_mean_mb,is_pareto_optimal,dominated_by
+A1,recursive_512_100,bm25,5,Top60_Pool120_prefix_quality_vs_actual_K_Pool120_latency,0.558361,0.6,0.28994,0.910417,0.658333,0.45,0.8125,549.8779,360.4357,607.5367,654.5,0.0,1246.02,True,
+A2,recursive_512_100,dense,5,Top60_Pool120_prefix_quality_vs_actual_K_Pool120_latency,0.392129,0.47,0.23402,0.707917,0.495833,0.275,0.7063,429.8517,389.4103,626.4896,654.5,458.5,2063.99,False,A1
+A3,recursive_512_100,hybrid_rrf,5,Top60_Pool120_prefix_quality_vs_actual_K_Pool120_latency,0.503654,0.57,0.284511,0.846667,0.604167,0.35,0.8187,927.4403,757.6036,1321.7942,654.5,458.5,2119.97,False,A1
+A4,recursive_512_100,hybrid_rerank,5,Top60_Pool120_prefix_quality_vs_actual_K_Pool120_latency,0.70525,0.7,0.347433,0.9875,0.720833,0.55,0.925,3209.5532,3097.8872,3693.1247,654.5,2661.98,2556.87,True,
+B1,structure_adaptive,bm25,5,Top60_Pool120_prefix_quality_vs_actual_K_Pool120_latency,0.441395,0.47,0.267705,0.85625,0.391667,0.175,0.6625,709.5761,452.3698,756.7464,309.2,0.0,1255.9,False,A1
+B2,structure_adaptive,dense,5,Top60_Pool120_prefix_quality_vs_actual_K_Pool120_latency,0.312834,0.34,0.19317,0.624583,0.3,0.1,0.4813,507.7162,457.6331,753.9596,309.2,458.5,2063.53,False,"A1,A2"
+B3,structure_adaptive,hybrid_rrf,5,Top60_Pool120_prefix_quality_vs_actual_K_Pool120_latency,0.416327,0.435,0.262882,0.78625,0.375,0.15,0.6562,1095.3564,896.0666,1308.3869,309.2,458.5,2131.37,False,"A1,B1"
+B4,structure_adaptive,hybrid_rerank,5,Top60_Pool120_prefix_quality_vs_actual_K_Pool120_latency,0.559133,0.6,0.350901,0.900833,0.5125,0.3,0.75,2982.0856,2366.7878,3214.2942,309.2,2648.32,2578.93,True,
+A1,recursive_512_100,bm25,15,Top60_Pool120_prefix_quality_vs_actual_K_Pool120_latency,0.567175,0.376667,0.522695,0.910417,0.8,0.6,0.8125,399.9733,361.339,569.1128,1939.3,0.0,1246.02,True,
+A2,recursive_512_100,dense,15,Top60_Pool120_prefix_quality_vs_actual_K_Pool120_latency,0.409912,0.293333,0.423507,0.718155,0.65,0.425,0.7063,431.5947,390.7535,637.9203,1939.3,458.5,2063.99,False,A1
+A3,recursive_512_100,hybrid_rrf,15,Top60_Pool120_prefix_quality_vs_actual_K_Pool120_latency,0.535137,0.366667,0.515677,0.846667,0.775,0.625,0.8187,1011.6062,757.1755,1230.6431,1939.3,458.5,2119.97,False,A1
+A4,recursive_512_100,hybrid_rerank,15,Top60_Pool120_prefix_quality_vs_actual_K_Pool120_latency,0.733531,0.473333,0.674455,0.9875,0.908333,0.8,0.925,3434.3729,3102.262,3738.9407,1939.3,2661.98,2556.87,True,
+B1,structure_adaptive,bm25,15,Top60_Pool120_prefix_quality_vs_actual_K_Pool120_latency,0.44703,0.263333,0.431996,0.861905,0.554167,0.325,0.6625,648.3317,451.2638,771.6318,842.1,0.0,1255.9,False,A1
+B2,structure_adaptive,dense,15,Top60_Pool120_prefix_quality_vs_actual_K_Pool120_latency,0.322737,0.2,0.317683,0.633988,0.391667,0.225,0.4813,498.4706,456.871,717.8157,842.1,458.5,2063.53,False,"A1,A2"
+B3,structure_adaptive,hybrid_rrf,15,Top60_Pool120_prefix_quality_vs_actual_K_Pool120_latency,0.438861,0.266667,0.431164,0.795278,0.5375,0.3,0.6562,1322.2603,906.0463,1577.0141,842.1,458.5,2131.37,False,"A1,A3,B1"
+B4,structure_adaptive,hybrid_rerank,15,Top60_Pool120_prefix_quality_vs_actual_K_Pool120_latency,0.590812,0.345,0.567696,0.900833,0.75,0.475,0.75,2551.3597,2346.2831,3110.066,842.1,2648.32,2578.93,True,
